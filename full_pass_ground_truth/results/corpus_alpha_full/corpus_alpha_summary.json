@@ -1,0 +1,13 @@
+[
+  {
+    "corpus": "SlimPajama-627B Reupload",
+    "method": "full_pass",
+    "tasks": 310,
+    "documents": 591399449,
+    "decoded_tokens": 0,
+    "input_bytes": 1507040721942,
+    "integer_matches": 13453661694,
+    "alpha": -1.556735067665862,
+    "r2": 0.7944690791040131
+  }
+]

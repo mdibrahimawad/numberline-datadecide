@@ -1,0 +1,11 @@
+{
+  "corpus": "LLM-JP Corpus v3",
+  "method": "full_pass",
+  "tasks": 1595,
+  "documents": 2213484857,
+  "decoded_tokens": 0,
+  "input_bytes": 2734229109172,
+  "integer_matches": 37261124679,
+  "alpha": -1.4597938779865642,
+  "r2": 0.7890751647361707
+}
