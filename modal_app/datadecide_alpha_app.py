@@ -36,7 +36,7 @@ APP_NAME = "numberline-datadecide-alpha"
 CACHE = Path("/dd_cache/v1")
 LOCAL_OUT = Path("results/corpus_alpha_datadecide")
 MODEL_REVISION = "step69369-seed-default"
-WINDOWS_PER_CALL = 20
+WINDOWS_PER_CALL = 100
 
 image = (
     modal.Image.debian_slim(python_version="3.12")
@@ -109,29 +109,38 @@ def count_window(tokenizer, tokens, window: dict, eos: int | None = None) -> dic
     from src.datadecide_sampling import EDGE_MODES, EOS_TOKEN_ID, split_documents
 
     eos = EOS_TOKEN_ID if eos is None else eos
-    out = {"tokens": int(len(tokens))}
-    for mode in EDGE_MODES:
-        docs = split_documents(tokens, mode, window["at_file_start"], window["at_file_end"], eos=eos)
-        counts: Counter[int] = Counter()
-        decoded = _decode_and_count_native(tokenizer, docs, counts) if docs else 0
-        out[mode] = {"docs": len(docs), "decoded_tokens": decoded,
-                     "counts": {str(k): v for k, v in counts.items()}}
+    drop_mode, keep_mode = EDGE_MODES
+    whole = split_documents(tokens, drop_mode, window["at_file_start"], window["at_file_end"], eos=eos)
+    keep = split_documents(tokens, keep_mode, window["at_file_start"], window["at_file_end"], eos=eos)
+    # keep = [left edge?] + whole + [right edge?]: decode the whole documents once
+    left = 0 if not whole or (keep and keep[0] == whole[0]) else 1
+    edges = keep if not whole else keep[:left] + keep[left + len(whole):]
+    counts: Counter[int] = Counter()
+    decoded = _decode_and_count_native(tokenizer, whole, counts) if whole else 0
+    out = {"tokens": int(len(tokens)),
+           drop_mode: {"docs": len(whole), "decoded_tokens": decoded,
+                       "counts": {str(k): v for k, v in counts.items()}}}
+    if edges:
+        decoded += _decode_and_count_native(tokenizer, edges, counts)
+    out[keep_mode] = {"docs": len(keep), "decoded_tokens": decoded,
+                      "counts": {str(k): v for k, v in counts.items()}}
     return out
 
 
-@app.function(cpu=2, memory=4096, timeout=2 * 60 * 60, max_containers=64, retries=2,
+@app.function(cpu=1, memory=2048, timeout=2 * 60 * 60, max_containers=64, retries=2,
               volumes={"/dd_cache": cache}, secrets=secrets)
 def count_windows(model_repo: str, windows: list[dict]) -> list[dict]:
-    results = []
-    for w in windows:
-        key = f"window::{w['path']}::{w['start']}::{w['length']}::{model_repo}"
+    """Count a batch of windows; the batch is cached as ONE Volume entry
+    (per-window entries made every window pay a Volume commit)."""
+    ident = hashlib.sha1(json.dumps(
+        [[w["path"], w["start"], w["length"]] for w in windows]).encode()).hexdigest()
 
-        def compute(w=w):
-            tokens = _read_tokens(w["path"], w["start"], w["length"])
-            return count_window(_tokenizer(model_repo), tokens, w)
+    def compute():
+        tok = _tokenizer(model_repo)
+        return [{**w, **count_window(tok, _read_tokens(w["path"], w["start"], w["length"]), w)}
+                for w in windows]
 
-        results.append({**w, **_cached(key, compute)})
-    return results
+    return _cached(f"windows::{model_repo}::{ident}", compute)
 
 
 @app.function(timeout=30 * 60, secrets=secrets)
