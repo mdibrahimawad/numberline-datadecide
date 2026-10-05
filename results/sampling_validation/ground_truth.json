@@ -1,0 +1,28 @@
+{
+  "slimpajama-627b_reupload": {
+    "alpha_ols": -1.556735067665861,
+    "r2": 0.7944690791040132,
+    "alpha_mle": -1.0647365859066475,
+    "alpha_mle_fisher_se": 3.207375568898447e-06,
+    "integer_matches": 13453661694.0,
+    "support": 1.0,
+    "summary_alpha": -1.556735067665862,
+    "summary_r2": 0.7944690791040131,
+    "alpha_matches_summary": true,
+    "summary_integer_matches": 13453661694,
+    "count_0": 845316642.0
+  },
+  "llm-jp_corpus_v3": {
+    "alpha_ols": -1.4597938779865633,
+    "r2": 0.7890751647361708,
+    "alpha_mle": -1.1148980745799153,
+    "alpha_mle_fisher_se": 1.979407938349282e-06,
+    "integer_matches": 37261124679.0,
+    "support": 1.0,
+    "summary_alpha": -1.4597938779865642,
+    "summary_r2": 0.7890751647361707,
+    "alpha_matches_summary": true,
+    "summary_integer_matches": 37261124679,
+    "count_0": 2632589751.0
+  }
+}

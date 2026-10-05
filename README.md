@@ -187,6 +187,38 @@ python tests/test_filter_correct.py     # offline: fake model + random tiny OLMo
 python tests/test_datadecide_smoke.py   # downloads allenai/DataDecide-dolma1_7-60M
 ```
 
+## Corpus alpha: sampling validation and DataDecide training data
+
+Counting is always `_count_text` (`\b\d+\b`, leading zeros stripped,
+0..10000) and alpha_OLS is `_fit_alpha`, both from
+`modal_app/corpus_alpha_app.py`; `src/sampling_validation.py` adds alpha_MLE
+(discrete power law on N=1..10000, zeros included) and the bootstrap.
+
+```bash
+# Part 0: alpha_OLS / alpha_MLE from the full-pass CSVs (local, seconds)
+python -m src.sampling_validation        # -> results/sampling_validation/ground_truth.json
+
+# Part 1: random samples vs the full pass (CPU on Modal); dry-run prints row-group sizes and cost
+modal run modal_app/sampling_validation_app.py --corpus slimpajama --dry-run
+modal run modal_app/sampling_validation_app.py --corpus slimpajama
+modal run modal_app/sampling_validation_app.py --corpus llmjp --dry-run
+modal run modal_app/sampling_validation_app.py --corpus llmjp
+# -> results/sampling_validation/{slimpajama,llmjp}/{summary_table.csv,summary.json,runs.csv,alpha_vs_size.png}
+
+# Part 2: DataDecide training-data sampler (docs/datadecide_sampling.md)
+modal run modal_app/datadecide_alpha_app.py::validate --dry-run   # dolma1_7: verify files, mixture
+modal run modal_app/datadecide_alpha_app.py::validate             # convergence, split-half, exact order
+modal run modal_app/datadecide_alpha_app.py::sweep --dry-run      # all 25 recipes: verify on the Hub
+modal run modal_app/datadecide_alpha_app.py::sweep --windows 1000 # -> results/corpus_alpha_datadecide/
+
+# offline tests (tiny fake parquet / .jsonl.gz / uint16 .npy files)
+python tests/test_sampling_validation.py
+python tests/test_datadecide_sampling.py
+```
+
+`configs/datadecide_data_map.json` (recipe -> ordered .npy files) is rebuilt with
+`python -m src.datadecide_sampling --olmo-repo <OLMo@DataDecide> --datadecide-repo <DataDecide>`.
+
 ## MLflow
 
 Both stages write to the same local SQLite DB at `./mlflow.db` by

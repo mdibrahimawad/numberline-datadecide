@@ -146,6 +146,14 @@ def _h5_file(task: dict) -> dict:
     return _payload(task, counts, documents, tokens)
 
 
+def _iter_parquet_texts(source, row_groups=None):
+    """Yield every string `text` value of a pyarrow ParquetFile (optionally some row groups)."""
+    for batch in source.iter_batches(batch_size=4096, columns=["text"], row_groups=row_groups):
+        for text in batch.column(0).to_pylist():
+            if isinstance(text, str):
+                yield text
+
+
 def _parquet_file(task: dict) -> dict:
     import tempfile
 
@@ -165,21 +173,29 @@ def _parquet_file(task: dict) -> dict:
             local.flush()
 
             source = parquet.ParquetFile(local.name)
-            for batch in source.iter_batches(batch_size=4096, columns=["text"]):
-                for text in batch.column(0).to_pylist():
-                    if isinstance(text, str):
-                        _count_text(text, counts)
-                        documents += 1
+            for text in _iter_parquet_texts(source):
+                _count_text(text, counts)
+                documents += 1
     finally:
         response.close()
     return _payload(task, counts, documents, 0)
+
+
+def _jsonl_text(line: bytes) -> str | None:
+    """`text` field of one JSON line, or None if unparsable / not a string."""
+    import orjson
+
+    try:
+        text = orjson.loads(line).get("text", "")
+    except (orjson.JSONDecodeError, AttributeError):
+        return None
+    return text if isinstance(text, str) else None
 
 
 def _text_file(task: dict) -> dict:
     import gzip
     import io
 
-    import orjson
     import zstandard
 
     url = task["url"]
@@ -199,11 +215,8 @@ def _text_file(task: dict) -> dict:
     documents = 0
     try:
         for line in reader:
-            try:
-                text = orjson.loads(line).get("text", "")
-            except (orjson.JSONDecodeError, AttributeError):
-                continue
-            if isinstance(text, str):
+            text = _jsonl_text(line)
+            if text is not None:
                 _count_text(text, counts)
                 documents += 1
     finally:
