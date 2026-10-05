@@ -723,33 +723,49 @@ def sweep(
         raise SystemExit(f"unknown recipes: {unknown}")
     groups = _groups_by_path()
     root = Path(out_dir)
-    plans = {}
-    for slug in names:
+
+    def write_summary_csv() -> int:
+        rows = []
+        for slug in data_map["recipes"]:
+            path = root / slug / "summary.json"
+            if path.exists():
+                rows.append(_summary_row(json.loads(path.read_text())))
+        root.mkdir(parents=True, exist_ok=True)
+        with open(root / "alpha_summary.csv", "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=ALPHA_COLUMNS)
+            w.writeheader()
+            w.writerows(rows)
+        return len(rows)
+
+    # One recipe at a time; a failure is logged and skipped, and alpha_summary.csv
+    # is rewritten after every recipe, so an unattended run keeps whatever finished.
+    # Rerunning the same command reuses every counted window batch from the Volume.
+    failed = []
+    for i, slug in enumerate(names, 1):
         rec = data_map["recipes"][slug]
-        file_tokens, _ = _recipe_tokens(rec)
-        (root / slug).mkdir(parents=True, exist_ok=True)
-        (root / slug / "mixture.json").write_text(json.dumps(_mixture(rec, file_tokens, groups), indent=2))
-        print(f"[sweep] {slug}: files={len(file_tokens)} tokens={sum(file_tokens)/1e9:.1f}B "
-              f"download={windows * window_tokens * 2 / 1e9:.2f} GB")
-        plan = plan_windows(file_tokens, windows, window_tokens, seed)
-        for w in plan:
-            w["path"] = rec["paths"][w["file_index"]]
-        plans[slug] = (rec, plan, file_tokens)
-    if dry_run:
-        print("[sweep] --dry-run: all recipes verified on the Hub; stopping before counting")
-        return
-    for slug, (rec, plan, file_tokens) in plans.items():
-        results = _count(rec["model_repo"], plan)
-        summary = _recipe_result(slug, rec, results, n_boot, root / slug, file_tokens)
+        try:
+            file_tokens, _ = _recipe_tokens(rec)
+            (root / slug).mkdir(parents=True, exist_ok=True)
+            (root / slug / "mixture.json").write_text(json.dumps(_mixture(rec, file_tokens, groups), indent=2))
+            print(f"[sweep] ({i}/{len(names)}) {slug}: files={len(file_tokens)} "
+                  f"tokens={sum(file_tokens)/1e9:.1f}B download={windows * window_tokens * 2 / 1e9:.2f} GB")
+            if dry_run:
+                continue
+            plan = plan_windows(file_tokens, windows, window_tokens, seed)
+            for w in plan:
+                w["path"] = rec["paths"][w["file_index"]]
+            results = _count(rec["model_repo"], plan)
+            summary = _recipe_result(slug, rec, results, n_boot, root / slug, file_tokens)
+        except (Exception, SystemExit) as exc:
+            print(f"[sweep] {slug} FAILED: {type(exc).__name__}: {exc}")
+            failed.append(slug)
+            continue
         s = summary["drop_partial_docs"]
-        print(f"[sweep] {slug}: alpha_ols={s['alpha_ols']:.4f} alpha_mle={s['alpha_mle']:.4f}")
-    rows = []
-    for slug in data_map["recipes"]:
-        path = root / slug / "summary.json"
-        if path.exists():
-            rows.append(_summary_row(json.loads(path.read_text())))
-    with open(root / "alpha_summary.csv", "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=ALPHA_COLUMNS)
-        w.writeheader()
-        w.writerows(rows)
-    print(f"[sweep] wrote {root / 'alpha_summary.csv'} ({len(rows)} recipes)")
+        print(f"[sweep] {slug}: alpha_ols={s['alpha_ols']:.4f} alpha_mle={s['alpha_mle']:.4f} "
+              f"-> {write_summary_csv()} recipes in alpha_summary.csv")
+    if dry_run:
+        print("[sweep] --dry-run: recipes verified on the Hub; stopping before counting")
+        return
+    print(f"[sweep] wrote {root / 'alpha_summary.csv'} ({write_summary_csv()} recipes)")
+    if failed:
+        print(f"[sweep] failed: {failed} -- rerun the same command to retry them (finished work is reused)")
