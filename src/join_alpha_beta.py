@@ -1,8 +1,13 @@
 """Join corpus alpha (training data) with model beta (number-line geometry) for the DataDecide 1B models.
 
-Inputs (both keyed by recipe slug, as in configs/datadecide_models.json):
-  results/corpus_alpha_datadecide/alpha_seed2.csv   from modal_app/datadecide_alpha_app.py::exact_all
-  results/datadecide/summary.csv                    from modal_app/datadecide_app.py
+Inputs (all keyed by recipe slug, as in configs/datadecide_models.json):
+  results/corpus_alpha_datadecide/alpha_seed2.csv   exact 100B training stream (::exact_all)
+  results/corpus_alpha_datadecide/alpha_summary.csv cheap ~1B-token window sample (::sweep),
+                                                    used for recipes without an exact alpha
+  results/datadecide/summary.csv                    beta (modal_app/datadecide_app.py)
+
+The window sampler's alpha_MLE matches the exact value (dolma1_7: 0.0003) but its
+alpha_OLS is biased by ~0.05, so OLS correlations use exact rows only.
 
 Output:
   results/datadecide/alpha_beta.csv                 one row per recipe with both
@@ -32,14 +37,22 @@ def _read(path: Path) -> dict[str, dict]:
         return {row["recipe"]: row for row in csv.DictReader(fh)}
 
 
-def join(alpha_csv: Path, beta_csv: Path) -> list[dict]:
-    alpha, beta = _read(alpha_csv), _read(beta_csv)
+def join(alpha_csv: Path, beta_csv: Path, window_csv: Path | None = None) -> list[dict]:
+    alpha = _read(alpha_csv) if alpha_csv.exists() else {}
+    for row in alpha.values():
+        row["alpha_source"] = "exact_100b"
+    if window_csv is not None and window_csv.exists():
+        for recipe, row in _read(window_csv).items():
+            if recipe not in alpha:
+                alpha[recipe] = {**row, "seed": "", "alpha_source": "window_1b"}
+    beta = _read(beta_csv)
     order = json.loads((Path(__file__).resolve().parent.parent / "configs" / "datadecide_models.json")
                        .read_text())["recipes"]
     rows = []
     for recipe in order:
         if recipe in alpha and recipe in beta:
-            row = {"recipe": recipe, "alpha_seed": alpha[recipe]["seed"]}
+            row = {"recipe": recipe, "alpha_source": alpha[recipe]["alpha_source"],
+                   "alpha_seed": alpha[recipe]["seed"]}
             row.update({k: alpha[recipe][k] for k in ALPHA_COLS})
             row["alpha_r2"] = row.pop("r2")
             row.update({k: beta[recipe].get(k, "") for k in BETA_COLS})
@@ -53,8 +66,10 @@ def join(alpha_csv: Path, beta_csv: Path) -> list[dict]:
 def correlations(rows: list[dict]) -> dict:
     out = {}
     for a in ("alpha_ols", "alpha_mle"):
+        # window-sample OLS is biased; only exact rows enter the OLS correlations
+        use = rows if a == "alpha_mle" else [r for r in rows if r["alpha_source"] == "exact_100b"]
         for b in ("beta_direct_mean", "beta_log_mean"):
-            pairs = [(float(r[a]), float(r[b])) for r in rows if r[a] and r[b]]
+            pairs = [(float(r[a]), float(r[b])) for r in use if r[a] and r[b]]
             pairs = [(x, y) for x, y in pairs if np.isfinite(x) and np.isfinite(y)]
             if len(pairs) < 3:
                 continue
@@ -74,13 +89,19 @@ def plot(rows: list[dict], path: Path) -> None:
 
     fig, axes = plt.subplots(1, 2, figsize=(11, 4.5))
     for ax, a in zip(axes, ("alpha_ols", "alpha_mle")):
-        x = np.asarray([float(r[a]) for r in rows])
-        y = np.asarray([float(r["beta_direct_mean"]) for r in rows])
-        err = np.asarray([float(r["beta_direct_std"] or 0) for r in rows])
-        ax.errorbar(x, y, yerr=err, fmt="o", ms=4, capsize=2, color="#2471a3")
-        for xi, yi, r in zip(x, y, rows):
+        use = rows if a == "alpha_mle" else [r for r in rows if r["alpha_source"] == "exact_100b"]
+        for source, color in (("exact_100b", "#c0392b"), ("window_1b", "#2471a3")):
+            sel = [r for r in use if r["alpha_source"] == source]
+            if sel:
+                ax.errorbar([float(r[a]) for r in sel], [float(r["beta_direct_mean"]) for r in sel],
+                            yerr=[float(r["beta_direct_std"] or 0) for r in sel], fmt="o", ms=4,
+                            capsize=2, color=color, label=source)
+        ax.legend(fontsize=7)
+        x = [float(r[a]) for r in use]
+        y = [float(r["beta_direct_mean"]) for r in use]
+        for xi, yi, r in zip(x, y, use):
             ax.annotate(r["recipe"], (xi, yi), fontsize=6, xytext=(3, 2), textcoords="offset points")
-        ax.set_xlabel(f"corpus {a} (exact 100B training stream)")
+        ax.set_xlabel(f"corpus {a}")
         ax.set_ylabel("model beta (direct fit, frozen layer)")
         ax.set_title(f"DataDecide 1B: {a} vs beta")
     fig.tight_layout()
@@ -91,11 +112,12 @@ def plot(rows: list[dict], path: Path) -> None:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--alpha", default="results/corpus_alpha_datadecide/alpha_seed2.csv")
+    p.add_argument("--window-alpha", default="results/corpus_alpha_datadecide/alpha_summary.csv")
     p.add_argument("--beta", default="results/datadecide/summary.csv")
     p.add_argument("--out", default="results/datadecide/alpha_beta.csv")
     args = p.parse_args(argv)
 
-    rows = join(Path(args.alpha), Path(args.beta))
+    rows = join(Path(args.alpha), Path(args.beta), Path(args.window_alpha))
     if not rows:
         raise SystemExit("[join] no recipe has both alpha and beta yet")
     out = Path(args.out)
