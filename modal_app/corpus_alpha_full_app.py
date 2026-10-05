@@ -34,6 +34,7 @@ image = (
         "h5py>=3.12.0",
         "huggingface_hub>=0.28.0",
         "orjson>=3.10.0",
+        "pyarrow>=19.0.0",
         "requests>=2.32.0",
         "sentencepiece>=0.2.0",
         "transformers>=5.5.0,<6",
@@ -145,6 +146,35 @@ def _h5_file(task: dict) -> dict:
     return _payload(task, counts, documents, tokens)
 
 
+def _parquet_file(task: dict) -> dict:
+    import tempfile
+
+    import pyarrow.parquet as parquet
+
+    response = _request_with_retry(
+        "get", task["url"], headers=_hf_headers(), stream=True, timeout=300
+    )
+    response.raise_for_status()
+    counts: Counter[int] = Counter()
+    documents = 0
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as local:
+            for chunk in response.iter_content(chunk_size=8 << 20):
+                if chunk:
+                    local.write(chunk)
+            local.flush()
+
+            source = parquet.ParquetFile(local.name)
+            for batch in source.iter_batches(batch_size=4096, columns=["text"]):
+                for text in batch.column(0).to_pylist():
+                    if isinstance(text, str):
+                        _count_text(text, counts)
+                        documents += 1
+    finally:
+        response.close()
+    return _payload(task, counts, documents, 0)
+
+
 def _text_file(task: dict) -> dict:
     import gzip
     import io
@@ -210,6 +240,8 @@ def _count_cached(task: dict) -> dict:
         payload = _token_range(task)
     elif task["kind"] == "h5":
         payload = _h5_file(task)
+    elif task["kind"] == "parquet":
+        payload = _parquet_file(task)
     else:
         payload = _text_file(task)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -485,6 +517,13 @@ CORPORA = {
     "olmo-mid": ("OLMo-3 Midtraining", "allenai/dolma3_dolmino_mix-100B-1125", ".jsonl.zst", "text", ""),
     "olmo-long": ("OLMo-3 Long-context", "allenai/dolma3_longmino_mix-100B-1125", ".jsonl.zst", "text", ""),
 }
+SLIMPAJAMA_REUPLOAD = (
+    "SlimPajama-627B Reupload",
+    "gmongaras/SlimPajama-627B_Reupload",
+    ".parquet",
+    "parquet",
+    "",
+)
 
 
 @app.local_entrypoint()
@@ -497,6 +536,7 @@ def full(
 ):
     if batch_tasks < 1:
         raise ValueError("batch_tasks must be positive")
+    known_names = list(CORPORA) + ["slimpajama", "slimpajama-reupload", "llm-jp"]
     if corpus == "all":
         names = list(CORPORA) + ["slimpajama", "llm-jp"]
     elif corpus == "olmo":
@@ -524,9 +564,12 @@ def full(
                 )
         elif name == "llm-jp":
             tasks = _llmjp_full_tasks()
+        elif name == "slimpajama-reupload":
+            corpus_name, repo, suffix, kind, tokenizer = SLIMPAJAMA_REUPLOAD
+            tasks = _hf_full_tasks(corpus_name, repo, suffix, kind, tokenizer)
         else:
             if name not in CORPORA:
-                raise ValueError(f"unknown corpus {name!r}; choose from {names}")
+                raise ValueError(f"unknown corpus {name!r}; choose from {known_names}")
             corpus_name, repo, suffix, kind, tokenizer = CORPORA[name]
             tasks = _hf_full_tasks(
                 corpus_name, repo, suffix, kind, tokenizer, chunk_bytes=chunk_mb << 20
