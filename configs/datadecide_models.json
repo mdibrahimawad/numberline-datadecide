@@ -1,0 +1,31 @@
+{
+  "repo_id_template": "allenai/DataDecide-{recipe}-1B",
+  "revision": "step69369-seed-default",
+  "recipes": [
+    "dolma1_7",
+    "dolma1_7-no-code",
+    "dolma1_7-no-math-code",
+    "dolma1_7-no-reddit",
+    "dolma1_7-no-flan",
+    "dolma1_6plus",
+    "c4",
+    "fineweb-pro",
+    "fineweb-edu",
+    "falcon",
+    "falcon-and-cc",
+    "falcon-and-cc-qc-10p",
+    "falcon-and-cc-qc-20p",
+    "falcon-and-cc-qc-orig-10p",
+    "falcon-and-cc-qc-tulu-10p",
+    "dclm-baseline",
+    "dclm-baseline-qc-7p-fw2",
+    "dclm-baseline-qc-7p-fw3",
+    "dclm-baseline-qc-fw-3p",
+    "dclm-baseline-qc-fw-10p",
+    "dclm-baseline-qc-10p",
+    "dclm-baseline-qc-20p",
+    "dclm-baseline-25p-dolma1.7-75p",
+    "dclm-baseline-50p-dolma1.7-50p",
+    "dclm-baseline-75p-dolma1.7-25p"
+  ]
+}

@@ -136,6 +136,57 @@ Cloud sweep over multiple models on Modal GPUs:
 Gated models (Llama-2, Mistral, …) need a Modal Secret named
 `huggingface` containing `HF_TOKEN`. Public models work without it.
 
+### Correct-output filter
+
+`--filter-correct` (numerics only) greedy-decodes `--filter-max-new-tokens`
+(default 8) new tokens per prompt and keeps the prompt only if the first
+integer of the continuation equals the target. A rejected slot resamples a
+new target from the same magnitude group (context built the same way), up to
+`--filter-max-candidates` (default 100) candidates; a slot that exhausts its
+budget marks the group failed. Hidden states are collected for accepted
+prompts only, and per-group stats (candidates tried, accepted, rejection
+rate, failed slots, 5 example rejections) land in the results JSON under
+`filter_stats`.
+
+## DataDecide sweep (25 × 1B models)
+
+`modal_app/datadecide_app.py` runs the paper protocol on
+`allenai/DataDecide-<recipe>-1B` at revision `step69369-seed-default` (recipes
+and revision in `configs/datadecide_models.json`): groups 1–4, k=40,
+3 in-context examples, random context, correct-output filter on; layer chosen
+on seeds 42–44 by the median over seeds of `sqrt(EV·|ρ|)`, then evaluated
+frozen on seeds 45–47 with both β fits (direct + R², and log). Runs on L4
+(`MODAL_DATADECIDE_GPU=A10G` to switch), bf16, at most 5 models in parallel,
+with the HF cache on the `numberline-datadecide-hf-cache` Modal Volume.
+
+The DataDecide checkpoints load through ai2-olmo (`hf_olmo.OLMoForCausalLM`),
+which only has `.generate()` on `transformers<4.50`, so this app pins
+`transformers==4.49.0` + `ai2-olmo==0.6.0` in its own image.
+
+```bash
+# verify all 25 repo ids + revision on the Hub, no GPU work
+modal run modal_app/datadecide_app.py --dry-run
+
+# pilot: two recipes
+modal run modal_app/datadecide_app.py --models dolma1_7,c4 --output-dir results/datadecide
+
+# full sweep: all 25 recipes
+modal run modal_app/datadecide_app.py --output-dir results/datadecide
+```
+
+Outputs: `results/datadecide/<recipe>.json` (per-layer selection metrics for
+both fits, frozen-layer evaluation, filter stats, tokenization diagnostics)
+and `results/datadecide/summary.csv`, rebuilt from every JSON in the
+directory after each run.
+
+Tests (CPU):
+
+```bash
+pip install "transformers==4.49.0" "ai2-olmo==0.6.0"
+python tests/test_filter_correct.py     # offline: fake model + random tiny OLMo
+python tests/test_datadecide_smoke.py   # downloads allenai/DataDecide-dolma1_7-60M
+```
+
 ## MLflow
 
 Both stages write to the same local SQLite DB at `./mlflow.db` by

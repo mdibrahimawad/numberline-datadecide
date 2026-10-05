@@ -90,6 +90,9 @@ def analyze_model(
     tokenizer_use_fast: bool = True,
     prepend_bos: bool = False,
     spacing_fit: str = "log",
+    filter_correct: bool = False,
+    filter_max_new_tokens: int = 8,
+    filter_max_candidates: int = 100,
 ) -> dict:
     import os
 
@@ -117,6 +120,9 @@ def analyze_model(
         tokenizer_use_fast=tokenizer_use_fast,
         prepend_bos=prepend_bos,
         spacing_fit=spacing_fit,
+        filter_correct=filter_correct,
+        filter_max_new_tokens=filter_max_new_tokens,
+        filter_max_candidates=filter_max_candidates,
     )
 
     hf_token = os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN")
@@ -302,6 +308,9 @@ def _log_one_run(payload: dict, run_name: str, dataset_repo_tag: str) -> None:
         tokenizer_use_fast=cfg_d.get("tokenizer_use_fast", True),
         prepend_bos=cfg_d.get("prepend_bos", False),
         spacing_fit=cfg_d.get("spacing_fit", "log"),
+        filter_correct=cfg_d.get("filter_correct", False),
+        filter_max_new_tokens=cfg_d.get("filter_max_new_tokens", 8),
+        filter_max_candidates=cfg_d.get("filter_max_candidates", 100),
     )
 
     def _hydrate(layer_map: dict) -> dict[int, LayerSummary]:
@@ -349,6 +358,9 @@ def _log_one_run(payload: dict, run_name: str, dataset_repo_tag: str) -> None:
                 "tokenizer_use_fast": cfg.tokenizer_use_fast,
                 "prepend_bos": cfg.prepend_bos,
                 "spacing_fit": cfg.spacing_fit,
+                "filter_correct": cfg.filter_correct,
+                "filter_max_new_tokens": cfg.filter_max_new_tokens,
+                "filter_max_candidates": cfg.filter_max_candidates,
             }
         )
         log_metric("n_layers", float(results.n_layers))
@@ -388,6 +400,9 @@ def main(
     tokenizer_use_fast: bool = True,
     prepend_bos: bool = False,
     spacing_fit: str = "log",
+    filter_correct: bool = False,
+    filter_max_new_tokens: int = 8,
+    filter_max_candidates: int = 100,
     experiment_name: str = "numberline_geometry_expv1",
     run_name_prefix: str = "modal_geometry",
     dataset_repo_tag: str = "numberline_numerics",
@@ -445,6 +460,9 @@ def main(
         tokenizer_use_fast=tokenizer_use_fast,
         prepend_bos=prepend_bos,
         spacing_fit=spacing_fit,
+        filter_correct=filter_correct,
+        filter_max_new_tokens=filter_max_new_tokens,
+        filter_max_candidates=filter_max_candidates,
     )
 
     futures = [

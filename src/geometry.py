@@ -75,6 +75,9 @@ class GeometryConfig:
     tokenizer_use_fast: bool = True
     prepend_bos: bool = False
     spacing_fit: str = "log"                             # "log" (legacy) | "direct" (paper)
+    filter_correct: bool = False                         # keep only prompts the model completes correctly (numerics)
+    filter_max_new_tokens: int = 8
+    filter_max_candidates: int = 100                     # resampling budget per slot
 
 
 # --------------------------------------------------------------------------- #
@@ -119,6 +122,7 @@ class HiddenStateBundle:
     states: dict[int, dict[int, list[np.ndarray]]] = field(default_factory=dict)
     answers: dict[int, dict[int, list[float]]] = field(default_factory=dict)
     tokenization_diagnostics: dict = field(default_factory=dict)
+    filter_stats: dict = field(default_factory=dict)
 
 
 def _tokenize_prompt(cfg: GeometryConfig, tokenizer, prompt: str):
@@ -184,6 +188,129 @@ def _build_prompts(cfg: GeometryConfig, rng: random.Random) -> tuple[dict[int, l
     raise ValueError(f"unknown data mode: {cfg.data!r}")
 
 
+_FIRST_INTEGER = re.compile(r"[-+]?\d+")
+
+
+def _generated_output_matches_target(
+    cfg: GeometryConfig,
+    model,
+    tokenizer,
+    device: torch.device,
+    prompt: str,
+    target: float,
+) -> tuple[bool, str, int | None]:
+    """Greedy-decode the continuation and compare its first integer to `target`.
+
+    Mirrors `generated_output_matches_target` in
+    llm_natural_log_paperfaithful/main_lab.py: only the new tokens are decoded.
+    """
+    inputs = _tokenize_prompt(cfg, tokenizer, prompt).to(device)
+    input_len = inputs["input_ids"].shape[-1]
+    pad_token_id = (
+        tokenizer.pad_token_id if tokenizer.pad_token_id is not None
+        else tokenizer.eos_token_id
+    )
+    output = model.generate(
+        **inputs,
+        max_new_tokens=cfg.filter_max_new_tokens,
+        do_sample=False,
+        pad_token_id=pad_token_id,
+    )
+    response = tokenizer.decode(output[0, input_len:], skip_special_tokens=True).strip()
+    match = _FIRST_INTEGER.search(response)
+    generated = int(match.group(0)) if match else None
+    return generated is not None and generated == int(target), response, generated
+
+
+def _resample_numeral_prompt(
+    cfg: GeometryConfig, group: int, prompt: str, rng: random.Random
+) -> str:
+    """Draw a replacement target from `group`'s interval, context built as in _build_prompts."""
+    if cfg.context == "random":
+        upper = cfg.upper_bound if cfg.upper_bound is not None else 10 ** max(cfg.groups)
+        return generate_numeral_prompts(
+            k=1,
+            num_examples=cfg.num_examples,
+            upper_bound=upper,
+            groups=(group,),
+            interval_fn=default_interval,
+            context="random",
+            rng=rng,
+        )[group][0]
+    # "fixed" / "same" contexts do not depend on the new target: keep the slot's prefix.
+    n = rng.choice(list(default_interval(group)))
+    return f"{prompt[: prompt.rfind(',') + 1]}{n}="
+
+
+def _filter_correct_prompts(
+    cfg: GeometryConfig,
+    model,
+    tokenizer,
+    device: torch.device,
+    rng: random.Random,
+    prompts: dict[int, list[str]],
+) -> tuple[dict[int, list[str]], dict]:
+    """Keep exactly k prompts per group whose greedy completion equals the target.
+
+    Each slot starts from its original prompt; on rejection a replacement target
+    is drawn from the same group, up to `filter_max_candidates` candidates per
+    slot. A slot that exhausts its budget marks the group as failed and the
+    group's remaining slots are skipped.
+    """
+    accepted: dict[int, list[str]] = {}
+    stats: dict = {}
+    for group, plist in prompts.items():
+        kept: list[str] = []
+        tried = 0
+        failed = False
+        example_rejections: list[dict] = []
+        for prompt in plist:
+            for attempt in range(cfg.filter_max_candidates):
+                candidate = prompt if attempt == 0 else _resample_numeral_prompt(
+                    cfg, group, prompt, rng
+                )
+                target = extract_target(candidate, alphabetic=False)
+                ok, response, generated = _generated_output_matches_target(
+                    cfg, model, tokenizer, device, candidate, target
+                )
+                tried += 1
+                if ok:
+                    kept.append(candidate)
+                    break
+                if len(example_rejections) < 5:
+                    example_rejections.append(
+                        {
+                            "prompt": candidate,
+                            "target": int(target),
+                            "response": response,
+                            "generated": generated,
+                        }
+                    )
+            else:
+                failed = True
+                break
+        accepted[group] = kept
+        rejected = tried - len(kept)
+        stats[str(group)] = {
+            "target_k": len(plist),
+            "candidates_tried": tried,
+            "accepted": len(kept),
+            "rejected": rejected,
+            "rejection_rate": rejected / tried if tried else float("nan"),
+            "failed": failed,
+            "failed_slots": len(plist) - len(kept),
+            "example_rejections": example_rejections,
+        }
+        print(
+            f"[filter] group {group}: tried={tried} accepted={len(kept)}/{len(plist)} "
+            f"rejection_rate={stats[str(group)]['rejection_rate']:.3f} "
+            f"failed_slots={len(plist) - len(kept)}{' FAILED' if failed else ''}"
+        )
+        for ex in example_rejections:
+            print(f"[filter]   rejected {ex['prompt']!r} -> {ex['response']!r}")
+    return accepted, stats
+
+
 def collect_hidden_states(
     cfg: GeometryConfig,
     model,
@@ -192,6 +319,16 @@ def collect_hidden_states(
     rng: random.Random,
 ) -> HiddenStateBundle:
     prompts, alphabetic = _build_prompts(cfg, rng)
+
+    filter_stats: dict = {}
+    if cfg.filter_correct:
+        if cfg.data.lower() != "numerics":
+            raise ValueError("filter_correct is only implemented for data='numerics'")
+        model.eval()
+        with torch.no_grad():
+            prompts, filter_stats = _filter_correct_prompts(
+                cfg, model, tokenizer, device, rng, prompts
+            )
 
     # outputs.hidden_states is (n_layers + 1) -- index 0 is the embedding output
     # and index n_layers is the final block output. We keep all of them so the
@@ -213,6 +350,8 @@ def collect_hidden_states(
     model.eval()
     with torch.no_grad():
         for group, plist in prompts.items():
+            if not plist:  # every candidate rejected by filter_correct
+                continue
             grp_states: dict[int, list[np.ndarray]] = {l: [] for l in range(n_layers)}
             grp_answers: list[float] = []
             for prompt in plist:
@@ -311,6 +450,7 @@ def collect_hidden_states(
         states=states,
         answers=answers,
         tokenization_diagnostics=diagnostics,
+        filter_stats=filter_stats,
     )
 
 
@@ -577,6 +717,7 @@ class GeometryResults:
     projections_pca: dict[int, LayerProjections] | None = None
     projections_pls: dict[int, LayerProjections] | None = None
     tokenization_diagnostics: dict | None = None
+    filter_stats: list[dict] | None = None              # one entry per run when filter_correct
 
     def to_dict(self) -> dict:
         out: dict = {
@@ -607,11 +748,17 @@ class GeometryResults:
         out["projections_pca"] = _proj_dict(self.projections_pca)
         out["projections_pls"] = _proj_dict(self.projections_pls)
         out["tokenization_diagnostics"] = self.tokenization_diagnostics
+        out["filter_stats"] = self.filter_stats
         return out
 
 
 def _load_model(cfg: GeometryConfig, device: torch.device, hf_token: str | None):
     from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    if cfg.model_name.startswith("allenai/DataDecide-"):
+        # DataDecide checkpoints use the ai2-olmo "hf_olmo" model type; importing
+        # it registers OLMoForCausalLM / OLMoTokenizerFast with the Auto* classes.
+        import hf_olmo  # noqa: F401
 
     hf_kwargs: dict = {}
     if hf_token:
@@ -659,6 +806,7 @@ def run_geometry(
     projections_pca: dict[int, LayerProjections] | None = None
     projections_pls: dict[int, LayerProjections] | None = None
     tokenization_diagnostics: dict | None = None
+    filter_stats: list[dict] | None = [] if cfg.filter_correct else None
     n_layers = 0
 
     for run_idx in range(max(1, cfg.runs)):
@@ -666,6 +814,8 @@ def run_geometry(
         bundle = collect_hidden_states(cfg, model, tokenizer, device, rng)
         if run_idx == 0:
             tokenization_diagnostics = bundle.tokenization_diagnostics
+        if filter_stats is not None:
+            filter_stats.append({"seed": cfg.seed + run_idx, "groups": bundle.filter_stats})
         n_layers = bundle.n_layers
         pca_metrics, pca_transforms = transform_and_score(
             bundle, "PCA", cfg.transform_dim, cfg.spacing_fit
@@ -696,6 +846,7 @@ def run_geometry(
         projections_pca=projections_pca,
         projections_pls=projections_pls,
         tokenization_diagnostics=tokenization_diagnostics,
+        filter_stats=filter_stats,
     )
 
 

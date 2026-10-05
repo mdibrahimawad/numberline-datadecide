@@ -79,6 +79,15 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="log",
         help="legacy log-gap regression or paper-matched direct geometric fit",
     )
+    p.add_argument(
+        "--filter-correct",
+        action="store_true",
+        help="numerics only: keep prompts whose greedy completion equals the target, "
+             "resampling rejected targets from the same group",
+    )
+    p.add_argument("--filter-max-new-tokens", type=int, default=8)
+    p.add_argument("--filter-max-candidates", type=int, default=100,
+                   help="candidates tried per prompt slot before the group is marked failed")
 
     p.add_argument("--experiment-name", default="numberline_geometry_expv1")
     p.add_argument("--run-name", default="local_geometry")
@@ -93,6 +102,10 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         p.error(f"--runs must be positive, got {args.runs}")
     if args.transform_dim <= 0:
         p.error(f"--transform-dim must be positive, got {args.transform_dim}")
+    if args.filter_max_new_tokens <= 0:
+        p.error(f"--filter-max-new-tokens must be positive, got {args.filter_max_new_tokens}")
+    if args.filter_max_candidates <= 0:
+        p.error(f"--filter-max-candidates must be positive, got {args.filter_max_candidates}")
     return args
 
 
@@ -125,6 +138,9 @@ def main(argv: list[str] | None = None) -> int:
         tokenizer_use_fast=args.tokenizer_use_fast,
         prepend_bos=args.prepend_bos,
         spacing_fit=args.spacing_fit,
+        filter_correct=args.filter_correct,
+        filter_max_new_tokens=args.filter_max_new_tokens,
+        filter_max_candidates=args.filter_max_candidates,
     )
 
     hf_token = args.hf_token or os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_TOKEN")
@@ -168,6 +184,9 @@ def main(argv: list[str] | None = None) -> int:
                 "tokenizer_use_fast": cfg.tokenizer_use_fast,
                 "prepend_bos": cfg.prepend_bos,
                 "spacing_fit": cfg.spacing_fit,
+                "filter_correct": cfg.filter_correct,
+                "filter_max_new_tokens": cfg.filter_max_new_tokens,
+                "filter_max_candidates": cfg.filter_max_candidates,
             }
         )
 
