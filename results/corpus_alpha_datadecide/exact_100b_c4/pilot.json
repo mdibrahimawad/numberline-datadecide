@@ -1,0 +1,9 @@
+{
+  "pilot_tasks": 20,
+  "tokens": 629467136,
+  "compute_seconds": 309.27618074417114,
+  "tokens_per_s_per_core": 2035291.3518441508,
+  "projected_core_hours": 18.894534555834838,
+  "projected_usd": 1.545693851688447,
+  "pilot_usd": 0.006111297331504822
+}
