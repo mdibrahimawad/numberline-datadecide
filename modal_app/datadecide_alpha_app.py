@@ -195,7 +195,7 @@ EXACT_TASK_CPU = 1.0
 EXACT_TASK_MEM_GIB = 3.0
 
 
-@app.function(cpu=4, memory=32768, timeout=2 * 60 * 60, volumes={"/dd_cache": cache})
+@app.function(cpu=4, memory=65536, timeout=3 * 60 * 60, volumes={"/dd_cache": cache})
 def build_membership(file_tokens: list[int], seeds: list[int]) -> dict:
     """Chunk -> membership code for every seed's training run, saved on the Volume."""
     import numpy as np
@@ -211,7 +211,9 @@ def build_membership(file_tokens: list[int], seeds: list[int]) -> dict:
     codes, base = membership_codes(file_tokens, seeds)
     folder.mkdir(parents=True, exist_ok=True)
     np.save(folder / "codes.npy", codes)
-    uniq, freq = np.unique(codes, return_counts=True)
+    freq_all = np.bincount(codes)
+    uniq = np.flatnonzero(freq_all)
+    freq = freq_all[uniq]
     per_seed_chunks = [0] * len(seeds)
     union = 0
     for code, f in zip(uniq.tolist(), freq.tolist()):
@@ -315,6 +317,12 @@ def exact_samples(
     dry_run: bool = False,
     out_dir: str = str(LOCAL_OUT),
 ) -> None:
+    _run_exact(recipe, [int(x) for x in seeds.split(",") if x.strip()], task_mtokens, max_tasks,
+               assumed_tokens_per_s, skip_unused, dry_run, out_dir)
+
+
+def _run_exact(recipe: str, seed_list: list[int], task_mtokens: int, max_tasks: int,
+               assumed_tokens_per_s: float, skip_unused: bool, dry_run: bool, out_dir: str):
     """Reproduce the 1B training data order of `recipe` for each seed, take the
     first 69,369 x 704 chunks (~100B tokens) of each, and count numbers in all
     of them -- plus the whole recipe -- in one pass. --max-tasks N is a pilot:
@@ -328,7 +336,6 @@ def exact_samples(
     from src.datadecide_sampling import SEQUENCE_LENGTH, TRAIN_INSTANCES_1B, load_data_map
     from src.sampling_validation import describe
 
-    seed_list = [int(x) for x in seeds.split(",") if x.strip()]
     rec = load_data_map()["recipes"][recipe]
     file_tokens, _ = _recipe_tokens(rec)
     total = sum(file_tokens)
@@ -345,7 +352,7 @@ def exact_samples(
           f"download {total * 2 / 1e9:.0f} GB")
     if dry_run:
         print("[exact] --dry-run: stopping before any counting (run a pilot with --max-tasks 20 next)")
-        return
+        return None
 
     meta = build_membership.remote(file_tokens, seed_list)
     print(f"[exact:{recipe}] membership: base={meta['base']} union={meta['union_chunks']/meta['n_chunks']:.1%} "
@@ -368,7 +375,7 @@ def exact_samples(
         (out / "pilot.json").write_text(json.dumps(report, indent=2))
         print(json.dumps(report, indent=2))
         print("[exact] pilot results are cached and reused by the full run")
-        return
+        return None
 
     done = errors = 0
     seconds = 0.0
@@ -424,6 +431,100 @@ def exact_samples(
     print(json.dumps({ref_name: summary[ref_name], "per_seed": seeds_out, "spread": spread,
                       "pairwise_chunk_overlap": overlap, "compute_usd": summary["compute_usd"]}, indent=2))
     print(f"[exact] wrote {out}")
+    return summary
+
+
+# Measured on the dolma1_7 run: decoding+counting ~2.04M tokens/s/core; reading and
+# skipping unused chunks ~ $0.8 per trillion tokens of recipe.
+READ_USD_PER_T = 0.8
+DECODE_TOKENS_PER_S = 2.04e6
+ALPHA_COLUMNS_EXACT = ("recipe", "seed", "alpha_ols", "r2", "alpha_mle", "integer_matches",
+                       "support", "sample_tokens", "recipe_tokens", "source")
+
+
+@app.local_entrypoint()
+def exact_all(
+    recipes: str = "",
+    seed: int = 2,
+    task_mtokens: int = 256,
+    dry_run: bool = False,
+    out_dir: str = str(LOCAL_OUT),
+) -> None:
+    """Alpha of the exact 100B training stream of ONE seed (default 2, the most
+    likely seed of the released seed-default 1B models) for every recipe.
+    Recipes that already have that seed in exact_100b_<recipe>/summary.json
+    (e.g. the 5-seed c4 and dolma1_7 runs) are reused. Results are written to
+    <out_dir>/alpha_seed<seed>.csv after every recipe; rerunning resumes."""
+    from src.datadecide_sampling import SEQUENCE_LENGTH, TRAIN_INSTANCES_1B, load_data_map
+
+    data_map = load_data_map()
+    names = [r.strip() for r in recipes.split(",") if r.strip()] or list(data_map["recipes"])
+    unknown = [r for r in names if r not in data_map["recipes"]]
+    if unknown:
+        raise SystemExit(f"unknown recipes: {unknown}")
+    root = Path(out_dir)
+    csv_path = root / f"alpha_seed{seed}.csv"
+
+    def row_from(slug: str, summary: dict, source: str) -> dict | None:
+        s = summary.get("per_seed", {}).get(str(seed))
+        if s is None:
+            return None
+        return {"recipe": slug, "seed": seed, "alpha_ols": s["alpha_ols"], "r2": s["r2"],
+                "alpha_mle": s["alpha_mle"], "integer_matches": int(s["integer_matches"]),
+                "support": s["support"], "sample_tokens": int(s["tokens"]),
+                "recipe_tokens": int(summary["membership"]["n_chunks"]) * SEQUENCE_LENGTH,
+                "source": source}
+
+    rows: dict[str, dict] = {}
+    to_run = []
+    for slug in names:
+        prev = root / f"exact_100b_{slug}" / "summary.json"
+        row = row_from(slug, json.loads(prev.read_text()), "reused") if prev.exists() else None
+        if row:
+            rows[slug] = row
+        else:
+            to_run.append(slug)
+    print(f"[exact-all] seed {seed}: {len(rows)} recipes already done ({', '.join(rows) or '-'}), "
+          f"{len(to_run)} to run")
+
+    total_usd = 0.0
+    for slug in to_run:
+        file_tokens, _ = _recipe_tokens(data_map["recipes"][slug])
+        tokens = sum(file_tokens)
+        decoded = min(tokens, TRAIN_INSTANCES_1B * SEQUENCE_LENGTH)
+        usd = _usd(decoded / DECODE_TOKENS_PER_S) + tokens / 1e12 * READ_USD_PER_T + 0.1
+        total_usd += usd
+        print(f"[exact-all] {slug:35s} {tokens/1e9:8.1f}B tokens  ~${usd:5.2f}")
+    print(f"[exact-all] estimated total for {len(to_run)} recipes: ~${total_usd:.0f} "
+          f"(compute only; downloads are free)")
+    if dry_run:
+        print("[exact-all] --dry-run: stopping before any counting")
+        return
+
+    def write_csv():
+        root.mkdir(parents=True, exist_ok=True)
+        with open(csv_path, "w", newline="") as fh:
+            w = csv.DictWriter(fh, fieldnames=ALPHA_COLUMNS_EXACT)
+            w.writeheader()
+            for slug in data_map["recipes"]:
+                if slug in rows:
+                    w.writerow(rows[slug])
+
+    write_csv()
+    failed = []
+    for i, slug in enumerate(to_run, 1):
+        print(f"[exact-all] ({i}/{len(to_run)}) {slug}")
+        try:
+            summary = _run_exact(slug, [seed], task_mtokens, 0, DECODE_TOKENS_PER_S, True, False, out_dir)
+        except (Exception, SystemExit) as exc:  # keep going; a rerun resumes from the cache
+            print(f"[exact-all] {slug} FAILED: {exc}")
+            failed.append(slug)
+            continue
+        rows[slug] = row_from(slug, summary, "seed-only run")
+        write_csv()
+    print(f"[exact-all] wrote {csv_path} ({len(rows)}/{len(names)} recipes)")
+    if failed:
+        print(f"[exact-all] failed: {failed} -- rerun the same command to finish them")
 
 
 # --------------------------------------------------------------------------- #

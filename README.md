@@ -218,6 +218,13 @@ modal run modal_app/datadecide_alpha_app.py::exact_samples --recipe c4 --max-tas
 modal run modal_app/datadecide_alpha_app.py::exact_samples --recipe c4
 # -> results/corpus_alpha_datadecide/exact_100b_c4/{summary.json,counts_full_recipe.csv,counts_seed_*.csv}
 
+# ALL 25 recipes: alpha of ONE seed's exact 100B training stream (seed 2 = the released
+# seed-default models), then beta of all 25 models, then join
+modal run modal_app/datadecide_alpha_app.py::exact_all --dry-run      # per-recipe sizes + cost
+modal run modal_app/datadecide_alpha_app.py::exact_all                # -> results/corpus_alpha_datadecide/alpha_seed2.csv
+modal run modal_app/datadecide_app.py --output-dir results/datadecide # beta, GPU -> results/datadecide/summary.csv
+python -m src.join_alpha_beta                                         # -> results/datadecide/alpha_beta.{csv,png}
+
 # offline tests (tiny fake parquet / .jsonl.gz / uint16 .npy files)
 python tests/test_sampling_validation.py
 python tests/test_datadecide_sampling.py

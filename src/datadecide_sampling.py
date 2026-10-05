@@ -232,11 +232,15 @@ def membership_codes(file_tokens: list[int], seeds: list[int],
         mult.append(m)
         del order
     base = int(max(int(m.max()) for m in mult)) + 1
-    if base ** len(seeds) > np.iinfo(np.uint32).max:
+    top = base ** len(seeds)
+    if top > np.iinfo(np.uint32).max:
         raise ValueError("too many seeds / epochs to encode")
-    codes = np.zeros(n, dtype=np.uint32)
+    dtype = np.uint8 if top <= 256 else np.uint16 if top <= 65536 else np.uint32
+    if len(mult) == 1 and dtype == np.uint8:
+        return mult[0], base  # one seed: the code is the multiplicity itself
+    codes = np.zeros(n, dtype=dtype)
     for i, m in enumerate(mult):
-        codes += m.astype(np.uint32) * np.uint32(base ** i)
+        codes += m.astype(dtype) * dtype(base ** i)
     return codes, base
 
 
