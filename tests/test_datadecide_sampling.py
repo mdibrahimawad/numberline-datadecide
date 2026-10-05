@@ -151,6 +151,63 @@ def test_data_map_config():
         assert r["n_paths"] == len(r["paths"]) and all(p.endswith(".npy") for p in r["paths"])
 
 
+def test_exact_samples_match_brute_force():
+    """Membership codes + grouped counting == counting each seed's chunks directly."""
+    tok = _olmo_tokenizer()
+    if tok is None:
+        print("skip test_exact_samples_match_brute_force: ai2-olmo not installed")
+        return
+    from modal_app.corpus_alpha_full_app import _decode_and_count_native
+
+    rng = np.random.default_rng(3)
+    chunk = 64
+    files = []
+    for n_docs in (40, 25, 60):
+        ids = []
+        for _ in range(n_docs):
+            ids += tok.backend_tokenizer.encode(
+                f"In {rng.integers(1900, 2030)} we sold {rng.integers(0, 12000)} units at {rng.integers(1, 99)}."
+            ).ids + [EOS]
+        files.append(np.asarray(ids, dtype=np.uint16))
+    file_tokens = [len(f) for f in files]
+    seeds = [2, 4, 5]
+    n_total = int(ds.chunk_offsets(file_tokens, chunk)[-1])
+    n_instances = n_total + 7  # forces a second epoch for some chunks
+    codes, base = ds.membership_codes(file_tokens, seeds, n_instances=n_instances, chunk=chunk)
+    assert base == 3 and len(codes) == n_total
+
+    offsets = ds.chunk_offsets(file_tokens, chunk)
+    groups = {}
+    dac = lambda docs, counter: _decode_and_count_native(tok, docs, counter)  # noqa: E731
+    for f, toks in enumerate(files):
+        n = file_tokens[f] // chunk
+        part = ds.count_chunks_by_code(dac, toks[: n * chunk], codes[offsets[f]: offsets[f] + n], chunk=chunk)
+        for code, g in part.items():
+            tgt = groups.setdefault(code, {"counts": Counter(), "chunks": 0, "decoded_tokens": 0})
+            tgt["counts"].update(g["counts"])
+            tgt["chunks"] += g["chunks"]
+    out = ds.combine_codes(groups, base, len(seeds), caa.MAX_N)
+
+    def chunk_counts(gid):
+        f = int(np.searchsorted(offsets, gid, side="right") - 1)
+        local = gid - int(offsets[f])
+        c = Counter()
+        docs = ds.split_documents(files[f][local * chunk:(local + 1) * chunk], "keep_partial", True, True)
+        _decode_and_count_native(tok, docs, c)
+        return c
+
+    for i, seed in enumerate(seeds):
+        expect = Counter()
+        for gid in ds.training_chunk_indices(file_tokens, n_instances, seed, chunk).tolist():
+            expect.update(chunk_counts(gid))
+        got = {k: v for k, v in enumerate(out["per_seed"][i]) if v}
+        assert got == {k: v for k, v in expect.items() if v}, seed
+        assert out["seed_tokens"][i] == n_instances * ds.SEQUENCE_LENGTH
+    full = Counter()
+    for gid in range(n_total):
+        full.update(chunk_counts(gid))
+    assert {k: v for k, v in enumerate(out["full"]) if v} == {k: v for k, v in full.items() if v}
+
 if __name__ == "__main__":
     for name, fn in list(globals().items()):
         if name.startswith("test_"):

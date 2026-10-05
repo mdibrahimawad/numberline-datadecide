@@ -56,8 +56,12 @@ secret_name = os.environ.get("MODAL_HF_SECRET_NAME", "numberline-hf-token").stri
 secrets = [modal.Secret.from_name(secret_name)] if secret_name else []
 
 
+def _cache_path(key: str) -> Path:
+    return CACHE / f"{hashlib.sha1(key.encode()).hexdigest()}.json"
+
+
 def _cached(key: str, compute):
-    path = CACHE / f"{hashlib.sha1(key.encode()).hexdigest()}.json"
+    path = _cache_path(key)
     cache.reload()
     if path.exists():
         return json.loads(path.read_text())
@@ -177,6 +181,229 @@ def exact_order_windows(file_tokens: list[int], n_chunks: int, seed: int, order_
     key = (f"exact_order::{hashlib.sha1(json.dumps(file_tokens).encode()).hexdigest()}"
            f"::{n_chunks}::{seed}::{order_seed}")
     return _cached(key, compute)
+
+
+# --------------------------------------------------------------------------- #
+# exact 100B training samples (one pass over the recipe, several seeds)
+# --------------------------------------------------------------------------- #
+
+EXACT_ROOT = CACHE / "exact"
+# Modal list prices (USD): CPU per physical core-second, memory per GiB-second
+USD_PER_CORE_S = 0.0000131
+USD_PER_GIB_S = 0.00000222
+EXACT_TASK_CPU = 1.0
+EXACT_TASK_MEM_GIB = 3.0
+
+
+@app.function(cpu=4, memory=32768, timeout=2 * 60 * 60, volumes={"/dd_cache": cache})
+def build_membership(file_tokens: list[int], seeds: list[int]) -> dict:
+    """Chunk -> membership code for every seed's training run, saved on the Volume."""
+    import numpy as np
+
+    from src.datadecide_sampling import TRAIN_INSTANCES_1B, decode_code, membership_codes
+
+    ident = hashlib.sha1(json.dumps([file_tokens, seeds, TRAIN_INSTANCES_1B]).encode()).hexdigest()
+    folder = EXACT_ROOT / ident
+    meta_path = folder / "meta.json"
+    cache.reload()
+    if meta_path.exists():
+        return json.loads(meta_path.read_text())
+    codes, base = membership_codes(file_tokens, seeds)
+    folder.mkdir(parents=True, exist_ok=True)
+    np.save(folder / "codes.npy", codes)
+    uniq, freq = np.unique(codes, return_counts=True)
+    per_seed_chunks = [0] * len(seeds)
+    union = 0
+    for code, f in zip(uniq.tolist(), freq.tolist()):
+        m = decode_code(code, base, len(seeds))
+        for i, k in enumerate(m):
+            per_seed_chunks[i] += k * f
+        union += f if any(m) else 0
+    meta = {"codes_path": str(folder / "codes.npy"), "base": base, "seeds": seeds,
+            "n_chunks": int(len(codes)), "union_chunks": int(union),
+            "per_seed_chunks": per_seed_chunks,
+            "code_chunks": {str(c): int(f) for c, f in zip(uniq.tolist(), freq.tolist())}}
+    meta_path.write_text(json.dumps(meta))
+    cache.commit()
+    return meta
+
+
+@app.function(cpu=EXACT_TASK_CPU, memory=int(EXACT_TASK_MEM_GIB * 1024), timeout=60 * 60,
+              max_containers=100, retries=2, volumes={"/dd_cache": cache}, secrets=secrets)
+def count_exact_task(task: dict) -> dict:
+    """Count one contiguous run of training chunks of one file, grouped by membership code.
+    The result stays on the Volume; only timing comes back."""
+    import time
+
+    import numpy as np
+
+    from src.datadecide_sampling import SEQUENCE_LENGTH, count_chunks_by_code
+
+    def compute():
+        start = time.time()
+        n = task["chunk_hi"] - task["chunk_lo"]
+        tokens = _read_tokens(task["path"], task["chunk_lo"] * SEQUENCE_LENGTH, n * SEQUENCE_LENGTH)
+        codes = np.load(task["codes_path"], mmap_mode="r")[task["global_lo"]: task["global_lo"] + n]
+        tok = _tokenizer(task["model_repo"])
+        groups = count_chunks_by_code(
+            lambda docs, counter: _decode_and_count_native(tok, docs, counter), tokens, np.asarray(codes)
+        )
+        return {
+            "tokens": int(len(tokens)),
+            "seconds": time.time() - start,
+            "groups": {str(c): {**g, "counts": {str(k): v for k, v in g["counts"].items()}}
+                       for c, g in groups.items()},
+        }
+
+    result = _cached(task["key"], compute)
+    return {"key": task["key"], "tokens": result["tokens"], "seconds": result["seconds"]}
+
+
+@app.function(cpu=1, memory=4096, timeout=30 * 60, max_containers=50, volumes={"/dd_cache": cache})
+def reduce_exact(keys: list[str], base: int, n_seeds: int) -> dict:
+    from modal_app.corpus_alpha_app import MAX_N
+    from src.datadecide_sampling import combine_codes
+
+    cache.reload()
+    total = None
+    for key in keys:
+        groups = {int(c): g for c, g in json.loads(_cache_path(key).read_text())["groups"].items()}
+        part = combine_codes(groups, base, n_seeds, MAX_N)
+        if total is None:
+            total = part
+        else:
+            for k in ("full", "per_seed", "seed_tokens"):
+                total[k] = total[k] + part[k]
+            total["full_tokens"] += part["full_tokens"]
+    return {"full": total["full"].tolist(), "per_seed": total["per_seed"].tolist(),
+            "seed_tokens": total["seed_tokens"].tolist(), "full_tokens": int(total["full_tokens"])}
+
+
+def _exact_tasks(rec: dict, file_tokens: list[int], meta: dict, task_chunks: int) -> list[dict]:
+    from src.datadecide_sampling import SEQUENCE_LENGTH, chunk_offsets
+
+    offsets = chunk_offsets(file_tokens)
+    tasks = []
+    for f, (path, t) in enumerate(zip(rec["paths"], file_tokens)):
+        n = t // SEQUENCE_LENGTH
+        for lo in range(0, n, task_chunks):
+            hi = min(n, lo + task_chunks)
+            tasks.append({
+                "model_repo": rec["model_repo"], "path": path, "file_index": f,
+                "chunk_lo": lo, "chunk_hi": hi, "global_lo": int(offsets[f]) + lo,
+                "codes_path": meta["codes_path"],
+                "key": f"exact::{meta['codes_path']}::{f}::{path}::{lo}::{hi}::{rec['model_repo']}",
+            })
+    return tasks
+
+
+def _usd(seconds: float) -> float:
+    return seconds * (EXACT_TASK_CPU * USD_PER_CORE_S + EXACT_TASK_MEM_GIB * USD_PER_GIB_S)
+
+
+@app.local_entrypoint()
+def exact_samples(
+    recipe: str = "c4",
+    seeds: str = "2,4,5,6198,14",
+    task_mtokens: int = 32,
+    max_tasks: int = 0,
+    assumed_tokens_per_s: float = 2e6,
+    dry_run: bool = False,
+    out_dir: str = str(LOCAL_OUT),
+) -> None:
+    """Reproduce the 1B training data order of `recipe` for each seed, take the
+    first 69,369 x 704 chunks (~100B tokens) of each, and count numbers in all
+    of them -- plus the whole recipe -- in one pass. --max-tasks N is a pilot:
+    count N spread-out slices, measure throughput, project the full cost."""
+    import random
+
+    import numpy as np
+
+    from src.datadecide_sampling import SEQUENCE_LENGTH, TRAIN_INSTANCES_1B, load_data_map
+    from src.sampling_validation import describe
+
+    seed_list = [int(x) for x in seeds.split(",") if x.strip()]
+    rec = load_data_map()["recipes"][recipe]
+    file_tokens, _ = _recipe_tokens(rec)
+    total = sum(file_tokens)
+    n_chunks = sum(t // SEQUENCE_LENGTH for t in file_tokens)
+    est_s = total / assumed_tokens_per_s
+    print(f"[exact:{recipe}] files={len(file_tokens)} tokens={total/1e9:.1f}B chunks={n_chunks:,} "
+          f"budget/seed={TRAIN_INSTANCES_1B * SEQUENCE_LENGTH / 1e9:.1f}B "
+          f"({min(1.0, TRAIN_INSTANCES_1B / n_chunks):.0%} of chunks per seed)")
+    print(f"[exact:{recipe}] full pass at an assumed {assumed_tokens_per_s/1e6:.1f}M tokens/s/core: "
+          f"~{est_s/3600:.0f} core-hours, ~${_usd(est_s):.2f} (+ membership build ~$0.10); "
+          f"download {total * 2 / 1e9:.0f} GB")
+    if dry_run:
+        print("[exact] --dry-run: stopping before any counting (run a pilot with --max-tasks 20 next)")
+        return
+
+    meta = build_membership.remote(file_tokens, seed_list)
+    print(f"[exact:{recipe}] membership: base={meta['base']} union={meta['union_chunks']/meta['n_chunks']:.1%} "
+          f"of chunks used by at least one seed; per seed {[c * SEQUENCE_LENGTH / 1e9 for c in meta['per_seed_chunks']]} B tokens")
+    tasks = _exact_tasks(rec, file_tokens, meta, max(1, task_mtokens * 1_000_000 // SEQUENCE_LENGTH))
+    out = Path(out_dir) / f"exact_100b_{recipe}"
+    out.mkdir(parents=True, exist_ok=True)
+
+    if max_tasks:
+        pilot = random.Random(0).sample(tasks, min(max_tasks, len(tasks)))
+        results = list(count_exact_task.map(pilot, order_outputs=False))
+        tok = sum(r["tokens"] for r in results)
+        sec = sum(r["seconds"] for r in results)
+        rate = tok / sec
+        proj = total / rate
+        report = {"pilot_tasks": len(results), "tokens": tok, "compute_seconds": sec,
+                  "tokens_per_s_per_core": rate, "projected_core_hours": proj / 3600,
+                  "projected_usd": _usd(proj) * 1.15, "pilot_usd": _usd(sec)}
+        (out / "pilot.json").write_text(json.dumps(report, indent=2))
+        print(json.dumps(report, indent=2))
+        print("[exact] pilot results are cached and reused by the full run")
+        return
+
+    done = errors = 0
+    seconds = 0.0
+    for r in count_exact_task.map(tasks, order_outputs=False, return_exceptions=True,
+                                  wrap_returned_exceptions=False):
+        if isinstance(r, BaseException):
+            errors += 1
+            continue
+        done += 1
+        seconds += r["seconds"]
+        if done % 200 == 0 or done == len(tasks):
+            print(f"[exact:{recipe}] {done}/{len(tasks)} slices, ~${_usd(seconds):.2f} so far")
+    if errors:
+        raise SystemExit(f"[exact] {errors} slices failed; rerun the same command to resume (done work is cached)")
+
+    keys = [t["key"] for t in tasks]
+    parts = list(reduce_exact.starmap(
+        [(keys[i:i + 100], meta["base"], len(seed_list)) for i in range(0, len(keys), 100)]))
+    full = np.sum([p["full"] for p in parts], axis=0)
+    per_seed = np.sum([p["per_seed"] for p in parts], axis=0)
+    seed_tokens = np.sum([p["seed_tokens"] for p in parts], axis=0)
+
+    full_desc = describe(full)
+    _write_counts_csv(out / "counts_full_recipe.csv", full)
+    seeds_out = {}
+    for i, sd in enumerate(seed_list):
+        d = describe(per_seed[i])
+        _write_counts_csv(out / f"counts_seed_{sd}.csv", per_seed[i])
+        seeds_out[str(sd)] = {**d, "tokens": float(seed_tokens[i]),
+                              "diff_ols_vs_full": d["alpha_ols"] - full_desc["alpha_ols"],
+                              "diff_mle_vs_full": d["alpha_mle"] - full_desc["alpha_mle"]}
+    spread = {}
+    for fit in ("ols", "mle"):
+        v = np.asarray([seeds_out[str(sd)][f"alpha_{fit}"] for sd in seed_list])
+        spread[fit] = {"mean": float(v.mean()), "sd": float(v.std(ddof=1)) if len(v) > 1 else 0.0,
+                       "max_minus_min": float(v.max() - v.min()),
+                       "max_abs_diff_vs_full": float(np.abs(v - full_desc[f"alpha_{fit}"]).max())}
+    summary = {"recipe": recipe, "seeds": seed_list, "full_recipe": {**full_desc, "tokens": int(sum(p["full_tokens"] for p in parts))},
+               "per_seed": seeds_out, "spread_across_seeds": spread,
+               "membership": {k: meta[k] for k in ("base", "n_chunks", "union_chunks", "per_seed_chunks")},
+               "compute_seconds": seconds, "compute_usd": _usd(seconds)}
+    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    print(json.dumps({"full_recipe": summary["full_recipe"], "per_seed": seeds_out, "spread": spread,
+                      "compute_usd": summary["compute_usd"]}, indent=2))
+    print(f"[exact] wrote {out}")
 
 
 # --------------------------------------------------------------------------- #

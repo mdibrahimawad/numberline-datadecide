@@ -214,6 +214,87 @@ def chunks_to_windows(chunk_ids: np.ndarray, file_tokens: list[int],
 
 
 # --------------------------------------------------------------------------- #
+# exact 100B training samples for several seeds, in one pass over the recipe
+# --------------------------------------------------------------------------- #
+
+def membership_codes(file_tokens: list[int], seeds: list[int],
+                     n_instances: int = TRAIN_INSTANCES_1B,
+                     chunk: int = SEQUENCE_LENGTH) -> tuple[np.ndarray, int]:
+    """One code per global chunk: code = sum_i m_i * base**i, where m_i is how
+    many times seed i's training run used that chunk (0, 1, or more if the
+    recipe is smaller than the token budget and training wrapped epochs)."""
+    n = int(chunk_offsets(file_tokens, chunk)[-1])
+    mult = []
+    for seed in seeds:
+        order = training_chunk_indices(file_tokens, n_instances, seed, chunk)
+        m = np.zeros(n, dtype=np.uint8)
+        np.add.at(m, order, 1)
+        mult.append(m)
+        del order
+    base = int(max(int(m.max()) for m in mult)) + 1
+    if base ** len(seeds) > np.iinfo(np.uint32).max:
+        raise ValueError("too many seeds / epochs to encode")
+    codes = np.zeros(n, dtype=np.uint32)
+    for i, m in enumerate(mult):
+        codes += m.astype(np.uint32) * np.uint32(base ** i)
+    return codes, base
+
+
+def decode_code(code: int, base: int, n_seeds: int) -> list[int]:
+    return [(code // base ** i) % base for i in range(n_seeds)]
+
+
+def count_chunks_by_code(decode_and_count, tokens: np.ndarray, codes: np.ndarray,
+                         chunk: int = SEQUENCE_LENGTH, eos: int = EOS_TOKEN_ID,
+                         batch_docs: int = 256) -> dict[int, dict]:
+    """Count numbers in consecutive `chunk`-token training sequences, grouped by
+    membership code. Each sequence is split on EOS (numbers never span
+    documents) and counted whole, exactly the text the model saw in it.
+    `decode_and_count(docs, counter) -> decoded tokens` wraps
+    _decode_and_count_native with the recipe tokenizer."""
+    groups: dict[int, dict] = {}
+    pending: dict[int, list] = {}
+
+    def flush(code):
+        docs = pending.pop(code, [])
+        if docs:
+            groups[code]["decoded_tokens"] += decode_and_count(docs, groups[code]["counts"])
+
+    for i, code in enumerate(np.asarray(codes).tolist()):
+        seq = tokens[i * chunk:(i + 1) * chunk]
+        g = groups.setdefault(code, {"counts": Counter(), "chunks": 0, "decoded_tokens": 0})
+        g["chunks"] += 1
+        docs = pending.setdefault(code, [])
+        docs.extend(split_documents(seq, "keep_partial", True, True, eos=eos))
+        if len(docs) >= batch_docs:
+            flush(code)
+    for code in list(pending):
+        flush(code)
+    return groups
+
+
+def combine_codes(groups: dict[int, dict], base: int, n_seeds: int, max_n: int) -> dict:
+    """Full-recipe vector (every whole chunk once) and one vector per seed
+    (chunks weighted by how often that seed's run used them)."""
+    full = np.zeros(max_n + 1)
+    per_seed = np.zeros((n_seeds, max_n + 1))
+    tokens = np.zeros(n_seeds)
+    full_tokens = 0
+    for code, g in groups.items():
+        vec = np.zeros(max_n + 1)
+        for k, v in g["counts"].items():
+            if 0 <= int(k) <= max_n:
+                vec[int(k)] += v
+        full += vec
+        full_tokens += g["chunks"] * SEQUENCE_LENGTH
+        for i, m in enumerate(decode_code(int(code), base, n_seeds)):
+            if m:
+                per_seed[i] += m * vec
+                tokens[i] += m * g["chunks"] * SEQUENCE_LENGTH
+    return {"full": full, "full_tokens": full_tokens, "per_seed": per_seed, "seed_tokens": tokens}
+
+
+# --------------------------------------------------------------------------- #
 # analysis on per-window count vectors
 # --------------------------------------------------------------------------- #
 

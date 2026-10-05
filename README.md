@@ -211,6 +211,13 @@ modal run modal_app/datadecide_alpha_app.py::validate             # convergence,
 modal run modal_app/datadecide_alpha_app.py::sweep --dry-run      # all 25 recipes: verify on the Hub
 modal run modal_app/datadecide_alpha_app.py::sweep --windows 1000 # -> results/corpus_alpha_datadecide/
 
+# exact 100B training samples of one recipe (c4; seeds 2,4,5 = the three trained c4 1B runs,
+# plus 6198 and 14) and the full recipe, in one pass; pilot first to measure the real cost
+modal run modal_app/datadecide_alpha_app.py::exact_samples --recipe c4 --dry-run
+modal run modal_app/datadecide_alpha_app.py::exact_samples --recipe c4 --max-tasks 20
+modal run modal_app/datadecide_alpha_app.py::exact_samples --recipe c4
+# -> results/corpus_alpha_datadecide/exact_100b_c4/{summary.json,counts_full_recipe.csv,counts_seed_*.csv}
+
 # offline tests (tiny fake parquet / .jsonl.gz / uint16 .npy files)
 python tests/test_sampling_validation.py
 python tests/test_datadecide_sampling.py
