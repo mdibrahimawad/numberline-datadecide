@@ -244,14 +244,33 @@ def decode_code(code: int, base: int, n_seeds: int) -> list[int]:
     return [(code // base ** i) % base for i in range(n_seeds)]
 
 
+def pairwise_overlap(code_chunks: dict, base: int, seeds: list[int]) -> dict:
+    """Fraction of seed i's training chunks that seed j's run also used."""
+    n = len(seeds)
+    used = [0] * n
+    shared = [[0] * n for _ in range(n)]
+    for code, chunks in code_chunks.items():
+        m = decode_code(int(code), base, n)
+        for i in range(n):
+            if m[i]:
+                used[i] += chunks
+                for j in range(n):
+                    if m[j]:
+                        shared[i][j] += chunks
+    return {f"{seeds[i]}-{seeds[j]}": shared[i][j] / used[i]
+            for i in range(n) for j in range(n) if i < j and used[i]}
+
+
 def count_chunks_by_code(decode_and_count, tokens: np.ndarray, codes: np.ndarray,
                          chunk: int = SEQUENCE_LENGTH, eos: int = EOS_TOKEN_ID,
-                         batch_docs: int = 256) -> dict[int, dict]:
+                         batch_docs: int = 256, skip_codes=()) -> dict[int, dict]:
     """Count numbers in consecutive `chunk`-token training sequences, grouped by
     membership code. Each sequence is split on EOS (numbers never span
     documents) and counted whole, exactly the text the model saw in it.
     `decode_and_count(docs, counter) -> decoded tokens` wraps
-    _decode_and_count_native with the recipe tokenizer."""
+    _decode_and_count_native with the recipe tokenizer. Chunks whose code is
+    in `skip_codes` (e.g. 0 = used by no seed) are not decoded or counted."""
+    skip = set(skip_codes)
     groups: dict[int, dict] = {}
     pending: dict[int, list] = {}
 
@@ -261,6 +280,8 @@ def count_chunks_by_code(decode_and_count, tokens: np.ndarray, codes: np.ndarray
             groups[code]["decoded_tokens"] += decode_and_count(docs, groups[code]["counts"])
 
     for i, code in enumerate(np.asarray(codes).tolist()):
+        if code in skip:
+            continue
         seq = tokens[i * chunk:(i + 1) * chunk]
         g = groups.setdefault(code, {"counts": Counter(), "chunks": 0, "decoded_tokens": 0})
         g["chunks"] += 1

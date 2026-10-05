@@ -246,7 +246,8 @@ def count_exact_task(task: dict) -> dict:
         codes = np.load(task["codes_path"], mmap_mode="r")[task["global_lo"]: task["global_lo"] + n]
         tok = _tokenizer(task["model_repo"])
         groups = count_chunks_by_code(
-            lambda docs, counter: _decode_and_count_native(tok, docs, counter), tokens, np.asarray(codes)
+            lambda docs, counter: _decode_and_count_native(tok, docs, counter), tokens, np.asarray(codes),
+            skip_codes=(0,) if task.get("skip_unused") else (),
         )
         return {
             "tokens": int(len(tokens)),
@@ -279,7 +280,8 @@ def reduce_exact(keys: list[str], base: int, n_seeds: int) -> dict:
             "seed_tokens": total["seed_tokens"].tolist(), "full_tokens": int(total["full_tokens"])}
 
 
-def _exact_tasks(rec: dict, file_tokens: list[int], meta: dict, task_chunks: int) -> list[dict]:
+def _exact_tasks(rec: dict, file_tokens: list[int], meta: dict, task_chunks: int,
+                 skip_unused: bool = False) -> list[dict]:
     from src.datadecide_sampling import SEQUENCE_LENGTH, chunk_offsets
 
     offsets = chunk_offsets(file_tokens)
@@ -291,8 +293,9 @@ def _exact_tasks(rec: dict, file_tokens: list[int], meta: dict, task_chunks: int
             tasks.append({
                 "model_repo": rec["model_repo"], "path": path, "file_index": f,
                 "chunk_lo": lo, "chunk_hi": hi, "global_lo": int(offsets[f]) + lo,
-                "codes_path": meta["codes_path"],
-                "key": f"exact::{meta['codes_path']}::{f}::{path}::{lo}::{hi}::{rec['model_repo']}",
+                "codes_path": meta["codes_path"], "skip_unused": skip_unused,
+                "key": f"exact::{meta['codes_path']}::{f}::{path}::{lo}::{hi}::{rec['model_repo']}"
+                       + ("::skip_unused" if skip_unused else ""),
             })
     return tasks
 
@@ -308,13 +311,16 @@ def exact_samples(
     task_mtokens: int = 32,
     max_tasks: int = 0,
     assumed_tokens_per_s: float = 2e6,
+    skip_unused: bool = False,
     dry_run: bool = False,
     out_dir: str = str(LOCAL_OUT),
 ) -> None:
     """Reproduce the 1B training data order of `recipe` for each seed, take the
     first 69,369 x 704 chunks (~100B tokens) of each, and count numbers in all
     of them -- plus the whole recipe -- in one pass. --max-tasks N is a pilot:
-    count N spread-out slices, measure throughput, project the full cost."""
+    count N spread-out slices, measure throughput, project the full cost.
+    --skip-unused counts only chunks some seed trained on (no full-recipe
+    alpha; for large recipes where a full pass is too expensive)."""
     import random
 
     import numpy as np
@@ -327,11 +333,14 @@ def exact_samples(
     file_tokens, _ = _recipe_tokens(rec)
     total = sum(file_tokens)
     n_chunks = sum(t // SEQUENCE_LENGTH for t in file_tokens)
-    est_s = total / assumed_tokens_per_s
+    per_seed_frac = min(1.0, TRAIN_INSTANCES_1B / n_chunks)
+    union_frac = 1 - (1 - per_seed_frac) ** len(seed_list)
+    est_s = total * (union_frac if skip_unused else 1.0) / assumed_tokens_per_s
     print(f"[exact:{recipe}] files={len(file_tokens)} tokens={total/1e9:.1f}B chunks={n_chunks:,} "
           f"budget/seed={TRAIN_INSTANCES_1B * SEQUENCE_LENGTH / 1e9:.1f}B "
           f"({min(1.0, TRAIN_INSTANCES_1B / n_chunks):.0%} of chunks per seed)")
-    print(f"[exact:{recipe}] full pass at an assumed {assumed_tokens_per_s/1e6:.1f}M tokens/s/core: "
+    print(f"[exact:{recipe}] {'sampled chunks only (~' + format(union_frac, '.0%') + ' of the recipe)' if skip_unused else 'full pass'} "
+          f"at an assumed {assumed_tokens_per_s/1e6:.1f}M tokens/s/core: "
           f"~{est_s/3600:.0f} core-hours, ~${_usd(est_s):.2f} (+ membership build ~$0.10); "
           f"download {total * 2 / 1e9:.0f} GB")
     if dry_run:
@@ -341,7 +350,8 @@ def exact_samples(
     meta = build_membership.remote(file_tokens, seed_list)
     print(f"[exact:{recipe}] membership: base={meta['base']} union={meta['union_chunks']/meta['n_chunks']:.1%} "
           f"of chunks used by at least one seed; per seed {[c * SEQUENCE_LENGTH / 1e9 for c in meta['per_seed_chunks']]} B tokens")
-    tasks = _exact_tasks(rec, file_tokens, meta, max(1, task_mtokens * 1_000_000 // SEQUENCE_LENGTH))
+    tasks = _exact_tasks(rec, file_tokens, meta, max(1, task_mtokens * 1_000_000 // SEQUENCE_LENGTH),
+                         skip_unused)
     out = Path(out_dir) / f"exact_100b_{recipe}"
     out.mkdir(parents=True, exist_ok=True)
 
@@ -351,7 +361,7 @@ def exact_samples(
         tok = sum(r["tokens"] for r in results)
         sec = sum(r["seconds"] for r in results)
         rate = tok / sec
-        proj = total / rate
+        proj = total / rate  # tokens read per second already reflects --skip-unused
         report = {"pilot_tasks": len(results), "tokens": tok, "compute_seconds": sec,
                   "tokens_per_s_per_core": rate, "projected_core_hours": proj / 3600,
                   "projected_usd": _usd(proj) * 1.15, "pilot_usd": _usd(sec)}
@@ -381,28 +391,38 @@ def exact_samples(
     per_seed = np.sum([p["per_seed"] for p in parts], axis=0)
     seed_tokens = np.sum([p["seed_tokens"] for p in parts], axis=0)
 
+    from src.datadecide_sampling import pairwise_overlap
+
+    # with --skip-unused the "full" vector is only the union of the sampled chunks
+    ref_name = "union_of_samples" if skip_unused else "full_recipe"
     full_desc = describe(full)
-    _write_counts_csv(out / "counts_full_recipe.csv", full)
+    _write_counts_csv(out / f"counts_{ref_name}.csv", full)
     seeds_out = {}
     for i, sd in enumerate(seed_list):
         d = describe(per_seed[i])
         _write_counts_csv(out / f"counts_seed_{sd}.csv", per_seed[i])
-        seeds_out[str(sd)] = {**d, "tokens": float(seed_tokens[i]),
-                              "diff_ols_vs_full": d["alpha_ols"] - full_desc["alpha_ols"],
-                              "diff_mle_vs_full": d["alpha_mle"] - full_desc["alpha_mle"]}
+        seeds_out[str(sd)] = {**d, "tokens": float(seed_tokens[i])}
+        if not skip_unused:
+            seeds_out[str(sd)]["diff_ols_vs_full"] = d["alpha_ols"] - full_desc["alpha_ols"]
+            seeds_out[str(sd)]["diff_mle_vs_full"] = d["alpha_mle"] - full_desc["alpha_mle"]
     spread = {}
     for fit in ("ols", "mle"):
         v = np.asarray([seeds_out[str(sd)][f"alpha_{fit}"] for sd in seed_list])
         spread[fit] = {"mean": float(v.mean()), "sd": float(v.std(ddof=1)) if len(v) > 1 else 0.0,
                        "max_minus_min": float(v.max() - v.min()),
-                       "max_abs_diff_vs_full": float(np.abs(v - full_desc[f"alpha_{fit}"]).max())}
-    summary = {"recipe": recipe, "seeds": seed_list, "full_recipe": {**full_desc, "tokens": int(sum(p["full_tokens"] for p in parts))},
+                       "max_abs_diff_vs_mean": float(np.abs(v - v.mean()).max())}
+        if not skip_unused:
+            spread[fit]["max_abs_diff_vs_full"] = float(np.abs(v - full_desc[f"alpha_{fit}"]).max())
+    overlap = pairwise_overlap(meta["code_chunks"], meta["base"], seed_list)
+    summary = {"recipe": recipe, "seeds": seed_list, "skip_unused": skip_unused,
+               ref_name: {**full_desc, "tokens": int(sum(p["full_tokens"] for p in parts))},
                "per_seed": seeds_out, "spread_across_seeds": spread,
+               "pairwise_chunk_overlap": overlap,
                "membership": {k: meta[k] for k in ("base", "n_chunks", "union_chunks", "per_seed_chunks")},
                "compute_seconds": seconds, "compute_usd": _usd(seconds)}
     (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
-    print(json.dumps({"full_recipe": summary["full_recipe"], "per_seed": seeds_out, "spread": spread,
-                      "compute_usd": summary["compute_usd"]}, indent=2))
+    print(json.dumps({ref_name: summary[ref_name], "per_seed": seeds_out, "spread": spread,
+                      "pairwise_chunk_overlap": overlap, "compute_usd": summary["compute_usd"]}, indent=2))
     print(f"[exact] wrote {out}")
 
 

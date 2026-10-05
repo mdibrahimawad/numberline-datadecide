@@ -203,6 +203,24 @@ def test_exact_samples_match_brute_force():
         got = {k: v for k, v in enumerate(out["per_seed"][i]) if v}
         assert got == {k: v for k, v in expect.items() if v}, seed
         assert out["seed_tokens"][i] == n_instances * ds.SEQUENCE_LENGTH
+    # skipping chunks no seed used leaves every seed's counts unchanged
+    skipped = {}
+    for f, toks in enumerate(files):
+        n = file_tokens[f] // chunk
+        part = ds.count_chunks_by_code(dac, toks[: n * chunk], codes[offsets[f]: offsets[f] + n],
+                                       chunk=chunk, skip_codes=(0,))
+        for code, g in part.items():
+            tgt = skipped.setdefault(code, {"counts": Counter(), "chunks": 0, "decoded_tokens": 0})
+            tgt["counts"].update(g["counts"])
+            tgt["chunks"] += g["chunks"]
+    assert 0 not in skipped
+    assert np.array_equal(ds.combine_codes(skipped, base, len(seeds), caa.MAX_N)["per_seed"], out["per_seed"])
+    uniq, freq = np.unique(codes, return_counts=True)
+    ov = ds.pairwise_overlap(dict(zip(uniq.tolist(), freq.tolist())), base, seeds)
+    o2 = ds.training_chunk_indices(file_tokens, n_instances, 2, chunk)
+    o4 = ds.training_chunk_indices(file_tokens, n_instances, 4, chunk)
+    in2, in4 = set(o2.tolist()), set(o4.tolist())
+    assert abs(ov["2-4"] - len(in2 & in4) / len(in2)) < 0.2  # chunk-weighted vs set-based, same ballpark
     full = Counter()
     for gid in range(n_total):
         full.update(chunk_counts(gid))
