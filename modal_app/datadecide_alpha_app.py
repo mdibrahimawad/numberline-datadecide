@@ -485,16 +485,18 @@ def exact_all(
                 "source": source}
 
     rows: dict[str, dict] = {}
-    to_run = []
-    for slug in names:
+    for slug in data_map["recipes"]:  # every recipe with results on disk goes into the CSV
         prev = root / f"exact_100b_{slug}" / "summary.json"
         row = row_from(slug, json.loads(prev.read_text()), "reused") if prev.exists() else None
         if row:
             rows[slug] = row
-        else:
-            to_run.append(slug)
+    to_run = [slug for slug in names if slug not in rows]
     print(f"[exact-all] seed {seed}: {len(rows)} recipes already done ({', '.join(rows) or '-'}), "
           f"{len(to_run)} to run")
+    if not to_run:
+        write_csv_now = True
+    else:
+        write_csv_now = False
 
     total_usd = 0.0
     for slug in to_run:
@@ -506,10 +508,6 @@ def exact_all(
         print(f"[exact-all] {slug:35s} {tokens/1e9:8.1f}B tokens  ~${usd:5.2f}")
     print(f"[exact-all] estimated total for {len(to_run)} recipes: ~${total_usd:.0f} "
           f"(compute only; downloads are free)")
-    if dry_run:
-        print("[exact-all] --dry-run: stopping before any counting")
-        return
-
     def write_csv():
         root.mkdir(parents=True, exist_ok=True)
         with open(csv_path, "w", newline="") as fh:
@@ -520,6 +518,10 @@ def exact_all(
                     w.writerow(rows[slug])
 
     write_csv()
+    if dry_run or write_csv_now:
+        print(f"[exact-all] wrote {csv_path} ({len(rows)} recipes)"
+              + ("; --dry-run: stopping before any counting" if dry_run else ""))
+        return
     failed = []
     for i, slug in enumerate(to_run, 1):
         print(f"[exact-all] ({i}/{len(to_run)}) {slug}")
