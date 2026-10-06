@@ -1,0 +1,26 @@
+{
+  "olmo-mix/v1_6-decontaminated": {
+    "tokens": 999327813261,
+    "share": 0.5300804871420806
+  },
+  "falcon-refinedweb/v0-0.05-heldout-complement_decontaminated": {
+    "tokens": 547335100295,
+    "share": 0.29032681042627784
+  },
+  "starcoder/v0_decontaminated_doc_only": {
+    "tokens": 263775304843,
+    "share": 0.1399161918959921
+  },
+  "redpajama/v1_decon_fix": {
+    "tokens": 47603245946,
+    "share": 0.025250524868569393
+  },
+  "proof-pile-2/v0_decontaminated": {
+    "tokens": 25356877139,
+    "share": 0.013450226850368365
+  },
+  "tulu_flan/v0_all_train": {
+    "tokens": 1839537482,
+    "share": 0.0009757588167117322
+  }
+}

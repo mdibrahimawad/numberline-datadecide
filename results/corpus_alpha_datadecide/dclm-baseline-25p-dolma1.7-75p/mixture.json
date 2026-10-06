@@ -1,0 +1,54 @@
+{
+  "fastdclm/text_openhermes_reddit_eli5_vs_rw_v2_bigram_200k_train": {
+    "tokens": 964496904318,
+    "share": 0.4294318589855972
+  },
+  "olmo-mix/v1_7-dd_ngram_dp_030-qc_cc_en_bin_001": {
+    "tokens": 444128103549,
+    "share": 0.1977432548315495
+  },
+  "falcon-refinedweb/v2-frac_005_100-qc_cc_multi_bin-paloma-rep-pii": {
+    "tokens": 343370271920,
+    "share": 0.15288191546375265
+  },
+  "starcoder/v0_decontaminated_doc_only": {
+    "tokens": 190070980968,
+    "share": 0.08462705720555937
+  },
+  "c4/v1_7-dd_ngram_dp_030-qc_cc_en_bin_001-fix": {
+    "tokens": 104776124155,
+    "share": 0.04665044083786146
+  },
+  "reddit/v5-dedupe-pii-nsfw-toxic-fuzzydd-length": {
+    "tokens": 60273718021,
+    "share": 0.026836223799011596
+  },
+  "olmo-mix/v1_6-decontaminated": {
+    "tokens": 54940013871,
+    "share": 0.024461449470385532
+  },
+  "redpajama_v1_decon_fix/arxiv": {
+    "tokens": 21070069165,
+    "share": 0.009381221370408704
+  },
+  "proof-pile-2/v0_decontaminated": {
+    "tokens": 20814071444,
+    "share": 0.009267241142236959
+  },
+  "redpajama_v1_decon_fix/stackexchange": {
+    "tokens": 14993639169,
+    "share": 0.00667575635803186
+  },
+  "tulu_flan/v2-decontaminated-60M-shots_all-upweight_1-dialog_false-sep_newline": {
+    "tokens": 12530581845,
+    "share": 0.005579106611725701
+  },
+  "cc-news/v3": {
+    "tokens": 11164523488,
+    "share": 0.004970883840762917
+  },
+  "megawika/v1": {
+    "tokens": 3354578803,
+    "share": 0.0014935900831165424
+  }
+}

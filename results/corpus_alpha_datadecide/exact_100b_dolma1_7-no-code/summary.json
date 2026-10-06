@@ -1,0 +1,52 @@
+{
+  "recipe": "dolma1_7-no-code",
+  "seeds": [
+    2
+  ],
+  "skip_unused": true,
+  "union_of_samples": {
+    "alpha_ols": -1.568886108722566,
+    "r2": 0.793780111607706,
+    "alpha_mle": -1.1123199168983948,
+    "alpha_mle_fisher_se": 9.068104616849548e-06,
+    "integer_matches": 1743497702.0,
+    "support": 1.0,
+    "tokens": 100015669248
+  },
+  "per_seed": {
+    "2": {
+      "alpha_ols": -1.568886108722566,
+      "r2": 0.793780111607706,
+      "alpha_mle": -1.1123199168983948,
+      "alpha_mle_fisher_se": 9.068104616849548e-06,
+      "integer_matches": 1743497702.0,
+      "support": 1.0,
+      "tokens": 100015669248.0
+    }
+  },
+  "spread_across_seeds": {
+    "ols": {
+      "mean": -1.568886108722566,
+      "sd": 0.0,
+      "max_minus_min": 0.0,
+      "max_abs_diff_vs_mean": 0.0
+    },
+    "mle": {
+      "mean": -1.1123199168983948,
+      "sd": 0.0,
+      "max_minus_min": 0.0,
+      "max_abs_diff_vs_mean": 0.0
+    }
+  },
+  "pairwise_chunk_overlap": {},
+  "membership": {
+    "base": 2,
+    "n_chunks": 699095116,
+    "union_chunks": 48835776,
+    "per_seed_chunks": [
+      48835776
+    ]
+  },
+  "compute_seconds": 118935.02502036095,
+  "compute_usd": 2.3501560944023323
+}

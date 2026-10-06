@@ -1,0 +1,10 @@
+{
+  "olmo-mix/eli5_oh_top20p": {
+    "tokens": 166469494338,
+    "share": 0.5823670962664093
+  },
+  "falcon-refinedweb/eli5_oh_top20p": {
+    "tokens": 119380265041,
+    "share": 0.4176329037335908
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "recipe": "fineweb-pro",
+  "seeds": [
+    2
+  ],
+  "skip_unused": true,
+  "union_of_samples": {
+    "alpha_ols": -1.7617902815481652,
+    "r2": 0.7945652927035268,
+    "alpha_mle": -1.0503121446669637,
+    "alpha_mle_fisher_se": 1.0455499440422783e-05,
+    "integer_matches": 1229740137.0,
+    "support": 1.0,
+    "tokens": 82723061760
+  },
+  "per_seed": {
+    "2": {
+      "alpha_ols": -1.761699229647942,
+      "r2": 0.7945221602019159,
+      "alpha_mle": -1.0503300041684829,
+      "alpha_mle_fisher_se": 9.509220035044047e-06,
+      "integer_matches": 1486696974.0,
+      "support": 1.0,
+      "tokens": 100015669248.0
+    }
+  },
+  "spread_across_seeds": {
+    "ols": {
+      "mean": -1.761699229647942,
+      "sd": 0.0,
+      "max_minus_min": 0.0,
+      "max_abs_diff_vs_mean": 0.0
+    },
+    "mle": {
+      "mean": -1.0503300041684829,
+      "sd": 0.0,
+      "max_minus_min": 0.0,
+      "max_abs_diff_vs_mean": 0.0
+    }
+  },
+  "pairwise_chunk_overlap": {},
+  "membership": {
+    "base": 3,
+    "n_chunks": 40392120,
+    "union_chunks": 40392120,
+    "per_seed_chunks": [
+      48835776
+    ]
+  },
+  "compute_seconds": 33201.52174639702,
+  "compute_usd": 0.6560620697088051
+}

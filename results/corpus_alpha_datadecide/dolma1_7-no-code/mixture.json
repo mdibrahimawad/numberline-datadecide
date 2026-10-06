@@ -1,0 +1,42 @@
+{
+  "olmo-mix/v1_7-dd_ngram_dp_030-qc_cc_en_bin_001": {
+    "tokens": 598422659025,
+    "share": 0.4179665501471051
+  },
+  "falcon-refinedweb/v2-frac_005_100-qc_cc_multi_bin-paloma-rep-pii": {
+    "tokens": 456404959027,
+    "share": 0.3187747043291298
+  },
+  "c4/v1_7-dd_ngram_dp_030-qc_cc_en_bin_001-fix": {
+    "tokens": 138441178003,
+    "share": 0.09669383452573753
+  },
+  "reddit/v5-dedupe-pii-nsfw-toxic-fuzzydd-length": {
+    "tokens": 79944013060,
+    "share": 0.055836661329041345
+  },
+  "olmo-mix/v1_6-decontaminated": {
+    "tokens": 69843953899,
+    "share": 0.04878230464628667
+  },
+  "redpajama_v1_decon_fix/arxiv": {
+    "tokens": 27973662590,
+    "share": 0.019538122548319114
+  },
+  "proof-pile-2/v0_decontaminated": {
+    "tokens": 25356877139,
+    "share": 0.017710436428927175
+  },
+  "tulu_flan/v2-decontaminated-60M-shots_all-upweight_1-dialog_false-sep_newline": {
+    "tokens": 16536907601,
+    "share": 0.011550154586981734
+  },
+  "cc-news/v3": {
+    "tokens": 14261416567,
+    "share": 0.009960844551627747
+  },
+  "megawika/v1": {
+    "tokens": 4562102218,
+    "share": 0.0031863869068438078
+  }
+}

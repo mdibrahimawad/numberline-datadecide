@@ -1,0 +1,49 @@
+{
+  "recipe": "dolma1_7-no-reddit",
+  "model_repo": "allenai/DataDecide-dolma1_7-no-reddit-1B",
+  "olmo_mix_name": "no_reddit",
+  "windows": 4000,
+  "corpus_tokens": 1635208604268,
+  "drop_partial_docs": {
+    "alpha_ols": -1.5037399298424516,
+    "r2": 0.7708732057849182,
+    "alpha_mle": -1.127185530798475,
+    "alpha_mle_fisher_se": 8.973332418715298e-05,
+    "integer_matches": 18672191.0,
+    "support": 1.0,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.5715814385704072,
+      -1.4627952587778386
+    ],
+    "alpha_mle_ci95": [
+      -1.1315740733865238,
+      -1.1232979832670922
+    ],
+    "alpha_ols_boot_sd": 0.02852397885711223,
+    "alpha_mle_boot_sd": 0.002594790876326118,
+    "sampled_tokens": 1011017104,
+    "documents": 1374995
+  },
+  "keep_partial": {
+    "alpha_ols": -1.4728182643459458,
+    "r2": 0.7799285152300248,
+    "alpha_mle": -1.1288982572944748,
+    "alpha_mle_fisher_se": 8.724997202065043e-05,
+    "integer_matches": 19839068.0,
+    "support": 1.0,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.5513644592452247,
+      -1.419017560761543
+    ],
+    "alpha_mle_ci95": [
+      -1.1340461136235498,
+      -1.1247037071426278
+    ],
+    "alpha_ols_boot_sd": 0.03480188368792628,
+    "alpha_mle_boot_sd": 0.002954890785253747,
+    "sampled_tokens": 1046279613,
+    "documents": 1382878
+  }
+}

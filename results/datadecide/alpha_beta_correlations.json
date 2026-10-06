@@ -1,0 +1,30 @@
+{
+  "alpha_ols vs beta_direct_mean": {
+    "n": 3,
+    "pearson_r": 0.7233010099591364,
+    "pearson_p": 0.48524783570691027,
+    "spearman_rho": 0.5,
+    "spearman_p": 0.6666666666666667
+  },
+  "alpha_ols vs beta_log_mean": {
+    "n": 3,
+    "pearson_r": 0.8078159982738685,
+    "pearson_p": 0.4012989544929807,
+    "spearman_rho": 0.5,
+    "spearman_p": 0.6666666666666667
+  },
+  "alpha_mle vs beta_direct_mean": {
+    "n": 25,
+    "pearson_r": -0.14108480121452532,
+    "pearson_p": 0.5011470593997678,
+    "spearman_rho": -0.16615384615384618,
+    "spearman_p": 0.42732483267123456
+  },
+  "alpha_mle vs beta_log_mean": {
+    "n": 25,
+    "pearson_r": -0.13716459911871778,
+    "pearson_p": 0.513232445402376,
+    "spearman_rho": -0.19384615384615386,
+    "spearman_p": 0.35316974326493866
+  }
+}
