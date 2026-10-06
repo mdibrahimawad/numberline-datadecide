@@ -456,6 +456,7 @@ def exact_all(
     recipes: str = "",
     seed: int = 2,
     task_mtokens: int = 256,
+    smallest_first: bool = False,
     dry_run: bool = False,
     out_dir: str = str(LOCAL_OUT),
 ) -> None:
@@ -498,14 +499,16 @@ def exact_all(
     else:
         write_csv_now = False
 
+    sizes = {slug: sum(_recipe_tokens(data_map["recipes"][slug])[0]) for slug in to_run}
+    if smallest_first:  # cheapest first: the most recipes finish before a budget limit
+        to_run.sort(key=sizes.get)
     total_usd = 0.0
     for slug in to_run:
-        file_tokens, _ = _recipe_tokens(data_map["recipes"][slug])
-        tokens = sum(file_tokens)
+        tokens = sizes[slug]
         decoded = min(tokens, TRAIN_INSTANCES_1B * SEQUENCE_LENGTH)
         usd = _usd(decoded / DECODE_TOKENS_PER_S) + tokens / 1e12 * READ_USD_PER_T + 0.1
         total_usd += usd
-        print(f"[exact-all] {slug:35s} {tokens/1e9:8.1f}B tokens  ~${usd:5.2f}")
+        print(f"[exact-all] {slug:35s} {tokens/1e9:8.1f}B tokens  ~${usd:5.2f}  (cumulative ~${total_usd:5.2f})")
     print(f"[exact-all] estimated total for {len(to_run)} recipes: ~${total_usd:.0f} "
           f"(compute only; downloads are free)")
     def write_csv():
