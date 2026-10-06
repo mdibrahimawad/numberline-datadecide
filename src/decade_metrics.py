@@ -20,6 +20,7 @@ leave-one-out (choose q / K and the linear map on the other models, predict the
 held-out one) scores it honestly.
 
     python -m src.decade_metrics
+    python -m src.decade_metrics --exclude dclm --out results/datadecide/decade_metrics_no_dclm.csv
 """
 
 from __future__ import annotations
@@ -108,12 +109,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--alpha-root", default="results/corpus_alpha_datadecide")
     p.add_argument("--beta", default="results/datadecide/summary.csv")
     p.add_argument("--seed", type=int, default=2)
+    p.add_argument("--exclude", default="", help="comma-separated recipe prefixes to leave out, e.g. dclm")
     p.add_argument("--out", default="results/datadecide/decade_metrics.csv")
     args = p.parse_args(argv)
 
     counts = load_counts(Path(args.alpha_root), args.seed)
     beta = {r["recipe"]: r for r in csv.DictReader(open(args.beta))}
-    recipes = [r for r in counts if r in beta]
+    skip = tuple(x for x in args.exclude.split(",") if x)
+    recipes = [r for r in counts if r in beta and not (skip and r.startswith(skip))]
     if len(recipes) < 4:
         raise SystemExit(f"[decade] need >= 4 recipes with counts and beta, have {recipes}")
     C = [counts[r] for r in recipes]
