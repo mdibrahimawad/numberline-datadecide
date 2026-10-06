@@ -1,0 +1,46 @@
+{
+  "olmo-mix/v1_7-dd_ngram_dp_030-qc_cc_en_bin_001": {
+    "tokens": 598422659025,
+    "share": 0.36596105075711943
+  },
+  "falcon-refinedweb/v2-frac_005_100-qc_cc_multi_bin-paloma-rep-pii": {
+    "tokens": 456404959027,
+    "share": 0.27911115305763046
+  },
+  "starcoder/v0_decontaminated_doc_only": {
+    "tokens": 263775304843,
+    "share": 0.16130988068099045
+  },
+  "c4/v1_7-dd_ngram_dp_030-qc_cc_en_bin_001-fix": {
+    "tokens": 138441178003,
+    "share": 0.08466270153034884
+  },
+  "olmo-mix/v1_6-decontaminated": {
+    "tokens": 69843953899,
+    "share": 0.04271256506154797
+  },
+  "redpajama_v1_decon_fix/arxiv": {
+    "tokens": 27973662590,
+    "share": 0.017107091117908098
+  },
+  "proof-pile-2/v0_decontaminated": {
+    "tokens": 25356877139,
+    "share": 0.015506814893718706
+  },
+  "redpajama_v1_decon_fix/stackexchange": {
+    "tokens": 19629583356,
+    "share": 0.012004329786894174
+  },
+  "tulu_flan/v2-decontaminated-60M-shots_all-upweight_1-dialog_false-sep_newline": {
+    "tokens": 16536907601,
+    "share": 0.010113026287800593
+  },
+  "cc-news/v3": {
+    "tokens": 14261416567,
+    "share": 0.008721466196897926
+  },
+  "megawika/v1": {
+    "tokens": 4562102218,
+    "share": 0.0027899206291433516
+  }
+}

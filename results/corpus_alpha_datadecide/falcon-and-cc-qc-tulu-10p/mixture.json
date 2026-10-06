@@ -1,0 +1,10 @@
+{
+  "olmo-mix/tulu_qc_top10": {
+    "tokens": 83686905814,
+    "share": 0.649162287037014
+  },
+  "falcon-refinedweb/tulu_qc_top10": {
+    "tokens": 45228324607,
+    "share": 0.350837712962986
+  }
+}

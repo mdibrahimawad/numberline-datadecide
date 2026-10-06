@@ -1,0 +1,49 @@
+{
+  "recipe": "fineweb-pro",
+  "model_repo": "allenai/DataDecide-fineweb-pro-1B",
+  "olmo_mix_name": "prox_fineweb_pro",
+  "windows": 4000,
+  "corpus_tokens": 82723189035,
+  "drop_partial_docs": {
+    "alpha_ols": -1.8015823419140984,
+    "r2": 0.7679715679467011,
+    "alpha_mle": -1.0512245046922748,
+    "alpha_mle_fisher_se": 9.403875438561453e-05,
+    "integer_matches": 15214720.0,
+    "support": 0.9977,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.8301888609157653,
+      -1.811486191556685
+    ],
+    "alpha_mle_ci95": [
+      -1.0522269826867114,
+      -1.050270184659176
+    ],
+    "alpha_ols_boot_sd": 0.004746937606992677,
+    "alpha_mle_boot_sd": 0.0005252471912797752,
+    "sampled_tokens": 1029039691,
+    "documents": 872197
+  },
+  "keep_partial": {
+    "alpha_ols": -1.7997568391441203,
+    "r2": 0.7696556231298352,
+    "alpha_mle": -1.0510242359201647,
+    "alpha_mle_fisher_se": 9.288352495635753e-05,
+    "integer_matches": 15591916.0,
+    "support": 0.9985,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.8290624972510643,
+      -1.8083771540232172
+    ],
+    "alpha_mle_ci95": [
+      -1.0520688293136111,
+      -1.0500581947069574
+    ],
+    "alpha_ols_boot_sd": 0.005439699793969192,
+    "alpha_mle_boot_sd": 0.0005371498913718476,
+    "sampled_tokens": 1046668440,
+    "documents": 880125
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "recipe": "falcon-and-cc-qc-tulu-10p",
+  "seeds": [
+    2
+  ],
+  "skip_unused": true,
+  "union_of_samples": {
+    "alpha_ols": -1.6906548900783398,
+    "r2": 0.8160827270666007,
+    "alpha_mle": -1.099715954258046,
+    "alpha_mle_fisher_se": 8.967381007632603e-06,
+    "integer_matches": 1748845575.0,
+    "support": 1.0,
+    "tokens": 100015669248
+  },
+  "per_seed": {
+    "2": {
+      "alpha_ols": -1.6906548900783398,
+      "r2": 0.8160827270666007,
+      "alpha_mle": -1.099715954258046,
+      "alpha_mle_fisher_se": 8.967381007632603e-06,
+      "integer_matches": 1748845575.0,
+      "support": 1.0,
+      "tokens": 100015669248.0
+    }
+  },
+  "spread_across_seeds": {
+    "ols": {
+      "mean": -1.6906548900783398,
+      "sd": 0.0,
+      "max_minus_min": 0.0,
+      "max_abs_diff_vs_mean": 0.0
+    },
+    "mle": {
+      "mean": -1.099715954258046,
+      "sd": 0.0,
+      "max_minus_min": 0.0,
+      "max_abs_diff_vs_mean": 0.0
+    }
+  },
+  "pairwise_chunk_overlap": {},
+  "membership": {
+    "base": 2,
+    "n_chunks": 62946778,
+    "union_chunks": 48835776,
+    "per_seed_chunks": [
+      48835776
+    ]
+  },
+  "compute_seconds": 45849.7122733593,
+  "compute_usd": 0.9059903145215797
+}

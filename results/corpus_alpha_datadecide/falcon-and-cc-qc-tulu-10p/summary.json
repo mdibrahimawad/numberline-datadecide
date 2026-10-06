@@ -1,0 +1,49 @@
+{
+  "recipe": "falcon-and-cc-qc-tulu-10p",
+  "model_repo": "allenai/DataDecide-falcon-and-cc-qc-tulu-10p-1B",
+  "olmo_mix_name": "falcon_and_cc_tulu_qc_top10",
+  "windows": 4000,
+  "corpus_tokens": 128915230421,
+  "drop_partial_docs": {
+    "alpha_ols": -1.7277459239896797,
+    "r2": 0.7921724602696563,
+    "alpha_mle": -1.1001220810563683,
+    "alpha_mle_fisher_se": 8.891004793385911e-05,
+    "integer_matches": 17795576.0,
+    "support": 1.0,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.7622982110123042,
+      -1.740327767790397
+    ],
+    "alpha_mle_ci95": [
+      -1.1012710706044664,
+      -1.098938675926747
+    ],
+    "alpha_ols_boot_sd": 0.005509398049717057,
+    "alpha_mle_boot_sd": 0.0006192863742044331,
+    "sampled_tokens": 1026414379,
+    "documents": 1954536
+  },
+  "keep_partial": {
+    "alpha_ols": -1.7300723192505945,
+    "r2": 0.7937889085913681,
+    "alpha_mle": -1.0997739201143644,
+    "alpha_mle_fisher_se": 8.798705975096646e-05,
+    "integer_matches": 18163636.0,
+    "support": 1.0,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.763243307730849,
+      -1.7420732839124486
+    ],
+    "alpha_mle_ci95": [
+      -1.1009495808087688,
+      -1.0985654378853758
+    ],
+    "alpha_ols_boot_sd": 0.005501935871117359,
+    "alpha_mle_boot_sd": 0.0006242613709262482,
+    "sampled_tokens": 1045366544,
+    "documents": 1962398
+  }
+}

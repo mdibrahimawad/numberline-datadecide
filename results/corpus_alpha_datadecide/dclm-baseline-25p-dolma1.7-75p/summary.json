@@ -1,0 +1,49 @@
+{
+  "recipe": "dclm-baseline-25p-dolma1.7-75p",
+  "model_repo": "allenai/DataDecide-dclm-baseline-25p-dolma1.7-75p-1B",
+  "olmo_mix_name": "dolma17-75p-DCLM-baseline-25p",
+  "windows": 4000,
+  "corpus_tokens": 2245983580716,
+  "drop_partial_docs": {
+    "alpha_ols": -1.537109302064386,
+    "r2": 0.771616603804129,
+    "alpha_mle": -1.1294054982334067,
+    "alpha_mle_fisher_se": 9.331231826878056e-05,
+    "integer_matches": 16983598.0,
+    "support": 1.0,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.5992170392698237,
+      -1.5157609268120131
+    ],
+    "alpha_mle_ci95": [
+      -1.132911835017962,
+      -1.1257504191673944
+    ],
+    "alpha_ols_boot_sd": 0.023320030043916983,
+    "alpha_mle_boot_sd": 0.0018271367728748913,
+    "sampled_tokens": 1014668186,
+    "documents": 1221093
+  },
+  "keep_partial": {
+    "alpha_ols": -1.5552770514021461,
+    "r2": 0.7932581644691055,
+    "alpha_mle": -1.1297715594308997,
+    "alpha_mle_fisher_se": 9.124047377141494e-05,
+    "integer_matches": 17847808.0,
+    "support": 1.0,
+    "n_boot": 500,
+    "alpha_ols_ci95": [
+      -1.626101063790937,
+      -1.5327056452366234
+    ],
+    "alpha_mle_ci95": [
+      -1.1339100211635,
+      -1.125470879069021
+    ],
+    "alpha_ols_boot_sd": 0.024693739032963225,
+    "alpha_mle_boot_sd": 0.002164556285969938,
+    "sampled_tokens": 1046893224,
+    "documents": 1229000
+  }
+}
