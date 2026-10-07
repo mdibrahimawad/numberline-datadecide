@@ -93,8 +93,10 @@ is CPU- or download-bound so you can size it right.
 ### Steps
 1. **Deploy**: console → **Pods → Deploy** → **CPU** → compute-optimised flavour (`cpu5c`, else
    `cpu3c`) with the **largest vCPU count offered, ideally ~32** (needs ≥ 16 GB RAM: the
-   membership step for the biggest recipe uses ~10 GB) → container disk 20 GB, **volume disk
-   50 GB** → a **US** datacentre if you can choose (Hugging Face's CDN is fastest there) →
+   membership step for the biggest recipe uses ~10 GB) → container disk 30 GB, and **attach a
+   50 GB network volume** (CPU pods have no volume disk; the container disk is erased on stop,
+   the network volume survives stop, delete and a $0 balance, ~$3.50/month — delete it at the
+   end) → a **US** datacentre if you can choose (Hugging Face's CDN is fastest there) →
    Deploy. Note the price per hour shown. If only small sizes exist (e.g. 8-16 vCPU), use
    several pods instead of one big one — same cost, see "Several pods" below.
 2. **Connect**: pod → **Connect** tab. Two SSH commands are shown:
