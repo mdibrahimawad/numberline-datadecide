@@ -196,6 +196,15 @@ def read_range(task: dict, start: int, length: int) -> np.ndarray:
     raise RuntimeError(f"giving up on {task['path']} [{start}, +{length}): {last}")
 
 
+def atomic_write(path: Path, text: str) -> None:
+    """Write via a unique temp file + rename: a crash, or another pod writing the
+    same file on a shared network volume, never leaves a half-written file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp = path.with_name(f".{path.name}.{os.getpid()}.{random.getrandbits(32):08x}.tmp")
+    tmp.write_text(text)
+    os.replace(tmp, path)
+
+
 # --------------------------------------------------------------------------- #
 # per-recipe preparation (main process)
 # --------------------------------------------------------------------------- #
@@ -213,8 +222,9 @@ def file_sizes(paths: list[str], work: Path) -> list[int]:
             for info in api.get_paths_info(HF_DATA_REPO, need[i:i + 200], repo_type="dataset"):
                 if getattr(info, "size", None) is not None:
                     cache[info.path] = int(info.size) // 2
-        work.mkdir(parents=True, exist_ok=True)
-        cache_path.write_text(json.dumps(cache))
+        if cache_path.exists():  # keep entries another pod added meanwhile
+            cache = {**json.loads(cache_path.read_text()), **cache}
+        atomic_write(cache_path, json.dumps(cache))
     missing = [p for p in paths if p not in cache]
     if missing:
         raise SystemExit(f"{len(missing)} paths missing from {HF_DATA_REPO}, e.g. {missing[:3]}")
@@ -230,7 +240,7 @@ def membership(recipe: str, file_tokens: list[int], seed: int, work: Path) -> tu
         codes, base = membership_codes(file_tokens, [seed])
         folder.mkdir(parents=True, exist_ok=True)
         np.save(path, codes)
-        meta.write_text(json.dumps({"base": base, "n_chunks": int(len(codes))}))
+        atomic_write(meta, json.dumps({"base": base, "n_chunks": int(len(codes))}))
         print(f"[{recipe}] membership built in {time.time() - t:.0f}s ({len(codes):,} chunks)", flush=True)
     return path, json.loads(meta.read_text())["base"]
 
@@ -311,7 +321,7 @@ def finish_recipe(recipe: str, tasks: list[dict], seed: int, base: int, n_chunks
                               "union_chunks": int(sum(code_chunks.values())),
                               "per_seed_chunks": [int(sum(int(c) * k for c, k in code_chunks.items()))]},
                "runner": "runpod_jobs.exact_alpha"}
-    (out / "summary.json").write_text(json.dumps(summary, indent=2) + "\n")
+    atomic_write(out / "summary.json", json.dumps(summary, indent=2) + "\n")
     s = seeds_out[str(seed)]
     print(f"[{recipe}] DONE alpha_ols={s['alpha_ols']:.4f} alpha_mle={s['alpha_mle']:.5f} "
           f"numbers={s['integer_matches']:.3e} tokens={s['tokens'] / 1e9:.2f}B -> {out}", flush=True)
@@ -335,11 +345,13 @@ def write_alpha_csv(out_root: Path, seed: int, data_map: dict) -> int:
                      "recipe_tokens": int(summary["membership"]["n_chunks"]) * SEQUENCE_LENGTH,
                      "source": source})
     path = out_root / f"alpha_seed{seed}.csv"
-    out_root.mkdir(parents=True, exist_ok=True)
-    with open(path, "w", newline="") as fh:
-        w = csv.DictWriter(fh, fieldnames=ALPHA_COLUMNS_EXACT)
-        w.writeheader()
-        w.writerows(rows)
+    import io
+
+    buf = io.StringIO()
+    w = csv.DictWriter(buf, fieldnames=ALPHA_COLUMNS_EXACT, lineterminator="\r\n")
+    w.writeheader()
+    w.writerows(rows)
+    atomic_write(path, buf.getvalue())
     return len(rows)
 
 
