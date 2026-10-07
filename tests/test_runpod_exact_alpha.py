@@ -255,7 +255,70 @@ def test_retry_upload_verify_then_delete_pod():
              ea.stop_this_pod, ea.time.sleep) = orig
 
 
+def test_pods_share_work_through_claims():
+    """Two recipes; another pod already claimed 'a'. This pod skips 'a', counts 'b',
+    uploads it, verifies only its own recipe and deletes itself."""
+    import shutil
+
+    import huggingface_hub
+
+    rng = np.random.default_rng(3)
+    files_a, files_b = _fake_files(rng), _fake_files(rng)
+    files = {**{f"a/{k}": v for k, v in files_a.items()}, **{f"b/{k}": v for k, v in files_b.items()}}
+    dm = {"recipes": {"a": {"model_repo": "x/y", "paths": [p for p in files if p.startswith("a/")]},
+                      "b": {"model_repo": "x/y", "paths": [p for p in files if p.startswith("b/")]}}}
+    ea.load_data_map = lambda: dm
+    ea.file_sizes = lambda ps, work: [len(files[p]) for p in ps]
+    ea.resolve_url = lambda path: "https://cdn.example/" + path
+    ea.read_range = lambda task, start, length: files[task["path"]][start:start + length]
+    ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
+    ea.membership_codes = lambda ft, seeds: membership_codes(ft, seeds, n_instances=N_INSTANCES)
+    ea.CLAIM_SETTLE_S = 0
+
+    with tempfile.TemporaryDirectory() as tmp:
+        hub = Path(tmp) / "hub"
+
+        class FakeApi:
+            def __init__(self, token=None):
+                pass
+
+            def whoami(self):
+                return {"name": "me"}
+
+            def create_repo(self, repo, **kw):
+                (hub / repo).mkdir(parents=True, exist_ok=True)
+
+            def upload_file(self, path_or_fileobj, path_in_repo, repo_id, **kw):
+                (hub / repo_id / path_in_repo).parent.mkdir(parents=True, exist_ok=True)
+                (hub / repo_id / path_in_repo).write_bytes(path_or_fileobj)
+
+            def upload_folder(self, folder_path, path_in_repo, repo_id, **kw):
+                shutil.copytree(folder_path, hub / repo_id / path_in_repo, dirs_exist_ok=True)
+
+            def list_repo_files(self, repo, **kw):
+                return [str(f.relative_to(hub / repo)) for f in (hub / repo).rglob("*") if f.is_file()]
+
+        orig = (huggingface_hub.HfApi, huggingface_hub.hf_hub_download, ea.terminate_this_pod)
+        deleted = []
+        huggingface_hub.HfApi = FakeApi
+        huggingface_hub.hf_hub_download = lambda repo, f, **kw: str(hub / repo / f)
+        ea.terminate_this_pod = lambda reason: deleted.append(reason)
+        (hub / "me/results/_claims/a").mkdir(parents=True)
+        (hub / "me/results/_claims/a/otherpod.txt").write_text("otherpod\n")
+        try:
+            out = Path(tmp) / "out"
+            assert ea.main(["--recipes", "a,b", "--workers", "3", "--task-mtokens", "0",
+                            "--work-dir", str(Path(tmp) / "work"), "--out-dir", str(out),
+                            "--upload-hf", "results", "--delete-pod-when-done"]) == 0
+            assert not (out / "exact_100b_a").exists()                       # left to the other pod
+            assert (hub / "me/results/exact_100b_b/summary.json").exists()   # done and uploaded here
+            assert len(deleted) == 1
+        finally:
+            huggingface_hub.HfApi, huggingface_hub.hf_hub_download, ea.terminate_this_pod = orig
+
+
 if __name__ == "__main__":
+    test_pods_share_work_through_claims()
     test_retry_upload_verify_then_delete_pod()
     test_crash_then_resume_redoes_only_missing_slices()
     test_usable_vcpus_and_range_reader()

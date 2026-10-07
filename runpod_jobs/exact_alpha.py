@@ -263,6 +263,47 @@ def hf_verify(repo: str, recipes: list[str], seed: int) -> list[str]:
     return missing
 
 
+POD_ID = os.environ.get("RUNPOD_POD_ID") or f"local-{os.getpid()}"
+CLAIM_SETTLE_S = 20
+
+
+def hf_take(repo: str, recipe: str, seed: int) -> bool:
+    """Work sharing between pods that run the same command: True if this pod should
+    count `recipe` now. False if it is already uploaded, or another pod claimed it.
+    A claim is the file _claims/<recipe>/<pod>.txt; if two pods claim at the same
+    moment, the smaller pod id keeps it (both see the same files after a pause)."""
+    from huggingface_hub import HfApi
+
+    api = HfApi(token=os.environ.get("HF_TOKEN"))
+
+    def files() -> set[str]:
+        return set(api.list_repo_files(repo, repo_type="dataset"))
+
+    try:
+        have = files()
+        if f"exact_100b_{recipe}/summary.json" in have and f"exact_100b_{recipe}/counts_seed_{seed}.csv" in have:
+            print(f"[{recipe}] already uploaded by another pod: skipping", flush=True)
+            return False
+        prefix = f"_claims/{recipe}/"
+        others = sorted(f[len(prefix):-4] for f in have if f.startswith(prefix) and f.endswith(".txt"))
+        if any(o != POD_ID for o in others):
+            print(f"[{recipe}] being counted by pod {others[0]}: skipping", flush=True)
+            return False
+        api.upload_file(path_or_fileobj=f"{POD_ID} {time.ctime()}\n".encode(),
+                        path_in_repo=f"{prefix}{POD_ID}.txt", repo_id=repo, repo_type="dataset",
+                        commit_message=f"{POD_ID} claims {recipe}")
+        time.sleep(CLAIM_SETTLE_S)
+        claimants = sorted(f[len(prefix):-4] for f in files() if f.startswith(prefix) and f.endswith(".txt"))
+        if claimants and claimants[0] != POD_ID:
+            print(f"[{recipe}] pod {claimants[0]} claimed it at the same time: leaving it to them", flush=True)
+            return False
+        print(f"[{recipe}] claimed by this pod ({POD_ID})", flush=True)
+        return True
+    except Exception as exc:  # noqa: BLE001 -- Hub unreachable: count it anyway (worst case: twice)
+        print(f"[{recipe}] could not check claims ({exc}); counting it here", flush=True)
+        return True
+
+
 # --------------------------------------------------------------------------- #
 # per-recipe preparation (main process)
 # --------------------------------------------------------------------------- #
@@ -461,9 +502,21 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"unknown recipes: {unknown}")
 
     sizes = {r: file_sizes(data_map["recipes"][r]["paths"], work) for r in names}
-    max_chunks = max((int(chunk_offsets(sizes[r])[-1]) for r in names), default=0)
+    chunks = {r: int(chunk_offsets(sizes[r])[-1]) for r in names}
+    if args.upload_hf and not args.workers:
+        # shared work: this pod only takes recipes it can build with its full worker count
+        # (3 x vCPU); bigger ones are left to pods with more RAM running the same command
+        room = usable_ram_gb() - BASE_GB - 3 * vcpus * WORKER_GB
+        too_big = [r for r in names if membership_gb(chunks[r]) > room]
+        if too_big and len(too_big) < len(names):
+            print(f"[plan] leaving {too_big} to pods with more RAM (this one has {usable_ram_gb():.0f} GB)")
+            names = [r for r in names if r not in too_big]
+    max_chunks = max((chunks[r] for r in names), default=0)
     workers = args.workers or default_workers(vcpus, max_chunks)
-    names.sort(key=lambda r: sum(sizes[r]))  # smallest first: most recipes done early
+    if args.upload_hf:  # several pods share the list: biggest first balances their finish times
+        names.sort(key=lambda r: -sum(sizes[r]))
+    else:               # one pod: smallest first, so most recipes are done early
+        names.sort(key=lambda r: sum(sizes[r]))
     tot_h = 0.0
     print(f"[plan] {vcpus} vCPUs, {usable_ram_gb():.0f} GB RAM, {workers} workers, seed {args.seed}, "
           f"{len(names)} recipes")
@@ -528,6 +581,7 @@ def _end_of_run(args, names: list[str], status: str) -> None:
     recipe is verified on Hugging Face; otherwise stop it if that is safe (a
     persistent volume), else leave it running and say why."""
     if args.upload_hf:
+        names = getattr(args, "mine", names)  # what THIS pod counted (others verify their own)
         try:
             missing = hf_verify(args.upload_hf, names, args.seed)
         except Exception as exc:  # noqa: BLE001
@@ -586,24 +640,36 @@ def _prepare(recipe: str, file_tokens: list[int], seed: int, work: str) -> tuple
 
 def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> int:
     start = time.time()
-    stats = {"bytes": 0, "done_bytes": 0, "decoded": 0, "slices": 0, "last": time.time()}
+    stats = {"bytes": 0, "done_bytes": 0, "skipped_bytes": 0, "decoded": 0, "slices": 0,
+             "last": time.time()}
 
     def log(remaining: int):
         el = time.time() - start
         gbps = stats["bytes"] / max(el, 1e-9) / 1e9
-        left = max(0, total_bytes - stats["done_bytes"])
+        left = max(0, total_bytes - stats["skipped_bytes"] - stats["done_bytes"])
         eta = left / (gbps * 1e9) / 3600 if gbps > 0 else float("nan")
         cost = (f"  ${el / 3600 * args.usd_per_hour:.2f} so far, ~${eta * args.usd_per_hour:.2f} to go"
                 if args.usd_per_hour else "")
         print(f"[run] {el / 60:6.1f} min  {stats['slices']} slices done  {gbps:.2f} GB/s  "
               f"{stats['decoded'] / max(el, 1e-9) / 1e6:.1f}M tok/s  "
-              f"{stats['done_bytes'] / total_bytes:.1%} of the data  ETA {eta:.1f} h{cost}", flush=True)
+              f"{stats['done_bytes'] / max(1, total_bytes - stats['skipped_bytes']):.1%} of this pod's data  "
+              f"ETA {eta:.1f} h{cost}", flush=True)
 
     total_bytes = sum(sum(sizes[r]) * 2 for r in names)
     # the training order of every recipe is built ahead, one at a time, in a
     # separate process, so the counting workers never wait for it
     prep_pool = ProcessPoolExecutor(max_workers=1)
-    prep = {r: prep_pool.submit(_prepare, r, sizes[r], args.seed, str(work)) for r in names}
+    prep: dict = {}
+
+    def ensure_prep(r: str):
+        if r not in prep:
+            prep[r] = prep_pool.submit(_prepare, r, sizes[r], args.seed, str(work))
+        return prep[r]
+
+    if not args.upload_hf:  # alone: build every training order ahead, in order
+        for r in names:
+            ensure_prep(r)
+    mine: list[str] = args.__dict__.setdefault("mine", [])
     with ProcessPoolExecutor(max_workers=workers) as pool:
         pending: dict = {}
         recipe_left: dict[str, int] = {}
@@ -646,7 +712,15 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
                 if stats["slices"] % 100 == 0:
                     log(len(pending))
 
-        for r in names:
+        for i, r in enumerate(names):
+            if args.upload_hf and not hf_take(args.upload_hf, r, args.seed):
+                stats["skipped_bytes"] += sum(sizes[r]) * 2
+                continue
+            if r not in mine:
+                mine.append(r)
+            ensure_prep(r)
+            if i + 1 < len(names):  # build the next candidate's order while this one counts
+                ensure_prep(names[i + 1])
             rec = data_map["recipes"][r]
             while not prep[r].done():  # keep finishing slices while this recipe's order is built
                 drain(block=True) if pending else prep[r].result()
@@ -667,7 +741,7 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
         while pending:
             drain(block=True)
         log(0)
-    prep_pool.shutdown()
+    prep_pool.shutdown(cancel_futures=True)
     n = write_alpha_csv(out_root, args.seed, data_map)
     print(f"[done] {out_root / f'alpha_seed{args.seed}.csv'} has {n} recipes")
     if failed:
