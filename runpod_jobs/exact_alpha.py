@@ -109,15 +109,25 @@ def usable_ram_gb() -> float:
 
 
 WORKER_GB = 0.4        # measured peak of one worker with a 64 MB slice (~0.3 GB) + margin
-MEMBERSHIP_GB = 12.0   # building the training order of the largest recipe
+BASE_GB = 1.5          # main process, page cache headroom
 
 
-def default_workers(vcpus: int) -> int:
+def membership_gb(n_chunks: int) -> float:
+    """Peak RAM of building one recipe's training order: a uint32 index per chunk
+    (shuffled in place) + a uint8 multiplicity per chunk, + 20 % margin."""
+    return n_chunks * 5 * 1.2 / 1e9
+
+
+def default_workers(vcpus: int, max_chunks: int) -> int:
     """3 workers per vCPU: a worker waiting on its download uses no CPU, so
     oversubscribing keeps every vCPU decoding while many downloads run; capped
-    so workers + one membership build fit in RAM."""
-    by_ram = int((usable_ram_gb() - MEMBERSHIP_GB) / WORKER_GB)
-    return max(2, min(3 * vcpus, by_ram))
+    so the workers + one membership build (the largest recipe's) fit in RAM."""
+    free = usable_ram_gb() - BASE_GB - membership_gb(max_chunks)
+    if free < 2 * WORKER_GB:
+        raise SystemExit(f"[plan] {usable_ram_gb():.0f} GB RAM is too little for the largest recipe "
+                         f"(its training order alone needs {membership_gb(max_chunks):.1f} GB): "
+                         "use a pod with more RAM for it, or leave it out of --recipes on this pod")
+    return max(2, min(3 * vcpus, int(free / WORKER_GB)))
 
 
 _RESOLVED: dict[str, tuple[str, float]] = {}
@@ -361,7 +371,6 @@ def main(argv: list[str] | None = None) -> int:
     data_map = load_data_map()
     out_root, work = Path(args.out_dir), Path(args.work_dir)
     vcpus = usable_vcpus()
-    workers = args.workers or default_workers(vcpus)
     if args.recipes:
         names = [r.strip() for r in args.recipes.split(",") if r.strip()]
     else:
@@ -374,6 +383,8 @@ def main(argv: list[str] | None = None) -> int:
         raise SystemExit(f"unknown recipes: {unknown}")
 
     sizes = {r: file_sizes(data_map["recipes"][r]["paths"], work) for r in names}
+    max_chunks = max((int(chunk_offsets(sizes[r])[-1]) for r in names), default=0)
+    workers = args.workers or default_workers(vcpus, max_chunks)
     names.sort(key=lambda r: sum(sizes[r]))  # smallest first: most recipes done early
     tot_h = 0.0
     print(f"[plan] {vcpus} vCPUs, {usable_ram_gb():.0f} GB RAM, {workers} workers, seed {args.seed}, "
