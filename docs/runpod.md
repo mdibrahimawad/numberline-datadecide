@@ -63,14 +63,16 @@ the docs; **the deploy page shows the real price before you click Deploy, always
    ls ~/.ssh/id_ed25519.pub || ssh-keygen -t ed25519 -C "runpod"   # press Enter 3x
    cat ~/.ssh/id_ed25519.pub                                        # copy this line
    ```
-   RunPod console → **Settings → SSH Public Keys** → paste → Save. Every pod you create gets it.
-3. **Hugging Face token** (raises download rate limits): RunPod console → **Secrets** →
+   RunPod console → **Credentials** page (console.runpod.io/user/credentials) → **SSH public keys**
+   tab → paste → Save. Every pod you create gets it. *(Optional: the pod's **Web Terminal** in the
+   browser works without any SSH key.)*
+3. **Hugging Face token** (raises download rate limits): RunPod console → **Credentials → Secrets** →
    create secret `hf_token` with your `hf_...` token. When deploying a pod, open
    **Edit template → Environment variables** and add `HF_TOKEN` = `{{ RUNPOD_SECRET_hf_token }}`.
    (Or just `export HF_TOKEN=hf_...` inside the pod each time.)
 4. **Low balance alert**: Billing → Notifications → enable, threshold e.g. $10.
 5. **runpodctl on your Mac** (for copying results back; it is preinstalled on every pod):
-   `brew install runpod/runpodctl/runpodctl` (or see the runpodctl install page). Optional:
+   `bash <(curl -sL cli.runpod.io)` (or `brew install runpod/runpodctl/runpodctl`). Optional:
    `runpodctl config --apiKey <key from Settings → API Keys>` to create/stop pods from the terminal.
 
 ---
