@@ -23,6 +23,7 @@ import sys
 import time
 from pathlib import Path
 
+from runpod_jobs.pod import stop_this_pod
 from src.datadecide_sweep import load_model_config, write_summary_csv
 
 
@@ -34,6 +35,8 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--parallel", type=int, default=4, help="models at once on the GPU")
     p.add_argument("--out-root", default="results/datadecide_runpod")
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--no-stop-pod", action="store_true",
+                   help="do NOT stop the RunPod pod when all runs end (default: stop it)")
     args = p.parse_args(argv)
 
     models = [m.strip() for m in args.models.split(",") if m.strip()] or list(config["recipes"])
@@ -52,6 +55,14 @@ def main(argv: list[str] | None = None) -> int:
             print(f"  {m} @ {rev}")
         return 0
 
+    try:
+        return _run_all(args, jobs, revisions, config)
+    finally:
+        if not args.no_stop_pod:
+            stop_this_pod("beta runs ended")
+
+
+def _run_all(args, jobs, revisions, config) -> int:
     running: list[tuple] = []
     failed = []
     start = time.time()

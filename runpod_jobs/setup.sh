@@ -10,9 +10,16 @@ MODE="${1:?usage: setup.sh cpu|gpu}"
 VENV="/workspace/venv-$MODE"
 export HF_HOME=/workspace/hf_cache
 
-if ! command -v tmux >/dev/null; then
-  (apt-get update -qq && apt-get install -y -qq tmux htop) >/dev/null 2>&1 || echo "[setup] could not install tmux/htop (not needed)"
+# bare Ubuntu images lack some of these; RunPod's official images have most of them
+need=""
+for pkg in tmux htop git; do command -v "$pkg" >/dev/null || need="$need $pkg"; done
+python3 -c "import ensurepip" 2>/dev/null || need="$need python3-venv python3-pip"
+if [ -n "$need" ]; then
+  echo "[setup] apt-get install$need"
+  (apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $need) >/dev/null \
+    || echo "[setup] apt-get failed for:$need (tmux/htop are optional)"
 fi
+python3 -c 'import sys; assert sys.version_info >= (3, 10), "need Python >= 3.10"'
 python3 -m venv --system-site-packages "$VENV"
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"

@@ -103,11 +103,12 @@ is CPU- or download-bound so you can size it right.
 3. **Install** (inside the pod, ~2 min):
    ```bash
    cd /workspace
+   command -v git || (apt-get update && apt-get install -y git)    # bare images lack git
    git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
-   #   private repo? use https://<github-username>:<personal-access-token>@github.com/...
    cd numberline-datadecide && bash runpod_jobs/setup.sh cpu
    source /workspace/venv-cpu/bin/activate
-   export HF_TOKEN=hf_...            # or: export HF_TOKEN=$RUNPOD_SECRET_hf_token
+   echo ${HF_TOKEN:+HF_TOKEN is set}  # set via the pod's env var {{ RUNPOD_SECRET_hf_token }};
+   export HF_TOKEN=hf_...             #   if nothing printed, export it by hand
    tmux new -s alpha                 # keeps the job alive if your laptop disconnects
    ```
    (tmux: detach `Ctrl-b d`, re-attach `tmux attach -t alpha`.)
@@ -121,19 +122,29 @@ is CPU- or download-bound so you can size it right.
    ```
    **Always pass `--recipes $R`**: the pod only has the c4/dolma1_7 results from git, so without
    it the script would redo the 12 recipes already finished on your laptop.
-   Read the projection:
-   * **download-bound** (GB/s is the limit) → a pod with fewer vCPUs costs less for the same
-     hours; and split the list over 2-4 pods to finish sooner.
-   * **CPU-bound** → keep 32 vCPU, split over pods to finish sooner.
-   Pilot slices are cached and reused by the full run.
+   The pilot prints download GB/s, decode speed and **how busy the vCPUs were**, then a dry-run
+   command with the measured numbers — run it to get hours and dollars for this pod.
+   * vCPUs busy **≥ 70 %** → CPU-bound: the pod is sized right; add pods to finish sooner.
+   * vCPUs busy **< 70 %** → download-bound: you pay for idle CPUs. Deploy smaller pods
+     (e.g. 16 vCPU) and more of them — each pod brings its own network connection.
+   Pilot slices are cached and reused by the full run. **Paste the pilot output to Claude
+   before starting the full run.**
 5. **Run**:
    ```bash
    python -m runpod_jobs.exact_alpha --recipes $R --usd-per-hour <pod price> 2>&1 | tee alpha.log
    ```
    Smallest recipes run first; each finished recipe writes
    `results/corpus_alpha_datadecide/exact_100b_<recipe>/` immediately. A progress line
-   every 100 slices shows GB/s, tokens/s and dollars so far. Interrupted? Run the same
-   command again — it resumes from the cache in `/workspace/dd_work`.
+   every 100 slices shows GB/s, tokens/s, % of the data done, ETA and dollars so far/to go.
+   * **The pod stops itself when the run ends** — finished, crashed, or stuck (no progress for
+     30 min) — so it never bills compute overnight for nothing. Stopping keeps `/workspace`
+     (results + cache); only the disk keeps billing (~$0.01/h for 50 GB). Start the pod again
+     to copy results, then terminate. (`--no-stop-pod` turns this off; Ctrl-C never stops it.)
+   * **Interrupted, crashed or stopped?** Start the pod, run the same command again: finished
+     slices are cached in `/workspace/dd_work` and are never downloaded or counted twice.
+   * **Sanity check on the first finished recipe**: its `alpha_mle` should be within ~0.001 of the
+     cheap window estimate in your laptop's `results/corpus_alpha_datadecide/alpha_summary.csv`
+     (that held for dolma1_7: 0.0003). If not, stop and tell Claude.
    **Several pods**: give each pod a part of the list, e.g. pod 1
    `--recipes dolma1_6plus,dolma1_7-no-flan,falcon`, pod 2 the dolma/DCLM mixes, and so on
    (balance by size — the dry run prints each recipe's TB).
@@ -165,6 +176,7 @@ experiment (beta vs numbers seen during training) and the extra seeds.
 
 1. **Deploy**: Pods → Deploy → **GPU** → Community Cloud, **spot** if offered →
    RTX A5000 (~$0.27/h), L4 (~$0.39/h) or RTX 3090/4090; template **RunPod PyTorch**;
+   set the **CUDA version filter to ≥ 12.4** (setup installs torch 2.6, built for CUDA 12.4);
    container disk 20 GB, **volume disk 100 GB** (each model checkpoint is a few GB in the HF
    cache).
 2. Connect as above, then:

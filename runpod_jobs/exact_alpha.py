@@ -38,18 +38,18 @@ from pathlib import Path
 
 import numpy as np
 
-from modal_app.corpus_alpha_app import MAX_N
+from modal_app.corpus_alpha_app import MAX_N, _hf_headers, _hf_url
 from modal_app.corpus_alpha_full_app import _decode_and_count_native
 from modal_app.datadecide_alpha_app import (
     ALPHA_COLUMNS_EXACT,
     DECODE_TOKENS_PER_S,
-    _read_tokens,
     _tokenizer,
     _write_counts_csv,
 )
 from src.datadecide_sampling import (
     HF_DATA_REPO,
     SEQUENCE_LENGTH,
+    TOKEN_DTYPE,
     TRAIN_INSTANCES_1B,
     chunk_offsets,
     combine_codes,
@@ -58,9 +58,132 @@ from src.datadecide_sampling import (
     membership_codes,
     pairwise_overlap,
 )
+from runpod_jobs.pod import stop_this_pod
 from src.sampling_validation import describe
 
 OUT = Path("results/corpus_alpha_datadecide")
+
+
+# --------------------------------------------------------------------------- #
+# machine + download helpers
+# --------------------------------------------------------------------------- #
+
+def usable_vcpus() -> int:
+    """vCPUs this container may use. Pods are containers with a CPU quota: the
+    affinity mask / os.cpu_count() can report the whole host (e.g. 128) while
+    the pod only gets its 32, so read the cgroup quota first."""
+    if os.environ.get("RUNPOD_CPU_COUNT", "").isdigit():  # set by RunPod on every pod
+        return max(1, int(os.environ["RUNPOD_CPU_COUNT"]))
+    n = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else (os.cpu_count() or 1)
+    try:  # cgroup v2: "max 100000" or "3200000 100000"
+        quota, period = Path("/sys/fs/cgroup/cpu.max").read_text().split()[:2]
+        if quota != "max":
+            n = min(n, max(1, int(int(quota) / int(period))))
+    except (OSError, ValueError):
+        try:  # cgroup v1
+            quota = int(Path("/sys/fs/cgroup/cpu/cpu.cfs_quota_us").read_text())
+            period = int(Path("/sys/fs/cgroup/cpu/cpu.cfs_period_us").read_text())
+            if quota > 0:
+                n = min(n, max(1, quota // period))
+        except (OSError, ValueError):
+            pass
+    return n
+
+
+def usable_ram_gb() -> float:
+    """Memory limit of this container (cgroup), else the machine's RAM."""
+    for path in ("/sys/fs/cgroup/memory.max", "/sys/fs/cgroup/memory/memory.limit_in_bytes"):
+        try:
+            v = Path(path).read_text().strip()
+            if v != "max" and int(v) < 1 << 50:
+                return int(v) / 1e9
+        except (OSError, ValueError):
+            pass
+    try:
+        for line in Path("/proc/meminfo").read_text().splitlines():
+            if line.startswith("MemTotal:"):
+                return int(line.split()[1]) / 1e6
+    except OSError:
+        pass
+    return 16.0
+
+
+WORKER_GB = 0.4        # measured peak of one worker with a 64 MB slice (~0.3 GB) + margin
+MEMBERSHIP_GB = 12.0   # building the training order of the largest recipe
+
+
+def default_workers(vcpus: int) -> int:
+    """3 workers per vCPU: a worker waiting on its download uses no CPU, so
+    oversubscribing keeps every vCPU decoding while many downloads run; capped
+    so workers + one membership build fit in RAM."""
+    by_ram = int((usable_ram_gb() - MEMBERSHIP_GB) / WORKER_GB)
+    return max(2, min(3 * vcpus, by_ram))
+
+
+_RESOLVED: dict[str, tuple[str, float]] = {}
+RESOLVE_TTL_S = 15 * 60
+
+
+def resolve_url(path: str) -> str:
+    """The CDN URL behind huggingface.co/.../resolve/main/<path>, cached for 15
+    minutes. Range requests then go straight to the CDN, so Hugging Face's API
+    rate limit (resolver calls per 5 minutes) is hit once per file, not once
+    per slice."""
+    import requests
+
+    hit = _RESOLVED.get(path)
+    if hit and time.time() - hit[1] < RESOLVE_TTL_S:
+        return hit[0]
+    url = _hf_url(HF_DATA_REPO, path)
+    for attempt in range(10):
+        try:
+            r = requests.head(url, headers=_hf_headers(), allow_redirects=True, timeout=60)
+            if r.status_code == 200:
+                _RESOLVED[path] = (r.url, time.time())
+                return r.url
+            if r.status_code not in (429, 500, 502, 503, 504):
+                break
+            wait_s = float(r.headers.get("Retry-After", 0) or 0)
+        except requests.RequestException:
+            wait_s = 0
+        time.sleep(max(wait_s, min(60, 2 ** attempt)) + random.random())
+    return url  # fall back to the resolver URL; read_range follows its redirect
+
+
+def read_range(task: dict, start: int, length: int) -> np.ndarray:
+    """`length` tokens from `start` of one .npy file. Retries with backoff (honours
+    Retry-After), re-resolves an expired CDN URL, and refuses a server that
+    ignores the Range header instead of downloading a whole multi-GB file."""
+    import requests
+
+    item = np.dtype(TOKEN_DTYPE).itemsize
+    rng = {"Range": f"bytes={start * item}-{(start + length) * item - 1}"}
+    url = task.get("url") or _hf_url(HF_DATA_REPO, task["path"])
+    last = None
+    for attempt in range(12):
+        headers = {**rng, **(_hf_headers() if "huggingface.co" in url else {})}
+        try:
+            with requests.get(url, headers=headers, stream=True, timeout=300) as r:
+                if r.status_code == 206:
+                    data = r.content
+                    if len(data) == length * item:
+                        return np.frombuffer(data, dtype=TOKEN_DTYPE)
+                    last = f"short read {len(data)} of {length * item} bytes"
+                elif r.status_code == 200:
+                    raise RuntimeError(f"server ignored the Range header for {task['path']}")
+                elif r.status_code in (401, 403, 404, 410) and "huggingface.co" not in url:
+                    last = f"HTTP {r.status_code} (expired CDN link)"
+                    url = _hf_url(HF_DATA_REPO, task["path"])  # back through the resolver
+                    continue
+                else:
+                    last = f"HTTP {r.status_code}"
+                    wait_s = float(r.headers.get("Retry-After", 0) or 0)
+                    time.sleep(max(wait_s, min(60, 2 ** attempt)) + random.random())
+                    continue
+        except requests.RequestException as exc:
+            last = f"{type(exc).__name__}: {exc}"
+        time.sleep(min(60, 2 ** attempt) + random.random())
+    raise RuntimeError(f"giving up on {task['path']} [{start}, +{length}): {last}")
 
 
 # --------------------------------------------------------------------------- #
@@ -133,7 +256,7 @@ def count_slice(task: dict) -> dict:
         return out
     t0 = time.time()
     n = task["chunk_hi"] - task["chunk_lo"]
-    tokens = _read_tokens(task["path"], task["chunk_lo"] * SEQUENCE_LENGTH, n * SEQUENCE_LENGTH)
+    tokens = read_range(task, task["chunk_lo"] * SEQUENCE_LENGTH, n * SEQUENCE_LENGTH)
     t1 = time.time()
     codes = np.asarray(np.load(task["codes_path"], mmap_mode="r")[task["global_lo"]: task["global_lo"] + n])
     tok = _tokenizer(task["model_repo"])
@@ -202,6 +325,7 @@ def write_alpha_csv(out_root: Path, seed: int, data_map: dict) -> int:
                      "recipe_tokens": int(summary["membership"]["n_chunks"]) * SEQUENCE_LENGTH,
                      "source": source})
     path = out_root / f"alpha_seed{seed}.csv"
+    out_root.mkdir(parents=True, exist_ok=True)
     with open(path, "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=ALPHA_COLUMNS_EXACT)
         w.writeheader()
@@ -218,7 +342,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--recipes", default="", help="comma list; default: every recipe without a result")
     p.add_argument("--seed", type=int, default=2)
     p.add_argument("--workers", type=int, default=0,
-                   help="parallel slices; default 1.5 x vCPUs so downloads overlap decoding")
+                   help="parallel slices; default 3 x vCPUs (capped by RAM) so downloads overlap decoding")
     p.add_argument("--task-mtokens", type=int, default=32, help="tokens per slice, millions (64 MB each)")
     p.add_argument("--work-dir", default="/workspace/dd_work")
     p.add_argument("--out-dir", default=str(OUT))
@@ -228,12 +352,16 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--download-gb-per-s", type=float, default=0.5, help="assumed by --dry-run")
     p.add_argument("--pilot", type=int, default=0, help="count N random slices, measure, project, stop")
     p.add_argument("--dry-run", action="store_true")
+    p.add_argument("--no-stop-pod", action="store_true",
+                   help="do NOT stop the RunPod pod when the full run ends (default: stop it)")
+    p.add_argument("--stall-minutes", type=float, default=30,
+                   help="abort (and stop the pod) if no slice finishes for this long")
     args = p.parse_args(argv)
 
     data_map = load_data_map()
     out_root, work = Path(args.out_dir), Path(args.work_dir)
-    vcpus = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count()
-    workers = args.workers or int(vcpus * 1.5)
+    vcpus = usable_vcpus()
+    workers = args.workers or default_workers(vcpus)
     if args.recipes:
         names = [r.strip() for r in args.recipes.split(",") if r.strip()]
     else:
@@ -248,7 +376,8 @@ def main(argv: list[str] | None = None) -> int:
     sizes = {r: file_sizes(data_map["recipes"][r]["paths"], work) for r in names}
     names.sort(key=lambda r: sum(sizes[r]))  # smallest first: most recipes done early
     tot_h = 0.0
-    print(f"[plan] {vcpus} vCPUs, {workers} workers, seed {args.seed}, {len(names)} recipes")
+    print(f"[plan] {vcpus} vCPUs, {usable_ram_gb():.0f} GB RAM, {workers} workers, seed {args.seed}, "
+          f"{len(names)} recipes")
     for r in names:
         tok = sum(sizes[r])
         decode_tok = min(tok, TRAIN_INSTANCES_1B * SEQUENCE_LENGTH)
@@ -267,41 +396,81 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
     task_chunks = max(1, args.task_mtokens * 1_000_000 // SEQUENCE_LENGTH)
+    if args.pilot:
+        return _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks)
+    status = "crashed"
+    try:
+        status = "finished" if _run(args, names, sizes, data_map, work, out_root, workers,
+                                    task_chunks) == 0 else "finished with failed slices"
+    except KeyboardInterrupt:
+        status = "interrupted by you (Ctrl-C)"
+        raise
+    finally:
+        if not args.no_stop_pod and status != "interrupted by you (Ctrl-C)":
+            stop_this_pod(f"run {status}")
+    return 0 if status == "finished" else 1
+
+
+def _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks) -> int:
+    with ProcessPoolExecutor(max_workers=workers) as pool:
+        r = names[-1]  # the largest recipe: the one that matters for the projection
+        rec = data_map["recipes"][r]
+        codes_path, _ = membership(r, sizes[r], args.seed, work)
+        tasks = make_tasks(r, rec, sizes[r], codes_path, task_chunks, work)
+        sample = random.Random(0).sample(tasks, min(args.pilot, len(tasks)))
+        for t in sample:
+            t["url"] = resolve_url(t["path"])
+        t0 = time.time()
+        res = [x for x in pool.map(count_slice, sample) if not x.get("cached")]
+        wall = time.time() - t0
+    if not res:
+        raise SystemExit("[pilot] every sampled slice was already cached; pass a larger --pilot")
+    byts = sum(x["bytes"] for x in res)
+    dec = sum(g["decoded_tokens"] for x in res for g in x["groups"].values())
+    count_s = sum(x["count_s"] for x in res)
+    per_vcpu = dec / count_s
+    gbps = byts / wall / 1e9
+    cpu_busy = count_s / (wall * vcpus)
+    print(f"[pilot] {len(res)} slices of {r} in {wall:.0f}s with {workers} workers: "
+          f"download {gbps:.2f} GB/s, decode {per_vcpu / 1e6:.2f}M tok/s per busy worker, "
+          f"vCPUs busy {min(cpu_busy, 1):.0%}")
+    if cpu_busy < 0.7:
+        print(f"[pilot] the CPUs were idle {1 - min(cpu_busy, 1):.0%} of the time -> this pod is "
+              "download-bound: more pods with fewer vCPUs each give the same speed for less money")
+    print("[pilot] projection with the measured numbers:\n"
+          f"  python -m runpod_jobs.exact_alpha --recipes {','.join(names)} --dry-run "
+          f"--download-gb-per-s {gbps:.2f} --tokens-per-s-per-vcpu {per_vcpu:.3g}"
+          + (f" --usd-per-hour {args.usd_per_hour}" if args.usd_per_hour else ""))
+    return 0
+
+
+def _prepare(recipe: str, file_tokens: list[int], seed: int, work: str) -> tuple[str, int]:
+    """Membership of one recipe, in a helper process (see _run)."""
+    path, base = membership(recipe, file_tokens, seed, Path(work))
+    return str(path), base
+
+
+def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> int:
     start = time.time()
-    stats = {"bytes": 0, "download_s": 0.0, "count_s": 0.0, "decoded": 0, "slices": 0}
+    stats = {"bytes": 0, "done_bytes": 0, "decoded": 0, "slices": 0, "last": time.time()}
 
     def log(remaining: int):
         el = time.time() - start
         gbps = stats["bytes"] / max(el, 1e-9) / 1e9
-        cost = f"  ${el / 3600 * args.usd_per_hour:.2f} so far" if args.usd_per_hour else ""
-        print(f"[run] {el / 60:6.1f} min  {stats['slices']} slices done, {remaining} left  "
-              f"{gbps:.2f} GB/s  {stats['decoded'] / max(el, 1e-9) / 1e6:.1f}M tok/s{cost}", flush=True)
+        left = max(0, total_bytes - stats["done_bytes"])
+        eta = left / (gbps * 1e9) / 3600 if gbps > 0 else float("nan")
+        cost = (f"  ${el / 3600 * args.usd_per_hour:.2f} so far, ~${eta * args.usd_per_hour:.2f} to go"
+                if args.usd_per_hour else "")
+        print(f"[run] {el / 60:6.1f} min  {stats['slices']} slices done  {gbps:.2f} GB/s  "
+              f"{stats['decoded'] / max(el, 1e-9) / 1e6:.1f}M tok/s  "
+              f"{stats['done_bytes'] / total_bytes:.1%} of the data  ETA {eta:.1f} h{cost}", flush=True)
 
+    total_bytes = sum(sum(sizes[r]) * 2 for r in names)
+    # the training order of every recipe is built ahead, one at a time, in a
+    # separate process, so the counting workers never wait for it
+    prep_pool = ProcessPoolExecutor(max_workers=1)
+    prep = {r: prep_pool.submit(_prepare, r, sizes[r], args.seed, str(work)) for r in names}
     with ProcessPoolExecutor(max_workers=workers) as pool:
-        if args.pilot:
-            r = names[-1]  # the largest recipe: the one that matters for the projection
-            rec = data_map["recipes"][r]
-            codes_path, _ = membership(r, sizes[r], args.seed, work)
-            tasks = make_tasks(r, rec, sizes[r], codes_path, task_chunks, work)
-            sample = random.Random(0).sample(tasks, min(args.pilot, len(tasks)))
-            t = time.time()
-            res = [x for x in pool.map(count_slice, sample) if not x.get("cached")]
-            wall = time.time() - t
-            if not res:
-                raise SystemExit("[pilot] every sampled slice was already cached; pass a larger --pilot")
-            byts = sum(x["bytes"] for x in res)
-            dec = sum(g["decoded_tokens"] for x in res for g in x["groups"].values())
-            per_vcpu = dec / sum(x["count_s"] for x in res)
-            gbps = byts / wall / 1e9
-            print(f"[pilot] {len(res)} slices of {r} in {wall:.0f}s: download {gbps:.2f} GB/s total, "
-                  f"decode {per_vcpu / 1e6:.2f}M tok/s per worker, "
-                  f"{dec / wall / 1e6:.1f}M tok/s total")
-            print("[pilot] rerun the dry run with these numbers:\n"
-                  f"  python -m runpod_jobs.exact_alpha --dry-run --download-gb-per-s {gbps:.2f} "
-                  f"--tokens-per-s-per-vcpu {per_vcpu:.3g}"
-                  + (f" --usd-per-hour {args.usd_per_hour}" if args.usd_per_hour else ""))
-            return 0
-
         pending: dict = {}
         recipe_left: dict[str, int] = {}
         recipe_meta: dict[str, tuple] = {}
@@ -310,9 +479,14 @@ def main(argv: list[str] | None = None) -> int:
         def drain(block: bool):
             if not pending:
                 return
-            done, _ = wait(list(pending), timeout=None if block else 0, return_when=FIRST_COMPLETED)
+            done, _ = wait(list(pending), timeout=60 if block else 0, return_when=FIRST_COMPLETED)
+            if not done and time.time() - stats["last"] > args.stall_minutes * 60:
+                raise RuntimeError(f"no slice finished for {args.stall_minutes:.0f} min (network down? "
+                                   "Hugging Face outage?) -- aborting so the pod does not bill for nothing")
             for fut in done:
-                r = pending.pop(fut)
+                stats["last"] = time.time()
+                r, nbytes = pending.pop(fut)
+                stats["done_bytes"] += nbytes
                 try:
                     x = fut.result()
                 except Exception as exc:  # retry once later by rerunning; keep going now
@@ -335,7 +509,10 @@ def main(argv: list[str] | None = None) -> int:
 
         for r in names:
             rec = data_map["recipes"][r]
-            codes_path, base = membership(r, sizes[r], args.seed, work)  # overlaps the previous recipe
+            while not prep[r].done():  # keep finishing slices while this recipe's order is built
+                drain(block=True) if pending else prep[r].result()
+            codes_path, base = prep[r].result()
+            codes_path = Path(codes_path)
             tasks = make_tasks(r, rec, sizes[r], codes_path, task_chunks, work)
             n_chunks = int(chunk_offsets(sizes[r])[-1])
             recipe_meta[r] = (tasks, base, n_chunks)
@@ -344,11 +521,14 @@ def main(argv: list[str] | None = None) -> int:
             for t in tasks:
                 while len(pending) >= workers * 4:  # bounded queue keeps memory flat
                     drain(block=True)
-                pending[pool.submit(count_slice, t)] = r
+                t["url"] = resolve_url(t["path"])  # fresh CDN link, resolved once per file
+                pending[pool.submit(count_slice, t)] = (
+                    r, (t["chunk_hi"] - t["chunk_lo"]) * SEQUENCE_LENGTH * 2)
             drain(block=False)
         while pending:
             drain(block=True)
         log(0)
+    prep_pool.shutdown()
     n = write_alpha_csv(out_root, args.seed, data_map)
     print(f"[done] {out_root / f'alpha_seed{args.seed}.csv'} has {n} recipes")
     if failed:
