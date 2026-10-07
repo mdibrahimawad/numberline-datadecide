@@ -7,8 +7,8 @@ Replaces Modal. Two jobs, two kinds of machine:
 | Exact 100B alpha of the 11 recipes still missing | `runpod_jobs/exact_alpha.py` | **CPU pod**, 32 vCPU | download + tokenizer decode; no GPU work |
 | Model beta (final models, training checkpoints) | `runpod_jobs/beta.py` | **GPU pod**, one 24 GB card (RTX A5000 / L4 / 3090 / 4090) | 1B models, several at once on one card |
 
-Prices below are RunPod's public list prices found in Oct 2026; **the deploy page shows the real
-price before you click Deploy, always check it there.**
+Checked against the official docs (github.com/runpod/docs, Oct 2026). Pod prices are not in
+the docs; **the deploy page shows the real price before you click Deploy, always check it there.**
 
 ---
 
@@ -17,17 +17,19 @@ price before you click Deploy, always check it there.**
 * **Pod** = a rented Linux machine (really a Docker container on a host) that you SSH into
   and run commands on, like your laptop's terminal. Billed **per second** while it runs.
   This is what we use for everything.
-* **GPU pod / CPU pod** = with or without a GPU. CPU pods are cheaper and come in "flavours":
-  `cpu3c`/`cpu5c` = compute-optimised (2 GB RAM per vCPU), `cpu3g`/`cpu5g` = general (4 GB/vCPU),
-  `cpu3m`/`cpu5m` = memory (8 GB/vCPU). 5 = newer, faster CPUs.
-* **Secure Cloud vs Community Cloud** = RunPod's own datacentres vs vetted third-party
-  hosts. Community is cheaper (e.g. H100 PCIe $1.99 vs $2.89/h); fine for us — our jobs
-  resume after any interruption.
-* **On-demand vs Spot (interruptible)** = spot is 50-70 % cheaper but can be taken away
-  with a **5-second** warning. Our scripts cache every finished piece on disk, so a spot
-  interruption costs only the minutes in flight. Use spot whenever it is offered.
-* **Template** = the starting software image. Use **RunPod PyTorch** for GPU pods and the
-  default Ubuntu/CPU template for CPU pods.
+* **GPU pod / CPU pod** = with or without a GPU. For a CPU pod you pick a *flavour* and a
+  vCPU count; RAM follows from the flavour: `cpu3c`/`cpu5c` = compute-optimised (2 GB RAM per
+  vCPU), `cpu3g`/`cpu5g` = general (4 GB/vCPU), `cpu5m` = memory (8 GB/vCPU). 5 = newer CPUs.
+* **Secure Cloud vs Community Cloud** = Tier-3/4 datacentres vs peer-to-peer hosts.
+  Community is cheaper, less reliable (RunPod no longer adds new community hosts, existing
+  ones remain). Fine for us — our jobs resume after any interruption.
+* **On-demand vs interruptible ("spot")** = on-demand cannot be displaced; interruptible is
+  cheaper but RunPod can *stop* it at any time to free the machine. A stopped pod keeps its
+  `/workspace` volume, so: restart it, rerun the same command, it resumes. Use it when the
+  deploy page offers it.
+* **Template** = the starting software image. Use **Runpod PyTorch** (official template:
+  SSH and file copy are pre-configured) for GPU pods; for CPU pods take the default CPU
+  template / an official Ubuntu image.
 * **Storage** (three kinds):
   * *Container disk*: wiped when the pod stops. Don't keep results there.
   * *Volume disk* (mounted at `/workspace`): survives stop/restart, deleted on terminate.
@@ -40,14 +42,22 @@ price before you click Deploy, always check it there.**
   laptop, then terminate.**
 * **Serverless** (auto-scaling API endpoints) and **Instant Clusters** (multi-node GPU
   training, 16-64 GPUs) are for other kinds of work. We don't need them.
-* No fees for downloading/uploading data (ingress/egress).
+* No fees for downloading/uploading data (ingress/egress). Billing is per second, charged
+  every 5 minutes from your credit balance.
+* **You need at least 1 hour of credit for a pod to deploy it**, and there is a default
+  spend limit of $80/hour across all pods (plenty for us).
+* **When the balance hits $0, every pod is stopped, and pods without a network volume are
+  terminated — their data is gone.** Turn on **Billing → Notifications → Low balance alert**
+  before your first run, and copy results off the pod as they finish.
 
 ---
 
 ## 2. One-time setup (on your Mac)
 
-1. **Account / team.** If your professor's funding is on a RunPod *team*, ask them to invite
-   your email, then switch to the team in the top-left account menu so pods bill to it.
+1. **Account / team.** If your professor's funding is on a RunPod **Team** (prepaid credit),
+   ask them to invite your email and switch to the team in the account menu so pods bill to it.
+   If it is an **Organization** (post-paid invoice, enterprise), note that joining one is
+   *permanent*: it removes you from any Team and your personal resources move into it.
 2. **SSH key** (lets you log in to pods):
    ```bash
    ls ~/.ssh/id_ed25519.pub || ssh-keygen -t ed25519 -C "runpod"   # press Enter 3x
@@ -55,11 +65,13 @@ price before you click Deploy, always check it there.**
    ```
    RunPod console → **Settings → SSH Public Keys** → paste → Save. Every pod you create gets it.
 3. **Hugging Face token** (raises download rate limits): RunPod console → **Secrets** →
-   create secret `hf_token` with your `hf_...` token. (Or just `export HF_TOKEN=...` inside
-   the pod each time.)
-4. *(optional)* **CLI** for scripting pods: `brew install runpod/runpodctl/runpodctl`, then
-   `runpodctl config --apiKey <key from Settings → API Keys>`. Not required — the web
-   console does everything below.
+   create secret `hf_token` with your `hf_...` token. When deploying a pod, open
+   **Edit template → Environment variables** and add `HF_TOKEN` = `{{ RUNPOD_SECRET_hf_token }}`.
+   (Or just `export HF_TOKEN=hf_...` inside the pod each time.)
+4. **Low balance alert**: Billing → Notifications → enable, threshold e.g. $10.
+5. **runpodctl on your Mac** (for copying results back; it is preinstalled on every pod):
+   `brew install runpod/runpodctl/runpodctl` (or see the runpodctl install page). Optional:
+   `runpodctl config --apiKey <key from Settings → API Keys>` to create/stop pods from the terminal.
 
 ---
 
@@ -77,12 +89,17 @@ extra cost, as long as each pod is fully busy.** The pilot (step 4) tells you wh
 is CPU- or download-bound so you can size it right.
 
 ### Steps
-1. **Deploy**: console → **Pods → Deploy** → **CPU** tab → `cpu5c` (or `cpu3c`) with
-   **32 vCPU** (64 GB RAM — the membership step for the biggest recipe needs ~10 GB) →
-   container disk 20 GB, **volume disk 50 GB** → pick a **US** region (Hugging Face's
-   CDN is fastest there) → Deploy. Note the price per hour shown.
-2. **Connect**: pod → **Connect** → copy the **"SSH over exposed TCP"** command, e.g.
-   `ssh root@203.0.113.7 -p 22114 -i ~/.ssh/id_ed25519`, and run it on your Mac.
+1. **Deploy**: console → **Pods → Deploy** → **CPU** → compute-optimised flavour (`cpu5c`, else
+   `cpu3c`) with the **largest vCPU count offered, ideally ~32** (needs ≥ 16 GB RAM: the
+   membership step for the biggest recipe uses ~10 GB) → container disk 20 GB, **volume disk
+   50 GB** → a **US** datacentre if you can choose (Hugging Face's CDN is fastest there) →
+   Deploy. Note the price per hour shown. If only small sizes exist (e.g. 8-16 vCPU), use
+   several pods instead of one big one — same cost, see "Several pods" below.
+2. **Connect**: pod → **Connect** tab. Two SSH commands are shown:
+   * **SSH** (`ssh <id>@ssh.runpod.io -i ~/.ssh/id_ed25519`) — always works, but **cannot copy
+     files** (no scp).
+   * **SSH over exposed TCP** (`ssh root@<ip> -p <port> -i ~/.ssh/id_ed25519`) — needs a public
+     IP; supports scp. Use this one when it is shown.
 3. **Install** (inside the pod, ~2 min):
    ```bash
    cd /workspace
@@ -120,13 +137,22 @@ is CPU- or download-bound so you can size it right.
    **Several pods**: give each pod a part of the list, e.g. pod 1
    `--recipes dolma1_6plus,dolma1_7-no-flan,falcon`, pod 2 the dolma/DCLM mixes, and so on
    (balance by size — the dry run prints each recipe's TB).
-6. **Copy results to your Mac** (run on the Mac, in the repo):
-   ```bash
-   scp -P <port> -i ~/.ssh/id_ed25519 -r \
-     "root@<ip>:/workspace/numberline-datadecide/results/corpus_alpha_datadecide/exact_100b_*" \
-     results/corpus_alpha_datadecide/
-   python -m runpod_jobs.exact_alpha --recipes "" --dry-run   # rebuilds alpha_seed2.csv from all summaries
-   ```
+6. **Copy results to your Mac** (do it after each few recipes too — results are small):
+   * with **runpodctl** (works with either SSH method). On the pod:
+     ```bash
+     cd /workspace/numberline-datadecide/results/corpus_alpha_datadecide
+     tar czf alpha_runpod.tgz exact_100b_* && runpodctl send alpha_runpod.tgz
+     ```
+     It prints a code; on your Mac, in the repo's `results/corpus_alpha_datadecide/`:
+     `runpodctl receive <code> && tar xzf alpha_runpod.tgz`
+   * or with **scp** (only with "SSH over exposed TCP"), on the Mac:
+     ```bash
+     scp -P <port> -i ~/.ssh/id_ed25519 -r \
+       "root@<ip>:/workspace/numberline-datadecide/results/corpus_alpha_datadecide/exact_100b_*" \
+       results/corpus_alpha_datadecide/
+     ```
+   Then, on the Mac: `python -m runpod_jobs.exact_alpha --recipes "" --dry-run` rebuilds
+   `alpha_seed2.csv` from every summary.
    (Empty `--recipes ""` falls back to "every recipe without a result"; when all 25 are present
    it only rewrites the CSV.) Check the CSV has 25 rows, **then terminate the pod**.
 
@@ -164,7 +190,8 @@ experiment (beta vs numbers seen during training) and the extra seeds.
    (Check the exact revision names first:
    `python -c "from huggingface_hub import list_repo_refs as l; print(sorted(b.name for b in l('allenai/DataDecide-c4-1B').branches))"`.)
    Results: `results/datadecide_runpod/<revision>/<recipe>.json` + `summary.csv`.
-5. `scp -r` the `results/datadecide_runpod` folder to your Mac, then **terminate**.
+5. Copy `results/datadecide_runpod` to your Mac (`tar czf` + `runpodctl send`, as in job A),
+   then **terminate**.
 
 ---
 
@@ -174,14 +201,15 @@ experiment (beta vs numbers seen during training) and the extra seeds.
    projected hours × price before starting the full run.
 2. **Terminate, don't stop**, once results are on your laptop. A stopped pod still bills
    its volume disk at double rate.
-3. **Spot + Community Cloud** whenever available — the scripts resume after interruptions.
+3. **Interruptible (spot) + Community Cloud** whenever offered — the scripts resume after
+   interruptions (restart the stopped pod, rerun the same command).
 4. **Parallel pods are free speed** for job A (same pod-hours, less wall time). For job B,
    fill one GPU with `--parallel` before renting a second.
 5. **Size to the bottleneck**: download-bound → fewer vCPUs; GPU idle → more `--parallel`.
 6. **Run inside tmux**, so a closed laptop lid doesn't kill a running job (it would keep
    billing with nothing running if the job died and you didn't notice).
-7. **Keep an eye on the balance** in the console's Billing page; pods stop when credit runs out
-   (volume disks are kept for a while but are deleted eventually — copy results early; each
-   finished recipe is written immediately).
+7. **Never let the balance reach $0**: pods without a network volume are then *terminated* and
+   their data is lost. Low-balance alert on, and copy results off as recipes finish (each one is
+   written to disk the moment it is done).
 8. Don't rent a big GPU (A100/H100) for this project: a 1B model doesn't need it, and the
    cheapest 24 GB card does the same job.
