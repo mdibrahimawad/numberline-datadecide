@@ -230,6 +230,9 @@ python tests/test_sampling_validation.py
 python tests/test_datadecide_sampling.py
 ```
 
+Without Modal, the same exact-alpha counting and the beta sweep run on rented RunPod machines:
+see `docs/runpod.md` (`runpod_jobs/exact_alpha.py`, `runpod_jobs/beta.py`).
+
 `configs/datadecide_data_map.json` (recipe -> ordered .npy files) is rebuilt with
 `python -m src.datadecide_sampling --olmo-repo <OLMo@DataDecide> --datadecide-repo <DataDecide>`.
 
