@@ -304,6 +304,26 @@ def hf_take(repo: str, recipe: str, seed: int) -> bool:
         return True
 
 
+def hf_release(repo: str, recipes: list[str], seed: int) -> None:
+    """Remove this pod's claims on recipes it did not finish, so a later run takes them."""
+    from huggingface_hub import HfApi
+
+    api = HfApi(token=os.environ.get("HF_TOKEN"))
+    try:
+        have = set(api.list_repo_files(repo, repo_type="dataset"))
+    except Exception:  # noqa: BLE001
+        return
+    for r in recipes:
+        claim = f"_claims/{r}/{POD_ID}.txt"
+        if claim in have and f"exact_100b_{r}/counts_seed_{seed}.csv" not in have:
+            try:
+                api.delete_file(claim, repo_id=repo, repo_type="dataset",
+                                commit_message=f"{POD_ID} releases {r}")
+                print(f"[{r}] claim released for a later run", flush=True)
+            except Exception:  # noqa: BLE001
+                pass
+
+
 # --------------------------------------------------------------------------- #
 # per-recipe preparation (main process)
 # --------------------------------------------------------------------------- #
@@ -483,6 +503,9 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--delete-pod-when-done", action="store_true",
                    help="with --upload-hf: once every recipe is uploaded AND verified, delete this pod "
                         "(all billing ends). If anything is missing the pod is kept, never deleted")
+    p.add_argument("--max-hours", type=float, default=0,
+                   help="hard limit: after this many hours the pod deletes itself whatever happens "
+                        "(finished recipes are already uploaded; unfinished ones are released)")
     p.add_argument("--retries", type=int, default=3,
                    help="rerun failed slices up to this many times before giving up")
     args = p.parse_args(argv)
@@ -545,6 +568,21 @@ def main(argv: list[str] | None = None) -> int:
     if args.upload_hf:  # check write access now, not after hours of work
         args.upload_hf = hf_results_repo(args.upload_hf)
         print(f"[plan] results go to the private dataset huggingface.co/datasets/{args.upload_hf}")
+    if args.max_hours:
+        import threading
+
+        def deadline():
+            print(f"[limit] {args.max_hours} h reached: deleting the pod so it cannot bill any longer",
+                  flush=True)
+            if args.upload_hf:
+                hf_release(args.upload_hf, list(getattr(args, "mine", [])), args.seed)
+            terminate_this_pod(f"--max-hours {args.max_hours} reached")
+            os._exit(3)
+
+        timer = threading.Timer(args.max_hours * 3600, deadline)
+        timer.daemon = True
+        timer.start()
+        print(f"[plan] hard limit: this pod deletes itself after {args.max_hours} h at the latest")
     status = "crashed"
     try:
         def done(r: str) -> bool:
@@ -595,6 +633,10 @@ def _end_of_run(args, names: list[str], status: str) -> None:
                 return
         else:
             print(f"[end] NOT uploaded yet: {missing} -- the pod is kept so nothing is lost", flush=True)
+            if args.max_hours:
+                print("[end] it deletes itself when the --max-hours limit is reached", flush=True)
+                while True:  # the --max-hours timer ends this process and the pod
+                    time.sleep(3600)
     if not args.no_stop_pod:
         stop_this_pod(f"run {status}")
 
@@ -707,6 +749,9 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
                     if args.upload_hf:
                         try:
                             hf_upload_recipe(args.upload_hf, out_root, r, args.seed)
+                            import shutil  # uploaded: free its cache (GBs) on the container disk
+
+                            shutil.rmtree(work / r, ignore_errors=True)
                         except Exception as exc:  # noqa: BLE001 -- verified again at the end
                             print(f"[{r}] {exc}", flush=True)
                 if stats["slices"] % 100 == 0:
