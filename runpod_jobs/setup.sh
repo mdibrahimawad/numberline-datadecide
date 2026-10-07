@@ -19,10 +19,30 @@ if [ -n "$need" ]; then
   (apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install -y -qq $need) >/dev/null \
     || echo "[setup] apt-get failed for:$need (tmux/htop are optional)"
 fi
-python3 -c 'import sys; assert sys.version_info >= (3, 10), "need Python >= 3.10"'
-python3 -m venv --system-site-packages "$VENV"
+# a Python >= 3.10 (Ubuntu 20.04 images ship 3.8): use one that exists, else let uv fetch 3.11
+PY=""
+for c in python3.12 python3.11 python3.10 python3; do
+  if command -v "$c" >/dev/null && "$c" -c 'import sys, venv; assert sys.version_info >= (3, 10)' 2>/dev/null; then
+    PY="$c"; break
+  fi
+done
+if [ -n "$PY" ] && "$PY" -m venv --system-site-packages "$VENV" 2>/dev/null; then
+  echo "[setup] using $($PY --version)"
+else
+  echo "[setup] no usable Python >= 3.10 here: installing Python 3.11 with uv"
+  rm -rf "$VENV"
+  export PATH="$HOME/.local/bin:$HOME/.cargo/bin:$PATH"
+  if ! command -v uv >/dev/null; then
+    command -v curl >/dev/null || (apt-get update -qq && apt-get install -y -qq curl) >/dev/null || true
+    curl -LsSf https://astral.sh/uv/install.sh 2>/dev/null | sh >/dev/null 2>&1 \
+      || python3 -m pip install -q --user uv \
+      || (apt-get install -y -qq python3-pip >/dev/null && python3 -m pip install -q --user uv)
+  fi
+  UV_PYTHON_INSTALL_DIR=/workspace/uv-python uv venv --seed --python 3.11 "$VENV"
+fi
 # shellcheck disable=SC1091
 source "$VENV/bin/activate"
+python -c 'import sys; assert sys.version_info >= (3, 10), sys.version'
 pip install -q --upgrade pip
 
 if [ "$MODE" = cpu ]; then

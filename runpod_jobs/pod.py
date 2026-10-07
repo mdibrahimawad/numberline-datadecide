@@ -12,6 +12,13 @@ def stop_this_pod(reason: str) -> None:
     pod = os.environ.get("RUNPOD_POD_ID")
     if not pod:
         return
+    if not os.path.ismount("/workspace"):
+        # no volume disk / network volume: /workspace lives on the container disk,
+        # which a stop ERASES -- keep the pod running rather than lose the results
+        print(f"[stop] {reason}. NOT stopping the pod: /workspace is not a persistent volume, so "
+              "stopping would erase the results. Copy them off now, then terminate the pod.",
+              flush=True)
+        return
     import subprocess
 
     print(f"[stop] {reason}: stopping pod {pod} so it stops billing compute", flush=True)
