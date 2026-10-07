@@ -527,9 +527,9 @@ def main(argv: list[str] | None = None) -> int:
     sizes = {r: file_sizes(data_map["recipes"][r]["paths"], work) for r in names}
     chunks = {r: int(chunk_offsets(sizes[r])[-1]) for r in names}
     if args.upload_hf and not args.workers:
-        # shared work: this pod only takes recipes it can build with its full worker count
-        # (3 x vCPU); bigger ones are left to pods with more RAM running the same command
-        room = usable_ram_gb() - BASE_GB - 3 * vcpus * WORKER_GB
+        # shared work: this pod only takes recipes it can build while keeping at least
+        # 2 x vCPU workers; bigger ones are left to pods with more RAM (same command)
+        room = usable_ram_gb() - BASE_GB - 2 * vcpus * WORKER_GB
         too_big = [r for r in names if membership_gb(chunks[r]) > room]
         if too_big and len(too_big) < len(names):
             print(f"[plan] leaving {too_big} to pods with more RAM (this one has {usable_ram_gb():.0f} GB)")
