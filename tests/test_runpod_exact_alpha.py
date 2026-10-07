@@ -152,7 +152,7 @@ def test_crash_then_resume_redoes_only_missing_slices():
 
         def run(out, work):
             return ea.main(["--recipes", "fake", "--workers", "3", "--task-mtokens", "0",
-                            "--work-dir", str(work), "--out-dir", str(out)])
+                            "--retries", "0", "--work-dir", str(work), "--out-dir", str(out)])
 
         ea.read_range = reader(fail=True)
         assert run(Path(tmp) / "out", Path(tmp) / "work") == 1          # some slices failed
@@ -171,7 +171,92 @@ def test_crash_then_resume_redoes_only_missing_slices():
         assert resumed["per_seed"] == clean["per_seed"]
 
 
+def test_retry_upload_verify_then_delete_pod():
+    """One command: slices fail on the first attempt, the built-in retry finishes them,
+    the result is uploaded, verified, and only then is the pod deleted. If the upload
+    is missing, the pod is NOT deleted."""
+    import shutil
+    import time as _time
+
+    import huggingface_hub
+
+    rng = np.random.default_rng(2)
+    files = _fake_files(rng)
+    paths = list(files)
+    ea.load_data_map = lambda: {"recipes": {"fake": {"model_repo": "x/y", "paths": paths}}}
+    ea.file_sizes = lambda ps, work: [len(files[p]) for p in ps]
+    ea.resolve_url = lambda path: "https://cdn.example/" + path
+    ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
+    ea.membership_codes = lambda ft, seeds: membership_codes(ft, seeds, n_instances=N_INSTANCES)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        hub = Path(tmp) / "hub"
+        flag = Path(tmp) / "failed_once"
+
+        class FakeApi:
+            def __init__(self, token=None):
+                pass
+
+            def whoami(self):
+                return {"name": "me"}
+
+            def create_repo(self, repo, **kw):
+                (hub / repo).mkdir(parents=True, exist_ok=True)
+
+            def upload_file(self, path_or_fileobj, path_in_repo, repo_id, **kw):
+                (hub / repo_id / path_in_repo).parent.mkdir(parents=True, exist_ok=True)
+                (hub / repo_id / path_in_repo).write_bytes(path_or_fileobj)
+
+            def upload_folder(self, folder_path, path_in_repo, repo_id, **kw):
+                shutil.copytree(folder_path, hub / repo_id / path_in_repo, dirs_exist_ok=True)
+
+            def list_repo_files(self, repo, **kw):
+                return [str(f.relative_to(hub / repo)) for f in (hub / repo).rglob("*") if f.is_file()]
+
+        def fake_download(repo, f, **kw):
+            return str(hub / repo / f)
+
+        orig = (huggingface_hub.HfApi, huggingface_hub.hf_hub_download, ea.terminate_this_pod,
+                ea.stop_this_pod, _time.sleep)
+        deleted, stopped = [], []
+        huggingface_hub.HfApi, huggingface_hub.hf_hub_download = FakeApi, fake_download
+        ea.terminate_this_pod = lambda reason: deleted.append(reason)
+        ea.stop_this_pod = lambda reason: stopped.append(reason)
+        ea.time.sleep = lambda s: None
+
+        def read(task, start, length):  # every 4th slice fails, but only on the first attempt
+            if (start // SEQUENCE_LENGTH) % 4 == 0 and not (flag / f"{task['path']}_{start}").exists():
+                flag.mkdir(exist_ok=True)
+                (flag / f"{task['path'].replace('/', '_')}_{start}").touch()
+                (flag / f"{task['path']}_{start}").parent.mkdir(parents=True, exist_ok=True)
+                (flag / f"{task['path']}_{start}").touch()
+                raise RuntimeError("simulated network failure")
+            return files[task["path"]][start:start + length]
+
+        ea.read_range = read
+        try:
+            args = ["--recipes", "fake", "--workers", "3", "--task-mtokens", "0", "--retries", "2",
+                    "--work-dir", str(Path(tmp) / "work"), "--out-dir", str(Path(tmp) / "out"),
+                    "--upload-hf", "results", "--delete-pod-when-done"]
+            assert ea.main(args) == 0
+            assert (hub / "me/results/exact_100b_fake/summary.json").exists()
+            assert (hub / "me/results/exact_100b_fake/counts_seed_2.csv").exists()
+            assert len(deleted) == 1 and not stopped, (deleted, stopped)
+
+            # upload lost -> verification fails -> the pod is never deleted
+            deleted.clear()
+            FakeApi.upload_folder = lambda self, *a, **k: None
+            shutil.rmtree(hub / "me/results/exact_100b_fake")
+            shutil.rmtree(Path(tmp) / "out")
+            ea.main(args)
+            assert not deleted, deleted
+        finally:
+            (huggingface_hub.HfApi, huggingface_hub.hf_hub_download, ea.terminate_this_pod,
+             ea.stop_this_pod, ea.time.sleep) = orig
+
+
 if __name__ == "__main__":
+    test_retry_upload_verify_then_delete_pod()
     test_crash_then_resume_redoes_only_missing_slices()
     test_usable_vcpus_and_range_reader()
     test_matches_brute_force()

@@ -58,7 +58,7 @@ from src.datadecide_sampling import (
     membership_codes,
     pairwise_overlap,
 )
-from runpod_jobs.pod import stop_this_pod
+from runpod_jobs.pod import stop_this_pod, terminate_this_pod
 from src.sampling_validation import describe
 
 OUT = Path("results/corpus_alpha_datadecide")
@@ -72,9 +72,9 @@ def usable_vcpus() -> int:
     """vCPUs this container may use. Pods are containers with a CPU quota: the
     affinity mask / os.cpu_count() can report the whole host (e.g. 128) while
     the pod only gets its 32, so read the cgroup quota first."""
-    if os.environ.get("RUNPOD_CPU_COUNT", "").isdigit():  # set by RunPod on every pod
-        return max(1, int(os.environ["RUNPOD_CPU_COUNT"]))
     n = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else (os.cpu_count() or 1)
+    if os.environ.get("RUNPOD_CPU_COUNT", "").isdigit():  # set by RunPod; trust the smallest signal
+        n = min(n, max(1, int(os.environ["RUNPOD_CPU_COUNT"])))
     try:  # cgroup v2: "max 100000" or "3200000 100000"
         quota, period = Path("/sys/fs/cgroup/cpu.max").read_text().split()[:2]
         if quota != "max":
@@ -203,6 +203,64 @@ def atomic_write(path: Path, text: str) -> None:
     tmp = path.with_name(f".{path.name}.{os.getpid()}.{random.getrandbits(32):08x}.tmp")
     tmp.write_text(text)
     os.replace(tmp, path)
+
+
+# --------------------------------------------------------------------------- #
+# results off the pod: a private Hugging Face dataset repo
+# --------------------------------------------------------------------------- #
+
+def hf_results_repo(name: str) -> str:
+    """<your HF user>/<name>, created private if missing. Fails fast (before any
+    paid work) if HF_TOKEN cannot write."""
+    from huggingface_hub import HfApi
+
+    api = HfApi(token=os.environ.get("HF_TOKEN"))
+    repo = name if "/" in name else f"{api.whoami()['name']}/{name}"
+    api.create_repo(repo, repo_type="dataset", private=True, exist_ok=True)
+    pod = os.environ.get("RUNPOD_POD_ID", "local")
+    api.upload_file(path_or_fileobj=f"started {time.ctime()}\n".encode(),
+                    path_in_repo=f"_pods/{pod}.txt", repo_id=repo, repo_type="dataset",
+                    commit_message=f"pod {pod} started")
+    return repo
+
+
+def hf_upload_recipe(repo: str, out_root: Path, recipe: str, seed: int) -> None:
+    """Upload exact_100b_<recipe>/ (summary + count CSVs, a few hundred KB). Retries:
+    several pods may commit to the same repo at once."""
+    from huggingface_hub import HfApi
+
+    api = HfApi(token=os.environ.get("HF_TOKEN"))
+    folder = out_root / f"exact_100b_{recipe}"
+    for attempt in range(8):
+        try:
+            api.upload_folder(folder_path=str(folder), path_in_repo=folder.name, repo_id=repo,
+                              repo_type="dataset", allow_patterns=["summary.json", "*.csv"],
+                              commit_message=f"{recipe} seed {seed}")
+            print(f"[{recipe}] uploaded to huggingface.co/datasets/{repo}", flush=True)
+            return
+        except Exception as exc:  # noqa: BLE001 -- network / concurrent-commit errors: retry
+            print(f"[{recipe}] upload attempt {attempt + 1} failed: {exc}", flush=True)
+            time.sleep(min(300, 15 * 2 ** attempt))
+    raise RuntimeError(f"could not upload {recipe} to {repo}")
+
+
+def hf_verify(repo: str, recipes: list[str], seed: int) -> list[str]:
+    """Recipes whose summary.json with this seed is NOT in the repo."""
+    from huggingface_hub import HfApi, hf_hub_download
+
+    api = HfApi(token=os.environ.get("HF_TOKEN"))
+    files = set(api.list_repo_files(repo, repo_type="dataset"))
+    missing = []
+    for r in recipes:
+        f = f"exact_100b_{r}/summary.json"
+        if f not in files or f"exact_100b_{r}/counts_seed_{seed}.csv" not in files:
+            missing.append(r)
+            continue
+        got = json.loads(Path(hf_hub_download(repo, f, repo_type="dataset",
+                                              token=os.environ.get("HF_TOKEN"))).read_text())
+        if str(seed) not in got.get("per_seed", {}):
+            missing.append(r)
+    return missing
 
 
 # --------------------------------------------------------------------------- #
@@ -378,6 +436,14 @@ def main(argv: list[str] | None = None) -> int:
                    help="do NOT stop the RunPod pod when the full run ends (default: stop it)")
     p.add_argument("--stall-minutes", type=float, default=30,
                    help="abort (and stop the pod) if no slice finishes for this long")
+    p.add_argument("--upload-hf", default="", metavar="REPO",
+                   help="upload each finished recipe to this PRIVATE Hugging Face dataset "
+                        "(e.g. numberline-alpha-results; HF_TOKEN needs write access)")
+    p.add_argument("--delete-pod-when-done", action="store_true",
+                   help="with --upload-hf: once every recipe is uploaded AND verified, delete this pod "
+                        "(all billing ends). If anything is missing the pod is kept, never deleted")
+    p.add_argument("--retries", type=int, default=3,
+                   help="rerun failed slices up to this many times before giving up")
     args = p.parse_args(argv)
 
     data_map = load_data_map()
@@ -421,17 +487,62 @@ def main(argv: list[str] | None = None) -> int:
     task_chunks = max(1, args.task_mtokens * 1_000_000 // SEQUENCE_LENGTH)
     if args.pilot:
         return _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks)
+    if args.delete_pod_when_done and not args.upload_hf:
+        raise SystemExit("--delete-pod-when-done needs --upload-hf (results must be off the pod first)")
+    if args.upload_hf:  # check write access now, not after hours of work
+        args.upload_hf = hf_results_repo(args.upload_hf)
+        print(f"[plan] results go to the private dataset huggingface.co/datasets/{args.upload_hf}")
     status = "crashed"
     try:
-        status = "finished" if _run(args, names, sizes, data_map, work, out_root, workers,
-                                    task_chunks) == 0 else "finished with failed slices"
+        def done(r: str) -> bool:
+            f = out_root / f"exact_100b_{r}" / "summary.json"
+            return f.exists() and str(args.seed) in json.loads(f.read_text()).get("per_seed", {})
+
+        for attempt in range(1 + max(0, args.retries)):
+            todo = [r for r in names if not done(r)] if attempt else names
+            if not todo:
+                status = "finished"
+                break
+            if attempt:
+                print(f"[retry] attempt {attempt + 1}: {todo} (finished slices are reused)", flush=True)
+                time.sleep(60)
+            try:
+                if _run(args, todo, sizes, data_map, work, out_root, workers, task_chunks) == 0:
+                    status = "finished"
+                    break
+                status = "finished with failed slices"
+            except Exception as exc:  # noqa: BLE001 -- e.g. a stall or a crashed worker: retry
+                status = f"crashed ({type(exc).__name__}: {exc})"
+                print(f"[retry] run {status}", flush=True)
     except KeyboardInterrupt:
         status = "interrupted by you (Ctrl-C)"
         raise
     finally:
-        if not args.no_stop_pod and status != "interrupted by you (Ctrl-C)":
-            stop_this_pod(f"run {status}")
+        if status != "interrupted by you (Ctrl-C)":
+            _end_of_run(args, names, status)
     return 0 if status == "finished" else 1
+
+
+def _end_of_run(args, names: list[str], status: str) -> None:
+    """Never lose results, never bill for nothing: delete the pod only when every
+    recipe is verified on Hugging Face; otherwise stop it if that is safe (a
+    persistent volume), else leave it running and say why."""
+    if args.upload_hf:
+        try:
+            missing = hf_verify(args.upload_hf, names, args.seed)
+        except Exception as exc:  # noqa: BLE001
+            missing = list(names)
+            print(f"[end] could not verify the uploads: {exc}", flush=True)
+        if not missing:
+            print(f"[end] all {len(names)} recipes verified on huggingface.co/datasets/{args.upload_hf}",
+                  flush=True)
+            if args.delete_pod_when_done:
+                terminate_this_pod(f"run {status}, every result is safely uploaded")
+                return
+        else:
+            print(f"[end] NOT uploaded yet: {missing} -- the pod is kept so nothing is lost", flush=True)
+    if not args.no_stop_pod:
+        stop_this_pod(f"run {status}")
 
 
 def _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks) -> int:
@@ -527,6 +638,11 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
                     tasks, base, n_chunks = recipe_meta[r]
                     finish_recipe(r, tasks, args.seed, base, n_chunks, out_root)
                     write_alpha_csv(out_root, args.seed, data_map)
+                    if args.upload_hf:
+                        try:
+                            hf_upload_recipe(args.upload_hf, out_root, r, args.seed)
+                        except Exception as exc:  # noqa: BLE001 -- verified again at the end
+                            print(f"[{r}] {exc}", flush=True)
                 if stats["slices"] % 100 == 0:
                     log(len(pending))
 
