@@ -160,30 +160,31 @@ def resolve_url(path: str) -> str:
     return url  # fall back to the resolver URL; read_range follows its redirect
 
 
-def read_range(task: dict, start: int, length: int) -> np.ndarray:
-    """`length` tokens from `start` of one .npy file. Retries with backoff (honours
-    Retry-After), re-resolves an expired CDN URL, and refuses a server that
-    ignores the Range header instead of downloading a whole multi-GB file."""
+CONNECTIONS_PER_SLICE = int(os.environ.get("DD_CONNECTIONS", "8"))
+MIN_PART_BYTES = 4 << 20
+
+
+def _fetch(task: dict, where: dict, lo: int, hi: int) -> bytes:
+    """Bytes [lo, hi] of one file with retries; `where["url"]` is shared by the parts of
+    one slice so an expired CDN link is replaced once for all of them."""
     import requests
 
-    item = np.dtype(TOKEN_DTYPE).itemsize
-    rng = {"Range": f"bytes={start * item}-{(start + length) * item - 1}"}
-    url = task.get("url") or _hf_url(HF_DATA_REPO, task["path"])
     last = None
     for attempt in range(12):
-        headers = {**rng, **(_hf_headers() if "huggingface.co" in url else {})}
+        url = where["url"]
+        headers = {"Range": f"bytes={lo}-{hi}", **(_hf_headers() if "huggingface.co" in url else {})}
         try:
             with requests.get(url, headers=headers, stream=True, timeout=300) as r:
                 if r.status_code == 206:
                     data = r.content
-                    if len(data) == length * item:
-                        return np.frombuffer(data, dtype=TOKEN_DTYPE)
-                    last = f"short read {len(data)} of {length * item} bytes"
+                    if len(data) == hi - lo + 1:
+                        return data
+                    last = f"short read {len(data)} of {hi - lo + 1} bytes"
                 elif r.status_code == 200:
                     raise RuntimeError(f"server ignored the Range header for {task['path']}")
                 elif r.status_code in (401, 403, 404, 410) and "huggingface.co" not in url:
                     last = f"HTTP {r.status_code} (expired CDN link)"
-                    url = _hf_url(HF_DATA_REPO, task["path"])  # back through the resolver
+                    where["url"] = _hf_url(HF_DATA_REPO, task["path"])  # back through the resolver
                     continue
                 else:
                     last = f"HTTP {r.status_code}"
@@ -193,7 +194,29 @@ def read_range(task: dict, start: int, length: int) -> np.ndarray:
         except requests.RequestException as exc:
             last = f"{type(exc).__name__}: {exc}"
         time.sleep(min(60, 2 ** attempt) + random.random())
-    raise RuntimeError(f"giving up on {task['path']} [{start}, +{length}): {last}")
+    raise RuntimeError(f"giving up on {task['path']} bytes [{lo}, {hi}]: {last}")
+
+
+def read_range(task: dict, start: int, length: int) -> np.ndarray:
+    """`length` tokens from `start` of one .npy file, fetched over several parallel
+    connections (CDNs often cap the speed of one connection). Retries with backoff
+    (honours Retry-After), re-resolves an expired CDN URL, and refuses a server that
+    ignores the Range header instead of downloading a whole multi-GB file."""
+    item = np.dtype(TOKEN_DTYPE).itemsize
+    lo, hi = start * item, (start + length) * item - 1
+    where = {"url": task.get("url") or _hf_url(HF_DATA_REPO, task["path"])}
+    n = max(1, min(CONNECTIONS_PER_SLICE, (hi - lo + 1) // MIN_PART_BYTES))
+    if n == 1:
+        return np.frombuffer(_fetch(task, where, lo, hi), dtype=TOKEN_DTYPE)
+    from concurrent.futures import ThreadPoolExecutor
+
+    cuts = [lo + (hi - lo + 1) * i // n for i in range(n)] + [hi + 1]
+    buf = bytearray(hi - lo + 1)
+    with ThreadPoolExecutor(n) as ex:
+        parts = ex.map(lambda i: _fetch(task, where, cuts[i], cuts[i + 1] - 1), range(n))
+        for i, data in enumerate(parts):
+            buf[cuts[i] - lo:cuts[i + 1] - lo] = data
+    return np.frombuffer(buf, dtype=TOKEN_DTYPE)  # no copy
 
 
 def atomic_write(path: Path, text: str) -> None:
@@ -686,11 +709,12 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
              "last": time.time()}
 
     def log(remaining: int):
-        el = time.time() - start
+        el = time.time() - stats.get("t_first_submit", start)  # excludes the training-order build
         gbps = stats["bytes"] / max(el, 1e-9) / 1e9
         left = max(0, total_bytes - stats["skipped_bytes"] - stats["done_bytes"])
         eta = left / (gbps * 1e9) / 3600 if gbps > 0 else float("nan")
-        cost = (f"  ${el / 3600 * args.usd_per_hour:.2f} so far, ~${eta * args.usd_per_hour:.2f} to go"
+        spent = (time.time() - start) / 3600 * args.usd_per_hour
+        cost = (f"  ${spent:.2f} so far, ~${eta * args.usd_per_hour:.2f} to go at this speed"
                 if args.usd_per_hour else "")
         print(f"[run] {el / 60:6.1f} min  {stats['slices']} slices done  {gbps:.2f} GB/s  "
               f"{stats['decoded'] / max(el, 1e-9) / 1e6:.1f}M tok/s  "
@@ -780,6 +804,7 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
                 while len(pending) >= workers * 4:  # bounded queue keeps memory flat
                     drain(block=True)
                 t["url"] = resolve_url(t["path"])  # fresh CDN link, resolved once per file
+                stats.setdefault("t_first_submit", time.time())
                 pending[pool.submit(count_slice, t)] = (
                     r, (t["chunk_hi"] - t["chunk_lo"]) * SEQUENCE_LENGTH * 2)
             drain(block=False)
