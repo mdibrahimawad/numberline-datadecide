@@ -24,7 +24,8 @@ def merge_tables(fine: Path, alpha: Path, old: Path) -> pd.DataFrame:
     """One row per recipe: fine beta, exact alpha / numbers seen, old 4-group beta, family."""
     old_beta = pd.read_csv(old)[["recipe", "beta_direct_mean", "beta_log_mean"]].rename(
         columns={"beta_direct_mean": "old_direct", "beta_log_mean": "old_log"})
-    m = pd.read_csv(fine).merge(pd.read_csv(alpha), on="recipe").merge(old_beta, on="recipe")
+    exact = pd.read_csv(alpha)[["recipe", "alpha_ols", "alpha_mle", "integer_matches"]]
+    m = pd.read_csv(fine).merge(exact, on="recipe").merge(old_beta, on="recipe")
     m["family"] = m.recipe.map(lambda r: FAMILY.get(r, r))
     m["log_numbers"] = np.log(m.integer_matches)
     return m
@@ -53,7 +54,7 @@ def correlations(m: pd.DataFrame) -> pd.DataFrame:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--fine", default="results/beta_fine/step69369-seed-default/summary.csv")
-    p.add_argument("--alpha", default="results/corpus_alpha_datadecide/alpha_exact_25.csv")
+    p.add_argument("--alpha", default="results/corpus_alpha_datadecide/alpha_seed2.csv")
     p.add_argument("--old", default="results/datadecide/summary.csv")
     p.add_argument("--out", default="results/beta_fine/fine_vs_data.csv")
     args = p.parse_args(argv)
