@@ -55,10 +55,13 @@ if [ "$MODE" = cpu ]; then
   python -m runpod_jobs.exact_alpha --help >/dev/null
 else
   # same pins as modal_app/datadecide_app.py (ai2-olmo needs transformers<4.50)
-  pip install -q "torch==2.6.0" "transformers==4.49.0" "ai2-olmo==0.6.0" "accelerate>=0.33" \
+  # torchvision/torchaudio pinned to match torch 2.6: the template's own (built for its torch)
+  # are visible through --system-site-packages and break `import transformers`
+  pip install -q "torch==2.6.0" "torchvision==0.21.0" "torchaudio==2.6.0" "transformers==4.49.0" "ai2-olmo==0.6.0" "accelerate>=0.33" \
                  "scikit-learn>=1.4" "scipy>=1.11" "numpy>=1.26,<2.3" "huggingface_hub>=0.24" \
                  "safetensors>=0.4.3" "datasets>=2.20" hf_transfer
   python -c "import torch; assert torch.cuda.is_available(), 'no GPU visible'; print('[setup] GPU:', torch.cuda.get_device_name(0))"
+  python -c "import transformers.modeling_utils, hf_olmo; print('[setup] transformers + OLMo import ok')"
 fi
 
 grep -q "HF_HOME" ~/.bashrc 2>/dev/null || {
