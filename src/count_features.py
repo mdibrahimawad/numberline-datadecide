@@ -16,7 +16,9 @@ import pandas as pd
 from scipy import stats
 
 from src.beta_fine import CENTRES, band
-from src.decade_metrics import FAMILY
+from src.confounder_analysis import source_shares
+
+RARE_K = 4000   # the locked threshold of R (docs/project_overview.md); do not re-tune
 
 DECADES = {"d1_0_9": (0, 10), "d2_10_99": (10, 100), "d3_100_999": (100, 1000), "d4_1000_9999": (1000, 10000)}
 
@@ -75,7 +77,7 @@ def features(c: np.ndarray) -> dict[str, float]:
         sel = (x >= lo) & (x < hi)
         f[f"F12_n_numbers_{name}"] = int(sel.sum())
         f[f"F13_mass_share_{name}"] = x[sel].sum() / mid
-    f["F14_n_seen_lt_4000"] = int((x < 4000).sum())          # below the saturation K
+    f["F14_n_seen_lt_4000"] = int((x < RARE_K).sum())        # R: the rarely-seen count
     # shape statistics
     p = x / mid
     f["F15_entropy_norm"] = float(-(p[p > 0] * np.log(p[p > 0])).sum() / np.log(len(p)))
@@ -101,6 +103,57 @@ def features(c: np.ndarray) -> dict[str, float]:
     f["F25_probe_band_top_over_bottom"] = float(bc[-1] / bc[0])
     f["F26_probe_band_slope"] = float(np.polyfit(np.log(CENTRES), np.log(bc), 1)[0])
     return f
+
+
+def partial_corr(x: np.ndarray, y: np.ndarray, controls: list[np.ndarray]) -> tuple[float, float]:
+    """Pearson correlation of x and y after regressing both on the controls (+ intercept)."""
+    Z = np.column_stack([np.ones(len(y))] + list(controls))
+    rx = x - Z @ np.linalg.lstsq(Z, x, rcond=None)[0]
+    ry = y - Z @ np.linalg.lstsq(Z, y, rcond=None)[0]
+    r = float(np.corrcoef(rx, ry)[0, 1])
+    dof = len(y) - 2 - len(controls)
+    return r, float(2 * stats.t.sf(abs(r * np.sqrt(dof / (1 - r * r))), dof))
+
+
+def rare_count_checks(d: pd.DataFrame, counts: dict[str, np.ndarray], beta: str,
+                      shares: dict[str, dict[str, float]]) -> None:
+    """Robustness of R (F14) as a predictor of beta: within family, leave one family out,
+    together with alpha, other thresholds, and the code/math-content confounder."""
+    R, a, y, fam = d.F14_n_seen_lt_4000, d.alpha_ols, d[beta], d.family
+
+    def demean(s):
+        return s - s.groupby(fam).transform("mean")
+
+    print(f"\nR = #{{n in 10..9999 : c(n) < {RARE_K}}} vs {beta}  (alpha_ols for comparison)")
+    for name, x in (("R", R), ("alpha_ols", a)):
+        r, p = stats.pearsonr(x, y)
+        rho, prho = stats.spearmanr(x, y)
+        rw, pw = stats.spearmanr(demean(x), demean(y))
+        drop = [stats.spearmanr(x[fam != f], y[fam != f])[0] for f in fam.unique()]
+        print(f"  {name:9s} pearson r={r:+.2f} (p={p:.1e})  spearman {rho:+.2f} (p={prho:.1e})  "
+              f"within-family {rw:+.2f} (p={pw:.1e})  weakest leave-one-family-out {min(drop, key=abs):+.2f}")
+    X = np.column_stack([np.ones(len(y)), a, R])
+    coef, *_ = np.linalg.lstsq(X, y, rcond=None)
+    resid = y - X @ coef
+    se = np.sqrt(np.diag(resid @ resid / (len(y) - 3) * np.linalg.inv(X.T @ X)))
+    pv = 2 * stats.t.sf(np.abs(coef / se), len(y) - 3)
+    print(f"  together: beta ~ alpha + R   p(alpha)={pv[1]:.3f}  p(R)={pv[2]:.4f}")
+    fit = stats.linregress(R, y)
+    print(f"  fitted line: beta = {fit.intercept:.2f} {fit.slope * 1000:+.3f} x R/1000")
+    print("  other thresholds K: " + "  ".join(
+        f"{k}: {stats.spearmanr([(counts[r][10:10000] < k).sum() for r in d.index], y)[0]:+.2f}"
+        for k in (1000, 2000, 4000, 8000)))
+    code = np.array([shares.get(r, {}).get("code_share", 0.0) for r in d.index])
+    math = np.array([shares.get(r, {}).get("math_share", 0.0) for r in d.index])
+    print(f"  content: code share vs beta r={np.corrcoef(code, y)[0, 1]:+.2f}, "
+          f"math share r={np.corrcoef(math, y)[0, 1]:+.2f}, code share vs R r={np.corrcoef(code, R)[0, 1]:+.2f}")
+    for label, ctrl in (("code share", [code]), ("math share", [math]),
+                        ("contains Dolma (code > 0)", [(code > 0).astype(float)])):
+        (rr, pr), (ra, pa) = partial_corr(R.values, y.values, ctrl), partial_corr(a.values, y.values, ctrl)
+        print(f"    controlling {label:26s} R: partial r={rr:+.2f} (p={pr:.3f})   alpha: {ra:+.2f} (p={pa:.3f})")
+    sub = code == 0
+    (rs, ps), (as_, pas) = stats.spearmanr(R[sub], y[sub]), stats.spearmanr(a[sub], y[sub])
+    print(f"    {sub.sum()} recipes without code: R spearman {rs:+.2f} (p={ps:.3f})   alpha {as_:+.2f} (p={pas:.3f})")
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -133,6 +186,7 @@ def main(argv: list[str] | None = None) -> int:
     pd.set_option("display.width", 200)
     print(f"\nSpearman rho with {args.beta}, with beta left over after alpha (resid), and with alpha:")
     print(t.sort_values("p_resid").round(3).to_string(index=False))
+    rare_count_checks(d, counts, args.beta, source_shares(Path(args.counts[0])))
     return 0
 
 

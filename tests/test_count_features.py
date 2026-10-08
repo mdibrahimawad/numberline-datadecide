@@ -45,7 +45,17 @@ def test_local_slope_recovers_alpha_and_round_numbers_are_detected():
     assert cf.features(c)["F19_round100_excess"] > 2                 # log(10) ~ 2.3
 
 
+def test_partial_correlation_removes_a_shared_cause():
+    rng = np.random.default_rng(0)
+    z = rng.normal(size=500)
+    x, y = z + 0.1 * rng.normal(size=500), z + 0.1 * rng.normal(size=500)
+    assert np.corrcoef(x, y)[0, 1] > 0.9
+    r, p = cf.partial_corr(x, y, [z])
+    assert abs(r) < 0.15 and p > 0.01, (r, p)
+
+
 if __name__ == "__main__":
+    test_partial_correlation_removes_a_shared_cause()
     test_rarely_seen_count_is_the_locked_definition()
     test_more_data_same_shape_means_fewer_rare_numbers()
     test_local_slope_recovers_alpha_and_round_numbers_are_detected()
