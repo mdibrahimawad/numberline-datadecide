@@ -1,4 +1,20 @@
+# environments and OS files
 .venv/
+venv/
 __MACOSX/
 .DS_Store
 __pycache__/
+.pytest_cache/
+
+# local experiment-tracking stores and scratch outputs (E00); results worth keeping go in results/
+mlflow.db
+mlruns/
+ICLR_results/
+sweep_log.txt
+join_log.txt
+beta.log
+alpha.log
+
+# secrets: never commit tokens
+.env
+*.token

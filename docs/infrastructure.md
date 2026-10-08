@@ -102,8 +102,8 @@ Full beginner guide: `docs/runpod.md`. Summary:
 | E04 exact α, c4 (5 seeds + full recipe) | Modal | $1.31 compute |
 | E04 exact α, dolma1_7 (5 seeds) | Modal | $5.67 compute |
 | E03 window sweep, 25 recipes | Modal | ~$3 for the first recipe (before a caching fix), then ~$0.5 each |
-| E01 β sweep, 25 models | Modal (GPU L4) | a few dollars |
-| E04 exact α, 12 more recipes (smallest first) | Modal, 2 workspaces | ~$45 including overhead (the user's note: "Modal took more than estimated") |
+| E01 β sweep, 25 models | Modal (GPU L4) | not recorded |
+| E04 exact α, 12 more recipes (smallest first) | Modal, 2 workspaces | not recorded exactly: most of a ~$18 balance, then part of a new $30 workspace. The real bill ran 1.35–2× the printed estimates. |
 | E04 exact α, last 11 recipes (largest, ~42 TB download) | RunPod, 2 CPU pods overnight | estimated $12–16 |
 | E06 fine β, 25 models | RunPod, 1 GPU | ~$0.20 |
 

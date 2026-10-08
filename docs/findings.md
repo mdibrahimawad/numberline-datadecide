@@ -24,7 +24,7 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
    | | α_OLS | R (rarely-seen count) |
    |---|---|---|
    | Spearman ρ with β | +0.46 | **−0.73** (p = 3e-5) |
-   | Within families | +0.24 (n.s.) | **−0.70** (p < 0.001) |
+   | Within families (Spearman, family-demeaned) | +0.24 (n.s.) | **−0.70** (p < 0.001) |
    | Variance of β explained | 32 % | **52 %** |
    | Leave-one-out prediction r | 0.45 | **0.64** |
    | In one regression together | p = 0.47 | **p = 0.004** |

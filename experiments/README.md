@@ -15,7 +15,7 @@ number, problems met). Code lives in the shared packages (`src/`, `modal_app/`,
 | [E05](E05_alpha_vs_beta/) | α vs β | Does training-data α predict model β? | done | α_OLS r = +0.56 (p = 0.003), but Dolma-driven and fails within families |
 | [E06](E06_fine_beta/) | Fine β (10 groups) | A more precise, reproducible β | done | seed noise ±0.015; same-layer α link r = 0.63; layer choice fragile |
 | [E07](E07_count_features_rarely_seen/) | Count features and R | What in the counts explains β beyond α? | done (exploratory) | R = #numbers seen < 4000 times: ρ = −0.73, absorbs α |
-| [E08](E08_checkpoint_test/) | Checkpoint test | Does β follow R during training, with α fixed? | **planned; predictions locked** | — |
+| [E08](E08_checkpoint_test/) | Checkpoint test | Does β follow R during training, with α fixed? | **planned; predictions pre-registered** | — |
 
 ## Dependencies between experiments
 

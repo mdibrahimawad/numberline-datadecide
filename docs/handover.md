@@ -47,7 +47,7 @@ earlier conversations. Everything needed to continue is in this repository.
 - Costs stated up front, with a worst case.
 
 ## Where to pick up (as of 2026-10-08)
-1. **E08 checkpoint test**: the definitions and predictions are locked in its README.
+1. **E08 checkpoint test**: the definitions and predictions are pre-registered in its README (review, then freeze before collecting data).
    First step: list the available checkpoint revisions on Hugging Face (command in the
    README), then exact prefix counts (CPU), then β per checkpoint (GPU, ~$0.50).
 2. **Training-seed noise**: β of the aux-seed final checkpoints, to know how much β

@@ -62,6 +62,6 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
 
 ## Next
 - **E08**: the checkpoint test (R changes during training while α stays fixed);
-  definitions and predictions are locked in `experiments/E08_checkpoint_test/README.md`.
+  definitions and predictions are pre-registered in `experiments/E08_checkpoint_test/README.md`.
 - Training-seed noise of β (seeds `-4`, `-5`).
 - Fixed-layer β for all models from the saved per-prompt scores (free).
