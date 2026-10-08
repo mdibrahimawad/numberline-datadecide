@@ -57,7 +57,7 @@ else
   # same pins as modal_app/datadecide_app.py (ai2-olmo needs transformers<4.50)
   pip install -q "torch==2.6.0" "transformers==4.49.0" "ai2-olmo==0.6.0" "accelerate>=0.33" \
                  "scikit-learn>=1.4" "scipy>=1.11" "numpy>=1.26,<2.3" "huggingface_hub>=0.24" \
-                 "safetensors>=0.4.3" "datasets>=2.20"
+                 "safetensors>=0.4.3" "datasets>=2.20" hf_transfer
   python -c "import torch; assert torch.cuda.is_available(), 'no GPU visible'; print('[setup] GPU:', torch.cuda.get_device_name(0))"
 fi
 

@@ -173,43 +173,39 @@ is CPU- or download-bound so you can size it right.
 
 ---
 
-## 4. Job B: model beta (GPU pod)
+## 4. Job B: fine-grained model beta (GPU pod)
 
-All 25 final-checkpoint betas are already done. Use this for the training-checkpoint
-experiment (beta vs numbers seen during training) and the extra seeds.
+`src/beta_fine.py`: 10 magnitude groups every third of a decade (10, 22, 46, 100, ..., 10000;
++-10 % bands) instead of 4, so beta is fitted to 9 gaps instead of 3; 100 prompts per group per
+seed, 3 seeds (45, 46, 47); prompts batched on the GPU; every prompt's top-5 PCA scores at every
+layer saved (`.npz`) for later re-analysis. It also reports the old 4-group beta (groups 10 / 100 /
+1000 / 10000) from the same prompts, a continuous fit over all prompts, and beta at the layer the
+old run selected. Fit quality is the relative error of the gap fit: R^2 is meaningless near
+beta = 1 (equal gaps leave nothing to explain), which is why the old R^2 looked "bad" for beta ~ 1.
 
-1. **Deploy**: Pods → Deploy → **GPU** → Community Cloud, **spot** if offered →
-   RTX A5000 (~$0.27/h), L4 (~$0.39/h) or RTX 3090/4090; template **RunPod PyTorch**;
-   set the **CUDA version filter to ≥ 12.4** (setup installs torch 2.6, built for CUDA 12.4);
-   container disk 20 GB, **volume disk 100 GB** (each model checkpoint is a few GB in the HF
-   cache).
-2. Connect as above, then:
+1. **Deploy**: Pods -> Deploy -> **GPU** -> a 24 GB card (RTX A5000 / RTX 4090 / L4 / RTX 3090,
+   whichever is available and cheapest) -> template **Runpod PyTorch** -> container disk **80 GB**
+   (model weights are cached there) -> Deploy.
+2. Connect (SSH command from the Connect tab), then:
    ```bash
-   cd /workspace && git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+   mkdir -p /workspace && cd /workspace
+   git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
    cd numberline-datadecide && bash runpod_jobs/setup.sh gpu
-   source /workspace/venv-gpu/bin/activate && export HF_HOME=/workspace/hf_cache
    tmux new -s beta
+   source /workspace/venv-gpu/bin/activate && export HF_HOME=/workspace/hf_cache
+   export HF_TOKEN=hf_YOUR_WRITE_TOKEN
    ```
-3. **Pilot one model** and watch the GPU in a second window (`Ctrl-b c`, then `nvidia-smi -l 5`):
+3. **Pilot, one model (~3-5 min)**: `python -m runpod_jobs.beta --fine --models c4 --parallel 1`
+   and check `results/beta_fine/step69369-seed-default/logs/c4.log` ends with a
+   `[beta-fine] c4: layer ... beta_fine ...` line. Its `beta_coarse` should be near the old c4
+   beta (0.62).
+4. **All 25, unattended**:
    ```bash
-   python -m runpod_jobs.beta --models c4 --parallel 1
+   python -m runpod_jobs.beta --fine --parallel 6 --upload-hf numberline-beta-results \
+     --delete-pod-when-done --max-hours 4 2>&1 | tee beta.log
    ```
-   Note the minutes it takes and the GPU memory / utilisation. If one model uses a few GB and
-   <50 % of the GPU, raise `--parallel` (4 is a good start on a 24 GB card) until utilisation
-   is ~90 % or memory is ~80 % full.
-4. **Run**, e.g. 4 recipes × 8 checkpoints:
-   ```bash
-   python -m runpod_jobs.beta --parallel 4 \
-     --models falcon-and-cc-qc-10p,falcon-and-cc-qc-tulu-10p,c4,dolma1_7 \
-     --revisions step5000-seed-default,step10000-seed-default,step20000-seed-default,step30000-seed-default,step40000-seed-default,step50000-seed-default,step60000-seed-default,step69369-seed-default
-   ```
-   (Check the exact revision names first:
-   `python -c "from huggingface_hub import list_repo_refs as l; print(sorted(b.name for b in l('allenai/DataDecide-c4-1B').branches))"`.)
-   Results: `results/datadecide_runpod/<revision>/<recipe>.json` + `summary.csv`.
-5. Copy `results/datadecide_runpod` to your Mac (`tar czf` + `runpodctl send`, as in job A),
-   then **terminate**.
-
----
+   Ctrl+B, D. Each model is uploaded when done; the pod deletes itself at the end.
+5. On the Mac: `python -m runpod_jobs.fetch_results --kind beta`.
 
 ## 5. Rules for not wasting a dollar
 

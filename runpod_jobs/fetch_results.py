@@ -1,8 +1,7 @@
-"""Download the exact-alpha results that RunPod pods uploaded (--upload-hf) into
-results/corpus_alpha_datadecide/ on this machine and rebuild alpha_seed2.csv.
+"""Download results that RunPod pods uploaded (--upload-hf) to this machine.
 
-    python -m runpod_jobs.fetch_results                        # repo numberline-alpha-results
-    python -m runpod_jobs.fetch_results --repo <user>/<name>
+    python -m runpod_jobs.fetch_results                 # exact alpha -> results/corpus_alpha_datadecide/
+    python -m runpod_jobs.fetch_results --kind beta     # fine beta   -> results/beta_fine/
 
 Needs HF_TOKEN (the same token the pods used) in the environment or `hf auth login`.
 """
@@ -18,14 +17,23 @@ def main(argv: list[str] | None = None) -> int:
     from huggingface_hub import HfApi, snapshot_download
 
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    p.add_argument("--repo", default="numberline-alpha-results")
-    p.add_argument("--out-dir", default="results/corpus_alpha_datadecide")
+    p.add_argument("--kind", choices=("alpha", "beta"), default="alpha")
+    p.add_argument("--repo", default="")
+    p.add_argument("--out-dir", default="")
     p.add_argument("--seed", type=int, default=2)
     args = p.parse_args(argv)
 
     token = os.environ.get("HF_TOKEN")
-    repo = args.repo if "/" in args.repo else f"{HfApi(token=token).whoami()['name']}/{args.repo}"
-    out = Path(args.out_dir)
+    name = args.repo or ("numberline-alpha-results" if args.kind == "alpha" else "numberline-beta-results")
+    repo = name if "/" in name else f"{HfApi(token=token).whoami()['name']}/{name}"
+    if args.kind == "beta":
+        out = Path(args.out_dir or "results/beta_fine")
+        snapshot_download(repo, repo_type="dataset", local_dir=str(out), token=token,
+                          allow_patterns=["*/*.json", "*/*.npz", "*/summary.csv"])
+        got = sorted(out.glob("*/*.json"))
+        print(f"[fetch] {len(got)} model results in {out}; summary: {sorted(out.glob('*/summary.csv'))}")
+        return 0
+    out = Path(args.out_dir or "results/corpus_alpha_datadecide")
     snapshot_download(repo, repo_type="dataset", local_dir=str(out), token=token,
                       allow_patterns=["exact_100b_*/summary.json", "exact_100b_*/*.csv"])
     got = sorted(d.name for d in out.glob("exact_100b_*") if (d / "summary.json").exists())
