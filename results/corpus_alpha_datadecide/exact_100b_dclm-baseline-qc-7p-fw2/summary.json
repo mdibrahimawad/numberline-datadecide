@@ -1,0 +1,37 @@
+{
+  "recipe": "dclm-baseline-qc-7p-fw2",
+  "seeds": [
+    2
+  ],
+  "skip_unused": true,
+  "union_of_samples": {
+    "alpha_ols": -1.6633735574027269,
+    "r2": 0.7825483221656334,
+    "alpha_mle": -1.1227223175086167,
+    "alpha_mle_fisher_se": 9.3061488035226e-06,
+    "integer_matches": 1658147214.0,
+    "support": 1.0,
+    "tokens": 100015669248
+  },
+  "per_seed": {
+    "2": {
+      "alpha_ols": -1.6633735574027269,
+      "r2": 0.7825483221656334,
+      "alpha_mle": -1.1227223175086167,
+      "alpha_mle_fisher_se": 9.3061488035226e-06,
+      "integer_matches": 1658147214.0,
+      "support": 1.0,
+      "tokens": 100015669248.0
+    }
+  },
+  "pairwise_chunk_overlap": {},
+  "membership": {
+    "base": 2,
+    "n_chunks": 247821193,
+    "union_chunks": 48835776,
+    "per_seed_chunks": [
+      48835776
+    ]
+  },
+  "runner": "runpod_jobs.exact_alpha"
+}

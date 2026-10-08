@@ -1,0 +1,37 @@
+{
+  "recipe": "dolma1_7-no-math-code",
+  "seeds": [
+    2
+  ],
+  "skip_unused": true,
+  "union_of_samples": {
+    "alpha_ols": -1.5720133514362618,
+    "r2": 0.7895843083985864,
+    "alpha_mle": -1.0956161690881743,
+    "alpha_mle_fisher_se": 9.294312978596708e-06,
+    "integer_matches": 1619203834.0,
+    "support": 1.0,
+    "tokens": 100015669248
+  },
+  "per_seed": {
+    "2": {
+      "alpha_ols": -1.5720133514362618,
+      "r2": 0.7895843083985864,
+      "alpha_mle": -1.0956161690881743,
+      "alpha_mle_fisher_se": 9.294312978596708e-06,
+      "integer_matches": 1619203834.0,
+      "support": 1.0,
+      "tokens": 100015669248.0
+    }
+  },
+  "pairwise_chunk_overlap": {},
+  "membership": {
+    "base": 2,
+    "n_chunks": 658779407,
+    "union_chunks": 48835776,
+    "per_seed_chunks": [
+      48835776
+    ]
+  },
+  "runner": "runpod_jobs.exact_alpha"
+}

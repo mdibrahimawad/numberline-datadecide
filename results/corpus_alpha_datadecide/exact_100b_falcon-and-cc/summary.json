@@ -1,0 +1,37 @@
+{
+  "recipe": "falcon-and-cc",
+  "seeds": [
+    2
+  ],
+  "skip_unused": true,
+  "union_of_samples": {
+    "alpha_ols": -1.581306386151631,
+    "r2": 0.7917016382505244,
+    "alpha_mle": -1.0858194129796785,
+    "alpha_mle_fisher_se": 9.19708985166832e-06,
+    "integer_matches": 1628415670.0,
+    "support": 1.0,
+    "tokens": 100015669248
+  },
+  "per_seed": {
+    "2": {
+      "alpha_ols": -1.581306386151631,
+      "r2": 0.7917016382505244,
+      "alpha_mle": -1.0858194129796785,
+      "alpha_mle_fisher_se": 9.19708985166832e-06,
+      "integer_matches": 1628415670.0,
+      "support": 1.0,
+      "tokens": 100015669248.0
+    }
+  },
+  "pairwise_chunk_overlap": {},
+  "membership": {
+    "base": 2,
+    "n_chunks": 515052339,
+    "union_chunks": 48835776,
+    "per_seed_chunks": [
+      48835776
+    ]
+  },
+  "runner": "runpod_jobs.exact_alpha"
+}
