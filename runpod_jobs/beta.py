@@ -44,7 +44,8 @@ def _prefetch(jobs, config, ahead: int, started: dict) -> None:
         while i >= len(started) + ahead:
             time.sleep(2)
         try:
-            snapshot_download(repo_id_for(m, config), revision=rev, token=os.environ.get("HF_TOKEN"))
+            snapshot_download(repo_id_for(m, config), revision=rev, token=os.environ.get("HF_TOKEN"),
+                              ignore_patterns=["training/*", "*.pt", "*.bin", "*.md"])  # weights only
             print(f"[prefetch] {m} @ {rev} downloaded", flush=True)
         except Exception as exc:  # noqa: BLE001 -- the worker will download it itself
             print(f"[prefetch] {m}: {exc}", flush=True)
