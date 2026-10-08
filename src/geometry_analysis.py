@@ -1,8 +1,8 @@
 """
 Figure generation for the number-line geometry probe.
 
-Mirrors the figure code that lived in `llm_natural_log/Figure_4.ipynb` and
-`llm_natural_log/utils/visual_utils.py`, ported into the same NeurIPS-style
+Mirrors the figure code that lived in `reference/llm_natural_log/Figure_4.ipynb` and
+`reference/llm_natural_log/utils/visual_utils.py`, ported into the same NeurIPS-style
 scaffolding used by `src/number_analysis.py`. Three figures total:
 
   fig_layer_profile     EV / rho / beta as a function of layer depth, for one
@@ -1250,8 +1250,8 @@ def main(argv: list[str] | None = None) -> int:
         description=(
             "Render figures for the number-line geometry probe. Pulls metrics "
             "from MLflow, plus an optional projections JSON for the PC1 "
-            "scatter. Mirrors `llm_natural_log/Figure_4.ipynb` and "
-            "`llm_natural_log/utils/visual_utils.py`."
+            "scatter. Mirrors `reference/llm_natural_log/Figure_4.ipynb` and "
+            "`reference/llm_natural_log/utils/visual_utils.py`."
         )
     )
     p.add_argument("--run-id", default=None,

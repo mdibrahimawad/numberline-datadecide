@@ -202,7 +202,7 @@ def _generated_output_matches_target(
     """Greedy-decode the continuation and compare its first integer to `target`.
 
     Mirrors `generated_output_matches_target` in
-    llm_natural_log_paperfaithful/main_lab.py: only the new tokens are decoded.
+    reference/llm_natural_log_paperfaithful/main_lab.py: only the new tokens are decoded.
     """
     inputs = _tokenize_prompt(cfg, tokenizer, prompt).to(device)
     input_len = inputs["input_ids"].shape[-1]

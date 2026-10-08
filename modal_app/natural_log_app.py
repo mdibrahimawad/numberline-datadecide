@@ -6,7 +6,7 @@ from pathlib import Path
 import modal
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-SOURCE_DIR_NAME = os.environ.get("NATURAL_LOG_SOURCE_DIR", "llm_natural_log")
+SOURCE_DIR_NAME = os.environ.get("NATURAL_LOG_SOURCE_DIR", "reference/llm_natural_log")
 LLM_NATURAL_LOG_DIR = REPO_ROOT / SOURCE_DIR_NAME
 
 APP_NAME = "llm-natural-log-exact"
