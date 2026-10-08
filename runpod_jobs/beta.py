@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 import threading
@@ -47,6 +48,15 @@ def _prefetch(jobs, config, ahead: int, started: dict) -> None:
             print(f"[prefetch] {m} @ {rev} downloaded", flush=True)
         except Exception as exc:  # noqa: BLE001 -- the worker will download it itself
             print(f"[prefetch] {m}: {exc}", flush=True)
+
+
+def _free_cache(repo_id: str) -> None:
+    """Delete one finished model's weights from the HF cache: 25 fp32 1B checkpoints
+    (~4.7 GB each) would not fit on an 80 GB container disk otherwise."""
+    from huggingface_hub import constants
+
+    path = Path(constants.HF_HUB_CACHE) / f"models--{repo_id.replace('/', '--')}"
+    shutil.rmtree(path, ignore_errors=True)
 
 
 def _hf(repo: str):
@@ -170,6 +180,8 @@ def _run_all(args, jobs, revisions, config, out_root: Path, hf) -> bool:
                     if hf:
                         files = [out_dir / f"{m}.json", out_dir / f"{m}.npz"]
                         status += ", uploaded" if _upload(*hf, files, rev) else ", UPLOAD FAILED"
+                if not proc.returncode and len(revisions) == 1:
+                    _free_cache(repo_id_for(m, config))
                 print(f"[beta] {m} @ {rev}: {status} in {(time.time() - t0) / 60:.1f} min "
                       f"(elapsed {(time.time() - start) / 60:.1f} min, {len(started)}/{len(jobs)} started)",
                       flush=True)
