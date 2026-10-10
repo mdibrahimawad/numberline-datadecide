@@ -47,6 +47,7 @@ from modal_app.datadecide_alpha_app import (
     _write_counts_csv,
 )
 from src.datadecide_sampling import (
+    EOS_TOKEN_ID,
     HF_DATA_REPO,
     SEQUENCE_LENGTH,
     TOKEN_DTYPE,
@@ -160,6 +161,14 @@ def resolve_url(path: str) -> str:
     return url  # fall back to the resolver URL; read_range follows its redirect
 
 
+def task_url(task: dict) -> str:
+    """Where a slice's file lives: a plain HTTP server when the recipe has a `base_url`
+    (e.g. Paloma's files on olmo-data.org), otherwise the DataDecide HF dataset."""
+    if task.get("base_url"):
+        return task["base_url"].rstrip("/") + "/" + task["path"]
+    return resolve_url(task["path"])
+
+
 CONNECTIONS_PER_SLICE = int(os.environ.get("DD_CONNECTIONS", "8"))
 MIN_PART_BYTES = 4 << 20
 
@@ -182,7 +191,8 @@ def _fetch(task: dict, where: dict, lo: int, hi: int) -> bytes:
                     last = f"short read {len(data)} of {hi - lo + 1} bytes"
                 elif r.status_code == 200:
                     raise RuntimeError(f"server ignored the Range header for {task['path']}")
-                elif r.status_code in (401, 403, 404, 410) and "huggingface.co" not in url:
+                elif r.status_code in (401, 403, 404, 410) and "huggingface.co" not in url \
+                        and not task.get("base_url"):
                     last = f"HTTP {r.status_code} (expired CDN link)"
                     where["url"] = _hf_url(HF_DATA_REPO, task["path"])  # back through the resolver
                     continue
@@ -204,7 +214,7 @@ def read_range(task: dict, start: int, length: int) -> np.ndarray:
     ignores the Range header instead of downloading a whole multi-GB file."""
     item = np.dtype(TOKEN_DTYPE).itemsize
     lo, hi = start * item, (start + length) * item - 1
-    where = {"url": task.get("url") or _hf_url(HF_DATA_REPO, task["path"])}
+    where = {"url": task.get("url") or task_url(task)}
     n = max(1, min(CONNECTIONS_PER_SLICE, (hi - lo + 1) // MIN_PART_BYTES))
     if n == 1:
         return np.frombuffer(_fetch(task, where, lo, hi), dtype=TOKEN_DTYPE)
@@ -351,8 +361,40 @@ def hf_release(repo: str, recipes: list[str], seed: int) -> None:
 # per-recipe preparation (main process)
 # --------------------------------------------------------------------------- #
 
-def file_sizes(paths: list[str], work: Path) -> list[int]:
-    """Tokens per file (bytes / 2) from HF metadata, cached in work/sizes.json."""
+def _http_sizes(urls: list[str]) -> dict[str, int]:
+    """Content-Length of plain HTTP files (HEAD requests in parallel, with retries)."""
+    import requests
+    from concurrent.futures import ThreadPoolExecutor
+
+    def head(url: str) -> tuple[str, int]:
+        for attempt in range(8):
+            try:
+                r = requests.head(url, allow_redirects=True, timeout=60)
+                if r.status_code == 200 and r.headers.get("Content-Length"):
+                    return url, int(r.headers["Content-Length"])
+                if r.status_code in (403, 404, 410):
+                    raise SystemExit(f"{url}: HTTP {r.status_code}")
+            except requests.RequestException:
+                pass
+            time.sleep(min(60, 2 ** attempt) + random.random())
+        raise SystemExit(f"{url}: no size after retries")
+
+    with ThreadPoolExecutor(32) as ex:
+        return dict(ex.map(head, urls))
+
+
+def file_sizes(paths: list[str], work: Path, base_url: str | None = None) -> list[int]:
+    """Tokens per file (bytes / 2), cached in work/sizes.json: from HF metadata, or from
+    HEAD requests when the recipe's files sit on a plain HTTP server (`base_url`)."""
+    if base_url:
+        cache_path = work / "sizes_http.json"
+        cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
+        urls = [base_url.rstrip("/") + "/" + p for p in paths]
+        need = sorted(set(urls) - set(cache))
+        if need:
+            cache.update({u: n // 2 for u, n in _http_sizes(need).items()})
+            atomic_write(cache_path, json.dumps(cache))
+        return [cache[u] for u in urls]
     cache_path = work / "sizes.json"
     cache = json.loads(cache_path.read_text()) if cache_path.exists() else {}
     need = sorted(set(paths) - set(cache))
@@ -373,13 +415,14 @@ def file_sizes(paths: list[str], work: Path) -> list[int]:
     return [cache[p] for p in paths]
 
 
-def membership(recipe: str, file_tokens: list[int], seed: int, work: Path) -> tuple[Path, int]:
+def membership(recipe: str, file_tokens: list[int], seed: int, work: Path,
+               n_instances: int = TRAIN_INSTANCES_1B) -> tuple[Path, int]:
     """uint8 multiplicity per global chunk for `seed` (0 = not trained on), cached."""
     folder = work / recipe
     path, meta = folder / f"codes_seed{seed}.npy", folder / f"codes_seed{seed}.json"
     if not meta.exists():
         t = time.time()
-        codes, base = membership_codes(file_tokens, [seed])
+        codes, base = membership_codes(file_tokens, [seed], n_instances=n_instances)
         folder.mkdir(parents=True, exist_ok=True)
         np.save(path, codes)
         atomic_write(meta, json.dumps({"base": base, "n_chunks": int(len(codes))}))
@@ -400,6 +443,7 @@ def make_tasks(recipe: str, rec: dict, file_tokens: list[int], codes_path: Path,
             if not codes[g:g + hi - lo].any():  # no trained chunk here: skip the download
                 continue
             tasks.append({"recipe": recipe, "model_repo": rec["model_repo"], "path": path,
+                          "base_url": rec.get("base_url"), "eos": int(rec.get("eos_token_id", EOS_TOKEN_ID)),
                           "chunk_lo": lo, "chunk_hi": hi, "global_lo": g,
                           "codes_path": str(codes_path),
                           "cache": str(work / recipe / "slices" / f"{f:05d}_{lo:09d}.json")})
@@ -423,7 +467,7 @@ def count_slice(task: dict) -> dict:
     codes = np.asarray(np.load(task["codes_path"], mmap_mode="r")[task["global_lo"]: task["global_lo"] + n])
     tok = _tokenizer(task["model_repo"])
     groups = count_chunks_by_code(lambda docs, c: _decode_and_count_native(tok, docs, c),
-                                  tokens, codes, skip_codes=(0,))
+                                  tokens, codes, eos=task.get("eos", EOS_TOKEN_ID), skip_codes=(0,))
     out = {"bytes": int(tokens.nbytes), "download_s": t1 - t0, "count_s": time.time() - t1,
            "groups": {str(c): {"chunks": g["chunks"], "decoded_tokens": g["decoded_tokens"],
                                "counts": {str(k): v for k, v in g["counts"].items() if k <= MAX_N}}
@@ -504,6 +548,9 @@ def write_alpha_csv(out_root: Path, seed: int, data_map: dict) -> int:
 def main(argv: list[str] | None = None) -> int:
     p = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     p.add_argument("--recipes", default="", help="comma list; default: every recipe without a result")
+    p.add_argument("--data-map", default="",
+                   help="recipe -> files map (default configs/datadecide_data_map.json); a recipe may set "
+                        "base_url (plain HTTP files), n_instances (training chunks), eos_token_id, model_repo")
     p.add_argument("--seed", type=int, default=2)
     p.add_argument("--workers", type=int, default=0,
                    help="parallel slices; default 3 x vCPUs (capped by RAM) so downloads overlap decoding")
@@ -533,7 +580,7 @@ def main(argv: list[str] | None = None) -> int:
                    help="rerun failed slices up to this many times before giving up")
     args = p.parse_args(argv)
 
-    data_map = load_data_map()
+    data_map = load_data_map(Path(args.data_map)) if args.data_map else load_data_map()
     out_root, work = Path(args.out_dir), Path(args.work_dir)
     vcpus = usable_vcpus()
     if args.recipes:
@@ -547,7 +594,8 @@ def main(argv: list[str] | None = None) -> int:
     if unknown:
         raise SystemExit(f"unknown recipes: {unknown}")
 
-    sizes = {r: file_sizes(data_map["recipes"][r]["paths"], work) for r in names}
+    sizes = {r: file_sizes(data_map["recipes"][r]["paths"], work, data_map["recipes"][r].get("base_url"))
+             for r in names}
     chunks = {r: int(chunk_offsets(sizes[r])[-1]) for r in names}
     if args.upload_hf and not args.workers:
         # shared work: this pod only takes recipes it can build while keeping at least
@@ -568,7 +616,7 @@ def main(argv: list[str] | None = None) -> int:
           f"{len(names)} recipes")
     for r in names:
         tok = sum(sizes[r])
-        decode_tok = min(tok, TRAIN_INSTANCES_1B * SEQUENCE_LENGTH)
+        decode_tok = min(tok, n_instances(data_map["recipes"][r]) * SEQUENCE_LENGTH)
         cpu_h = decode_tok / (args.tokens_per_s_per_vcpu * vcpus) / 3600
         net_h = tok * 2 / (args.download_gb_per_s * 1e9) / 3600
         h = max(cpu_h, net_h)
@@ -668,11 +716,11 @@ def _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks) -> i
     with ProcessPoolExecutor(max_workers=workers) as pool:
         r = names[-1]  # the largest recipe: the one that matters for the projection
         rec = data_map["recipes"][r]
-        codes_path, _ = membership(r, sizes[r], args.seed, work)
+        codes_path, _ = membership(r, sizes[r], args.seed, work, n_instances(rec))
         tasks = make_tasks(r, rec, sizes[r], codes_path, task_chunks, work)
         sample = random.Random(0).sample(tasks, min(args.pilot, len(tasks)))
         for t in sample:
-            t["url"] = resolve_url(t["path"])
+            t["url"] = task_url(t)
         t0 = time.time()
         res = [x for x in pool.map(count_slice, sample) if not x.get("cached")]
         wall = time.time() - t0
@@ -697,9 +745,15 @@ def _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks) -> i
     return 0
 
 
-def _prepare(recipe: str, file_tokens: list[int], seed: int, work: str) -> tuple[str, int]:
+def n_instances(rec: dict) -> int:
+    """Training sequences (chunks) the recipe's model consumed (DataDecide 1B default)."""
+    return int(rec.get("n_instances", TRAIN_INSTANCES_1B))
+
+
+def _prepare(recipe: str, file_tokens: list[int], seed: int, work: str,
+             n_inst: int = TRAIN_INSTANCES_1B) -> tuple[str, int]:
     """Membership of one recipe, in a helper process (see _run)."""
-    path, base = membership(recipe, file_tokens, seed, Path(work))
+    path, base = membership(recipe, file_tokens, seed, Path(work), n_inst)
     return str(path), base
 
 
@@ -729,7 +783,8 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
 
     def ensure_prep(r: str):
         if r not in prep:
-            prep[r] = prep_pool.submit(_prepare, r, sizes[r], args.seed, str(work))
+            prep[r] = prep_pool.submit(_prepare, r, sizes[r], args.seed, str(work),
+                                       n_instances(data_map["recipes"][r]))
         return prep[r]
 
     if not args.upload_hf:  # alone: build every training order ahead, in order
@@ -803,7 +858,7 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
             for t in tasks:
                 while len(pending) >= workers * 4:  # bounded queue keeps memory flat
                     drain(block=True)
-                t["url"] = resolve_url(t["path"])  # fresh CDN link, resolved once per file
+                t["url"] = task_url(t)  # fresh CDN link (HF) or the plain HTTP URL
                 stats.setdefault("t_first_submit", time.time())
                 pending[pool.submit(count_slice, t)] = (
                     r, (t["chunk_hi"] - t["chunk_lo"]) * SEQUENCE_LENGTH * 2)

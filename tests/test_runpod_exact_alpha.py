@@ -41,11 +41,11 @@ def test_matches_brute_force():
     paths = list(files)
     data_map = {"recipes": {"fake": {"model_repo": "x/y", "paths": paths}}}
     ea.load_data_map = lambda: data_map
-    ea.file_sizes = lambda ps, work: [len(files[p]) for p in ps]
+    ea.file_sizes = lambda ps, work, base_url=None: [len(files[p]) for p in ps]
     ea.read_range = lambda task, start, length: files[task["path"]][start:start + length]
     ea.resolve_url = lambda path: "https://cdn.example/" + path
     ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
-    ea.membership_codes = lambda ft, seeds: membership_codes(ft, seeds, n_instances=N_INSTANCES)
+    ea.membership_codes = lambda ft, seeds, **kw: membership_codes(ft, seeds, n_instances=N_INSTANCES)
 
     with tempfile.TemporaryDirectory() as tmp:
         out, work = Path(tmp) / "out", Path(tmp) / "work"
@@ -133,10 +133,10 @@ def test_crash_then_resume_redoes_only_missing_slices():
     files = _fake_files(rng)
     paths = list(files)
     ea.load_data_map = lambda: {"recipes": {"fake": {"model_repo": "x/y", "paths": paths}}}
-    ea.file_sizes = lambda ps, work: [len(files[p]) for p in ps]
+    ea.file_sizes = lambda ps, work, base_url=None: [len(files[p]) for p in ps]
     ea.resolve_url = lambda path: "https://cdn.example/" + path
     ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
-    ea.membership_codes = lambda ft, seeds: membership_codes(ft, seeds, n_instances=N_INSTANCES)
+    ea.membership_codes = lambda ft, seeds, **kw: membership_codes(ft, seeds, n_instances=N_INSTANCES)
 
     with tempfile.TemporaryDirectory() as tmp:
         log = Path(tmp) / "downloads.log"
@@ -184,10 +184,10 @@ def test_retry_upload_verify_then_delete_pod():
     files = _fake_files(rng)
     paths = list(files)
     ea.load_data_map = lambda: {"recipes": {"fake": {"model_repo": "x/y", "paths": paths}}}
-    ea.file_sizes = lambda ps, work: [len(files[p]) for p in ps]
+    ea.file_sizes = lambda ps, work, base_url=None: [len(files[p]) for p in ps]
     ea.resolve_url = lambda path: "https://cdn.example/" + path
     ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
-    ea.membership_codes = lambda ft, seeds: membership_codes(ft, seeds, n_instances=N_INSTANCES)
+    ea.membership_codes = lambda ft, seeds, **kw: membership_codes(ft, seeds, n_instances=N_INSTANCES)
 
     with tempfile.TemporaryDirectory() as tmp:
         hub = Path(tmp) / "hub"
@@ -268,11 +268,11 @@ def test_pods_share_work_through_claims():
     dm = {"recipes": {"a": {"model_repo": "x/y", "paths": [p for p in files if p.startswith("a/")]},
                       "b": {"model_repo": "x/y", "paths": [p for p in files if p.startswith("b/")]}}}
     ea.load_data_map = lambda: dm
-    ea.file_sizes = lambda ps, work: [len(files[p]) for p in ps]
+    ea.file_sizes = lambda ps, work, base_url=None: [len(files[p]) for p in ps]
     ea.resolve_url = lambda path: "https://cdn.example/" + path
     ea.read_range = lambda task, start, length: files[task["path"]][start:start + length]
     ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
-    ea.membership_codes = lambda ft, seeds: membership_codes(ft, seeds, n_instances=N_INSTANCES)
+    ea.membership_codes = lambda ft, seeds, **kw: membership_codes(ft, seeds, n_instances=N_INSTANCES)
     ea.CLAIM_SETTLE_S = 0
 
     with tempfile.TemporaryDirectory() as tmp:
