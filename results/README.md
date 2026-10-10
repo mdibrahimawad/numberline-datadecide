@@ -18,6 +18,7 @@ access. Raw training data and model weights are **not** stored here.
 | `datadecide/decade_metrics.csv` | E05 | data-side decade metrics (infomax, power q, saturation K) | `python -m src.decade_metrics` |
 | `datadecide/count_features.csv` | E07 | 26 count features (incl. R = `F14_n_seen_lt_4000`), α, β, residual | `python -m src.count_features` |
 | `beta_fine/step69369-seed-default/<recipe>.{json,npz}`, `summary.csv` | E06 | 10-group β; `.npz` = per-prompt targets, groups and top-5 PCA scores at every layer, per seed | `runpod_jobs/beta.py --fine` |
+| `beta_fine/fixed_layer_beta.csv`, `beta_fine/frozen_lines.json` | E06, E09 | β at every fixed layer with α, S, R; the frozen DataDecide calibration lines (layer 8) used by E09 | `python -m src.fixed_layer_beta` |
 | `beta_fine/fine_vs_data.csv` | E06 | fine β joined with exact α, numbers seen, E01 β, family | `python -m src.beta_fine_analysis` |
 
 ## Conventions

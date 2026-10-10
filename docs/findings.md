@@ -45,7 +45,14 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
    at all**, R still predicts β (ρ = −0.51, p = 0.03) and α doesn't (ρ = −0.28, n.s.).
    So R's signal is not only "Dolma vs the rest", but the Dolma family carries much of
    it, and content (code, math) remains a live alternative explanation.
-7. **Status of the claim:** a strong exploratory finding, **not yet confirmed**. R was
+7. **Layer matters for "R beats α".** Items 2–4 use the paper-protocol β, with each model at its
+   own selected layer. With **every model at the same layer** (E06 data,
+   `python -m src.fixed_layer_beta`), α_OLS, R and S predict β about equally well at layers 6–11
+   (r ≈ 0.6–0.75). At layer 8, α_OLS is the best (r = +0.75 vs S +0.62, R −0.70). So on DataDecide
+   alone we can't say which formula is right. The pre-registered Paloma test (E09) is designed
+   to decide: Paloma trained on 150B tokens, and α predicts no effect of the extra data, while S/R
+   predict less compression.
+8. **Status of the claim:** a strong exploratory finding, **not yet confirmed**. R was
    the best of 26 features tried on the same 25 models (it passes Bonferroni, and the
    threshold can be anywhere in 1000–8000). The confirmation test is planned
    (E08: training checkpoints, where α and content are fixed but R changes).
@@ -105,3 +112,4 @@ notes can be understood in context:
 | All 25 exact | 25 | α_OLS significant (r = 0.56) but Dolma-driven; family-relative formula drops to R² 0.39, LOO 0.18; decade "power q→0" shape metric r = 0.67 | the 5 Dolma ablations have the flattest α and the highest β |
 | New β (E06) | 25 | β reproducible; same-layer α link r = 0.63; re-selected layers weaken it | layer near-ties |
 | Count features (E07) | 25 | R (rarely-seen count) is the best predictor and absorbs α | 26 features tested |
+| Fixed-layer β (2026-10-10) | 25 | at one common layer α, R and S are about equal (r 0.6–0.75); "R absorbs α" was layer-dependent | removes the per-model layer choice |

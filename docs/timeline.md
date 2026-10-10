@@ -60,7 +60,13 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
 - Code tidied and tested (`6728032`); result tables refreshed for all 25 recipes
   (`338c540`); repository reorganised into `experiments/` and `docs/` (this commit series).
 
+## 2026-10-10
+- Fixed-layer analysis (`src/fixed_layer_beta.py`): at one common layer α, R and S predict β about
+  equally well; "R absorbs α" was layer-dependent.
+- **E09 pre-registered**: three frozen predictors (α, S, R) to be tested on the 6 Paloma baselines.
+
 ## Next
+- **E09**: Paloma out-of-sample test (β, then 150B-token counts per corpus).
 - **E08**: the checkpoint test (R changes during training while α stays fixed);
   definitions and predictions are pre-registered in `experiments/E08_checkpoint_test/README.md`.
 - Training-seed noise of β (seeds `-4`, `-5`).

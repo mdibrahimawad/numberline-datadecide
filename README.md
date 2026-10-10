@@ -14,8 +14,8 @@ integer 0–10000 in **exactly the 100B tokens it was trained on**.
 |---|---|
 | **Established** | β is real and reproducible (±0.015) and varies 0.55–1.38 across the 25 models. The exact training-stream counts are reproducible: any 100B sample has the recipe's α, and the data seed doesn't matter. |
 | **α (power-law slope)** | correlates with β (r = +0.56, p = 0.003) in the predicted direction, but it is carried by the Dolma family and fails inside other families. Not the direct driver. |
-| **Best predictor so far** | **R = how many integers 10–9999 the model saw fewer than 4,000 times**: ρ = −0.73 with β, holds within families, and absorbs α (with R in the model, α has p = 0.47). Interpreted as Bayesian shrinkage of rarely-seen numbers. |
-| **Caveat** | Exploratory, and confounded with code/math content (Dolma). Confirmation planned: the **checkpoint test (E08)**. |
+| **Strongest candidate** | **R = how many integers 10–9999 the model saw fewer than 4,000 times** (and its smooth version S = Σ c/(c+4000), Bayesian shrinkage). With the paper-protocol β: ρ = −0.73, holds within families, and absorbs α (with R in the model, α has p = 0.47). |
+| **Caveat** | Exploratory, confounded with code/math content (Dolma), and layer-dependent: with every model at the same layer, α, R and S are about equally good (r ≈ 0.6–0.75). Deciding tests are pre-registered: **Paloma (E09)** and the **checkpoint test (E08)**. |
 
 Details: [`docs/findings.md`](docs/findings.md).
 
@@ -47,6 +47,7 @@ Details: [`docs/findings.md`](docs/findings.md).
 | [E06](experiments/E06_fine_beta/) | Fine β: 10 groups, reproducible, per-prompt data saved | done |
 | [E07](experiments/E07_count_features_rarely_seen/) | Count features: the rarely-seen count R | done (exploratory) |
 | [E08](experiments/E08_checkpoint_test/) | Checkpoint test: does β follow R during training? | planned, pre-registered |
+| [E09](experiments/E09_paloma_out_of_sample/) | Paloma: do formulas frozen on DataDecide predict 6 new models? | planned, pre-registered |
 
 ## Repository layout
 

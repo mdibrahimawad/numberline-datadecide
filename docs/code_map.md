@@ -48,6 +48,7 @@ every documented `python -m …` / `modal run …` command and every import keep
 | `beta_fine.py` | 10-group batched β, saves per-prompt PCA scores | E06 |
 | `beta_fine_analysis.py` | fine β vs exact α / numbers seen → `results/beta_fine/fine_vs_data.csv` | E06 |
 | `count_features.py` | 26 count-shape features incl. R (`F14_n_seen_lt_4000`) → `results/datadecide/count_features.csv` | E07 |
+| `fixed_layer_beta.py` | β at every fixed layer + the frozen DataDecide lines for E09 → `results/beta_fine/{fixed_layer_beta.csv,frozen_lines.json}` | E06, E09 |
 
 ## src/ — prior work (E00)
 
@@ -104,3 +105,4 @@ and the E00 counters.
 | `test_decade_metrics.py` | decade metrics |
 | `test_beta_fine.py` | 10-group β: bands, fits recover known β, batching = one-by-one, full run, R² blind spot |
 | `test_count_features.py` | the locked definition of R and the count features |
+| `test_fixed_layer_beta.py` | fixed-layer table, S/R definitions, frozen-line fit |

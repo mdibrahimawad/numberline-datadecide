@@ -53,5 +53,8 @@ fewer than 4,000 times. More rarely-seen numbers go with more compression (lower
 - **Main caveat, content:** code/math share (Dolma-only) correlates with β at r = 0.85 and
   with R at −0.79. Controlling for code share removes R's signal (partial r = −0.17). R
   still works among the 18 recipes without code (ρ = −0.51, p = 0.03), where α doesn't.
+- **Layer caveat (found later):** these numbers use the paper-protocol β (each model at its own
+  selected layer). With all models at one fixed layer, α, R and S are about equally good
+  (r ≈ 0.6–0.75; at layer 8, α is best at 0.75). See `docs/findings.md` item 7 and E09.
 - **Interpretation (hypothesis):** Bayesian shrinkage. Rarely-seen numbers are pulled
   toward a shared default and crowd together. Details and formulas: [DETAILS.md](DETAILS.md).
