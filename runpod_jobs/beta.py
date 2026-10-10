@@ -32,7 +32,7 @@ import time
 from pathlib import Path
 
 from runpod_jobs.pod import terminate_this_pod
-from src.datadecide_sweep import load_model_config, repo_id_for, write_summary_csv
+from src.datadecide_sweep import load_model_config, recipe_slug, repo_id_for, write_summary_csv
 
 
 def _prefetch(jobs, config, ahead: int, started: dict) -> None:
@@ -109,8 +109,9 @@ def main(argv: list[str] | None = None) -> int:
 
     models = [m.strip() for m in args.models.split(",") if m.strip()] or list(config["recipes"])
     revisions = [r.strip() for r in args.revisions.split(",") if r.strip()]
+    # output files are named by recipe_slug (a full repo id like allenai/x becomes allenai_x)
     jobs = [(m, rev, out_root / rev) for rev in revisions for m in models
-            if not (out_root / rev / f"{m}.json").exists()]
+            if not (out_root / rev / f"{recipe_slug(m)}.json").exists()]
     print(f"[beta] {'fine (10 groups)' if args.fine else 'paper (4 groups)'}: {len(jobs)} model runs to do "
           f"({len(models)} models x {len(revisions)} revisions, finished ones skipped), {args.parallel} at a time")
     if args.dry_run:
@@ -135,7 +136,7 @@ def main(argv: list[str] | None = None) -> int:
     if hf and args.delete_pod_when_done:
         api, repo = hf
         have = set(api.list_repo_files(repo, repo_type="dataset"))
-        missing = [m for m, rev, _ in jobs if f"{rev}/{m}.json" not in have]
+        missing = [m for m, rev, _ in jobs if f"{rev}/{recipe_slug(m)}.json" not in have]
         if not missing:
             terminate_this_pod("every model uploaded and verified")
         else:
@@ -154,7 +155,7 @@ def _run_all(args, jobs, revisions, config, out_root: Path, hf) -> bool:
 
     def launch(m, rev, out_dir):
         (out_dir / "logs").mkdir(parents=True, exist_ok=True)
-        log = open(out_dir / "logs" / f"{m}.log", "a")
+        log = open(out_dir / "logs" / f"{recipe_slug(m)}.log", "a")
         if args.fine:
             cmd = [sys.executable, "-m", "src.beta_fine", "--model", m, "--revision", rev, "--k", str(args.k),
                    "--seeds", args.seeds, "--device", "cuda", "--out-dir", str(out_dir)]
@@ -179,7 +180,7 @@ def _run_all(args, jobs, revisions, config, out_root: Path, hf) -> bool:
                 else:
                     status = "ok"
                     if hf:
-                        files = [out_dir / f"{m}.json", out_dir / f"{m}.npz"]
+                        files = [out_dir / f"{recipe_slug(m)}.json", out_dir / f"{recipe_slug(m)}.npz"]
                         status += ", uploaded" if _upload(*hf, files, rev) else ", UPLOAD FAILED"
                 if not proc.returncode and len(revisions) == 1:
                     _free_cache(repo_id_for(m, config))

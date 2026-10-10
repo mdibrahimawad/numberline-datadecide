@@ -31,6 +31,7 @@ every documented `python -m …` / `modal run …` command and every import keep
 |---|---|---|
 | `datadecide_models.json` | the 25 recipe slugs, model repo template `allenai/DataDecide-{recipe}-1B`, revision `step69369-seed-default` | all |
 | `datadecide_data_map.json` | recipe → ordered list of training `.npy` files (duplicates kept) + constants; rebuilt by `python -m src.datadecide_sampling` | E03, E04 |
+| `paloma/` | the 6 Paloma baseline training configs (OLMo commit 1f2f020) + `paloma_data_map.json` (files, seed, batch, steps) | E09 |
 
 ## src/ — active
 
@@ -106,3 +107,4 @@ and the E00 counters.
 | `test_beta_fine.py` | 10-group β: bands, fits recover known β, batching = one-by-one, full run, R² blind spot |
 | `test_count_features.py` | the locked definition of R and the count features |
 | `test_fixed_layer_beta.py` | fixed-layer table, S/R definitions, frozen-line fit |
+| `test_runpod_beta.py` | the GPU runner end to end with a fake worker and fake HF (full repo ids -> slug file names, upload, self-delete) |

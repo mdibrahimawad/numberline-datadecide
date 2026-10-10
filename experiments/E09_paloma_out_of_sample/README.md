@@ -74,6 +74,15 @@ Secondary analyses (labelled as such): a shift-corrected MAE (subtract the mean
 residual, in case Paloma's unfinished learning-rate schedule moves every β by the same
 amount), the β_coarse and layer-6–10 versions, and α_MLE.
 
+## Facts found after pre-registration (do not change the plan above)
+- Models: `allenai/paloma-1b-baseline-{c4,mc4,redpajama,pile,falcon-refinedweb,dolma}`.
+- Training configs (OLMo commit `1f2f020`) are saved in `configs/paloma/`: data seed **6198**,
+  batch 2048 × 2048 tokens, 35,000 steps ≈ 146.8B tokens, full lists of tokenized training
+  files. So an **exact** reproduction of each training stream (as in E04) is possible if those
+  files are downloadable; otherwise the random-sample plan applies.
+- `runpod_jobs/beta.py` now names outputs by slug, so full repo ids work
+  (`tests/test_runpod_beta.py`).
+
 ## Steps
 1. **List the models** (laptop):
    `python -c "from huggingface_hub import list_models; [print(m.id) for m in list_models(author='allenai', search='paloma')]"`
