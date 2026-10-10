@@ -57,6 +57,13 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
    threshold can be anywhere in 1000–8000). The confirmation test is planned
    (E08: training checkpoints, where α and content are fixed but R changes).
 
+9. **Out-of-sample test on the 6 Paloma models (E09, pre-registered): no formula
+   transfers.** Only 3 models pass the locked layer-8 validity checks. On them, α_OLS has the
+   lowest error (MAE 0.19) but misses the pre-set bar (0.15); S overpredicts by ~0.5; R
+   predicts β ≈ 2–2.6 against a measured 0.8–1.0 and is **falsified**. The "more data → less
+   compression" prediction of S/R goes the wrong way. Across all 5 counted models none of
+   the predictors ranks them. Details: `experiments/E09_paloma_out_of_sample/README.md` → Result.
+
 ## What holds up (with evidence)
 
 | Claim | Evidence | Experiment |

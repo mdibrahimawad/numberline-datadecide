@@ -147,3 +147,38 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
   tell them apart. This test can.
 - n = 6 is small: the ordering test has little power, so the accuracy and amount-effect
   checks carry most of the information.
+
+## Result (2026-10-10; `python -m src.paloma_analysis` → `results/paloma_counts/{validity.csv,scores.json}`)
+
+**Validity at layer 8 (locked checks):** dolma, mc4, pile valid; c4 (|ρ| 0.70, acceptance 0.46),
+falcon-refinedweb (|ρ| 0.899, acceptance 0.74) and redpajama (|ρ| 0.886; no counts anyway)
+invalid. So the primary test has **n = 3**, too few for the ordering criterion (planned for n = 6).
+
+**Primary, β_cont at layer 8, valid models (dolma 0.830, mc4 0.966, pile 0.942):**
+
+| Predictor | Predicted (dolma, mc4, pile) | MAE | Limit (1.5 × DataDecide LOO) | Mean residual |
+|---|---|---|---|---|
+| α_OLS | 1.08, 1.22, 0.88 | **0.189** | 0.151 → fails | −0.145 |
+| S | 1.20, 1.54, 1.42 | 0.471 | 0.202 → fails | −0.471 |
+| R | 2.11, 2.59, 2.59 | 1.516 | 0.169 → fails | −1.516 |
+
+1. Ordering: not testable with n = 3 (S ρ = +1.0, R +0.87, α +0.5; any order of 3 has p ≥ 0.17).
+2. Accuracy: **no predictor transfers.**
+3. Winner (lowest MAE): **α_OLS**.
+4. Amount effect: the measured β lies *below* the α prediction (−0.145), not above it as S/R
+   predicted. **The "more data → less compression" prediction of S and R is not supported.**
+
+**Secondary analyses (all 5 counted models, including the invalid ones):** α has the lowest
+MAE in every variant (0.12–0.30); none of the three predictors orders the 5 models in the
+primary target (Spearman ≈ 0 for β_cont at L8, L6–10 mean, own layer). α transfers in one
+variant only (β_coarse at each model's own layer, MAE 0.117 ≤ 0.130). R is off by ~1 β unit
+everywhere.
+
+**Conclusion:** R is falsified out of sample (it predicted β ≈ 2–2.6; measured 0.6–1.5). S
+overpredicts by ~0.3–0.5. α_OLS is the least wrong in level but does not rank the Paloma models
+and misses the pre-set accuracy bar. None of the DataDecide formulas predicts individual
+Paloma models' β. Caveats: few valid models; Paloma's number line sits at different depths
+(c4 and falcon are weak at layer 8); 4 of 5 counts are public versions, not the exact training
+data. Note for future pre-registrations: the |ρ| ≥ 0.9 layer-8 check would also have excluded
+DataDecide c4 (0.897).
+
