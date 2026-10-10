@@ -106,7 +106,7 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
     as 1 GB pieces (lines starting in each piece), so they are sampled in random pieces too.
   - **Deviations (state them in the paper):** these are the public releases, not Paloma's
     decontaminated training versions (removed documents are a tiny fraction); RedPajama
-    lacks its 'book' subset (no longer distributed); the Pile is `pile-uncopyrighted` (no
+    lacks its 'book' subset (no longer distributed) and the few files its server now refuses (listed in `summary.json` → `unavailable_files`; the run stops if more than 5 % of a subset is missing); the Pile is `pile-uncopyrighted` (no
     Books3 and a few other sets); RefinedWeb is the whole public release (Paloma held out
     5 %). The sample is random, not the model's exact order; between data seeds E04 found R
     to move by ±2 (c4) and ±17 (dolma1_7).

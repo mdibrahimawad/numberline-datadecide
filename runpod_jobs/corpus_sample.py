@@ -68,10 +68,37 @@ def _hf_sizes(repo: str, paths: list[str]) -> dict[str, int]:
     return out
 
 
-def _head_sizes(urls: list[str]) -> dict[str, int]:
-    from runpod_jobs.exact_alpha import _http_sizes
+MAX_UNAVAILABLE = 0.05     # more dead files than this share of a stratum stops the run (sample bias)
 
-    return _http_sizes(urls)
+
+def _head_sizes(urls: list[str], unavailable: list | None = None) -> dict[str, int]:
+    """Content-Length per URL (HEAD in parallel, with retries). Files the server refuses
+    for good (403 / 404 / 410: a few RedPajama files are gone) are left out and appended
+    to `unavailable`; they are reported in the summary."""
+    import requests
+    from concurrent.futures import ThreadPoolExecutor
+
+    def head(url: str):
+        for attempt in range(8):
+            try:
+                r = requests.head(url, headers=_auth(url), allow_redirects=True, timeout=60)
+                if r.status_code == 200 and r.headers.get("Content-Length"):
+                    return url, int(r.headers["Content-Length"])
+                if r.status_code in (403, 404, 410):
+                    return url, None
+            except requests.RequestException:
+                pass
+            time.sleep(min(60, 2 ** attempt) + random.random())
+        raise SystemExit(f"{url}: no size after retries")
+
+    with ThreadPoolExecutor(32) as ex:
+        got = dict(ex.map(head, urls))
+    dead = [u for u in urls if got[u] is None]
+    if unavailable is not None:
+        unavailable.extend(dead)
+    if len(dead) > MAX_UNAVAILABLE * len(urls):
+        raise SystemExit(f"{len(dead)} of {len(urls)} files unavailable (e.g. {dead[:3]}): too many to ignore")
+    return {u: n for u, n in got.items() if n is not None}
 
 
 def split_large(files: dict[str, list[dict]], piece: int | None = None) -> dict[str, list[dict]]:
@@ -93,14 +120,15 @@ def split_large(files: dict[str, list[dict]], piece: int | None = None) -> dict[
     return out
 
 
-def list_files(spec: dict) -> dict[str, list[dict]]:
-    """{stratum: [{"url", "size", "format"}]} for a corpus spec (big .jsonl files split)."""
-    return split_large(_list_files(spec))
+def list_files(spec: dict, unavailable: list | None = None) -> dict[str, list[dict]]:
+    """{stratum: [{"url", "size", "format"}]} for a corpus spec (big .jsonl files split);
+    URLs the server refuses are skipped and appended to `unavailable`."""
+    return split_large(_list_files(spec, unavailable))
 
 
-def _list_files(spec: dict) -> dict[str, list[dict]]:
+def _list_files(spec: dict, unavailable: list | None) -> dict[str, list[dict]]:
     if "strata_urls" in spec:                            # explicit lists (tests, ad-hoc)
-        return {st: [{"url": u, "size": s, "format": _fmt(spec, u)} for u, s in _head_sizes(urls).items()]
+        return {st: [{"url": u, "size": s, "format": _fmt(spec, u)} for u, s in _head_sizes(urls, unavailable).items()]
                 for st, urls in spec["strata_urls"].items()}
     if "url_lists" in spec:                              # RedPajama: urls/<subset>.txt in the HF repo
         from huggingface_hub import hf_hub_download
@@ -111,7 +139,7 @@ def _list_files(spec: dict) -> dict[str, list[dict]]:
                                    token=os.environ.get("HF_TOKEN"))
             urls = [x.strip() for x in Path(path).read_text().splitlines() if x.strip()]
             out[subset] = [{"url": u, "size": s, "format": _fmt(spec, u)}
-                           for u, s in _head_sizes(urls).items()]
+                           for u, s in _head_sizes(urls, unavailable).items()]
         return out
     lst = spec["list"]
     if "template" in lst:
@@ -344,6 +372,7 @@ def write_outputs(corpus: str, spec: dict, counts: np.ndarray, agg: dict, budget
                "tokenizer": args.tokenizer, "source": {k: spec[k] for k in spec if k != "urls"},
                "files_used": agg.get("files"), "docs": agg.get("docs"), "text_bytes": agg.get("text_bytes"),
                "compressed_bytes": agg.get("compressed_bytes"), "per_stratum": per_stratum,
+               "unavailable_files": getattr(args, "unavailable", []),
                **count_summary(counts)}
     atomic_write(out / "summary.json", json.dumps(summary, indent=2) + "\n")
     print(f"[{corpus}] DONE alpha_ols={summary['alpha_ols']:.4f} alpha_mle={summary['alpha_mle']:.5f} "
@@ -400,7 +429,11 @@ def main(argv: list[str] | None = None) -> int:
     if args.delete_pod_when_done and not args.upload_hf:
         raise SystemExit("--delete-pod-when-done needs --upload-hf (results must be off the pod first)")
 
-    files = shuffled(list_files(spec), args.seed)
+    args.unavailable = []
+    files = shuffled(list_files(spec, args.unavailable), args.seed)
+    if args.unavailable:
+        print(f"[plan] {len(args.unavailable)} files refused by the server, skipped (listed in summary.json): "
+              f"{args.unavailable[:3]}", flush=True)
     n_files = sum(len(v) for v in files.values())
     gb = sum(f["size"] for v in files.values() for f in v) / 1e9
     print(f"[plan] {args.corpus}: {n_files} files, {gb:,.0f} GB compressed, strata "

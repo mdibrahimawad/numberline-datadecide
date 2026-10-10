@@ -203,6 +203,33 @@ def _check_pieces(docs: list[str], pieces_to_try):
             server.shutdown()
 
 
+def test_files_the_server_refuses_are_skipped_and_reported():
+    cs._tokenizer = lambda repo: _FakeTok()
+    with tempfile.TemporaryDirectory() as tmp:
+        tmp = Path(tmp)
+        root = tmp / "srv"
+        root.mkdir()
+        names = [_write(root, f"f{i}.jsonl", _docs(i)).name for i in range(30)]
+        server, base = _serve(root)
+        try:
+            spec = {"strata_urls": {"all": [base + n for n in names] + [base + "gone.jsonl"]},
+                    "format": "auto", "text_key": "text"}
+            per_file = 200 * (len(_docs(0)[0].split()) + 1)
+            counts, summary = _run(tmp, spec, 2 * per_file)
+            assert summary["unavailable_files"] == [base + "gone.jsonl"]
+            assert abs(summary["tokens_est"] - 2 * per_file) < 1e-6 * per_file
+            # too many dead files: refuse instead of sampling a biased remainder
+            spec["strata_urls"]["all"] += [base + f"gone{i}.jsonl" for i in range(3)]
+            try:
+                cs.list_files(spec)
+            except SystemExit as exc:
+                assert "unavailable" in str(exc)
+            else:
+                raise AssertionError("4 of 34 dead files were accepted")
+        finally:
+            server.shutdown()
+
+
 def test_rare_k_matches_the_analysis_and_needs_no_analysis_packages():
     import subprocess
 
@@ -218,5 +245,6 @@ if __name__ == "__main__":
     test_prefix_with_fractional_last_file_in_every_format()
     test_strata_get_budget_in_proportion_and_small_corpus_repeats()
     test_big_jsonl_split_into_byte_ranges_counts_every_line_once()
+    test_files_the_server_refuses_are_skipped_and_reported()
     test_rare_k_matches_the_analysis_and_needs_no_analysis_packages()
     print("ok")
