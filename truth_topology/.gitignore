@@ -1,0 +1,5 @@
+work/
+results/validation/*.npz
+results/*/*/cells/
+results/*/*/summaries/
+results/*/*/velocity_pairwise.npz

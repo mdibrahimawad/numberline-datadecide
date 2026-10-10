@@ -1,0 +1,111 @@
+{
+ "n": 1504,
+ "d": 2048,
+ "criteria": {
+  "1_no_signal": "|L1-0.5|<0.06, |T1 gap|<0.15, |z(T3b)|<3, |z(T3c)|<3",
+  "2_shared_shift": "L1>0.9, L3>0.9, |T1 gap|<0.15, z(T3b)>3, z(T3c)>3",
+  "3_topic_specific_shift": "L1_within>0.9, |L3-0.5|<0.1, |z(T3c)|<3, z(T3b)>3",
+  "4_shape_only": "|L1-0.5|<0.1, T1>0.95, T1 gap>0.2",
+  "5_abrupt_change": "H1 velocity peaks at the change transition, peak/median > 3",
+  "6_scale_invariance": "x10 cloud: normalised summaries, T1, T3 identical (rel. diff < 1e-6)"
+ },
+ "criteria_changes": [
+  "4_shape_only: was 'T1 gap>0.3'. First run gave T1 = 1.00 but T1-null = 0.70 (overlapping subsamples from two fixed pools are told apart by pool idiosyncrasies), so a gap > 0.3 was unreachable even for a perfect shape test. Now T1>0.95 and gap>0.2.",
+  "3_topic_specific_shift: topic shift directions were independent random draws; in d=2048 their accidental overlap (~1/sqrt(d)) times a 25-sigma shift moved L3 to 0.40. The scenario means 'unrelated directions', so they are now exactly orthogonal to each other and to the topic means."
+ ],
+ "tests": {
+  "1_no_signal": {
+   "values": {
+    "L1": 0.5364188405387054,
+    "L1_within": 0.5071213271977916,
+    "L3": 0.5205307095090609,
+    "L2": 0.5234428050022635,
+    "T1": 0.7344615384615384,
+    "T1_null": 0.7187692307692307,
+    "T1_gap": 0.015692307692307672,
+    "T3a_z": 47.02415334207931,
+    "T3b": 0.48946887952438073,
+    "T3b_z": -0.7489586238613319,
+    "T3c": 0.5156555772994129,
+    "T3c_z": 1.0275582639760727
+   },
+   "pass": true
+  },
+  "2_shared_shift": {
+   "values": {
+    "L1": 1.0,
+    "L1_within": 1.0,
+    "L3": 1.0,
+    "L2": 1.0,
+    "T1": 0.8513846153846153,
+    "T1_null": 0.7554461538461539,
+    "T1_gap": 0.09593846153846142,
+    "T3a_z": 50.992586788957894,
+    "T3b": 0.9978920653678743,
+    "T3b_z": 37.85318345299137,
+    "T3c": 0.9990610328638497,
+    "T3c_z": 33.75881879031236
+   },
+   "pass": true
+  },
+  "3_topic_specific_shift": {
+   "values": {
+    "L1": 1.0,
+    "L1_within": 1.0,
+    "L3": 0.5241976690463698,
+    "L2": 1.0,
+    "T1": 0.7661538461538461,
+    "T1_null": 0.6516923076923076,
+    "T1_gap": 0.1144615384615385,
+    "T3a_z": 50.417099252301,
+    "T3b": 0.9978920653678743,
+    "T3b_z": 38.23027980965404,
+    "T3c": 0.7142857142857143,
+    "T3c_z": 1.1505269486494796
+   },
+   "pass": true
+  },
+  "4_shape_only": {
+   "values": {
+    "L1": 0.5130220122227251,
+    "L1_within": 0.49293406482187135,
+    "L3": 0.5000003108483352,
+    "L2": 0.4538942253282028,
+    "T1": 1.0,
+    "T1_null": 0.7048,
+    "T1_gap": 0.2952,
+    "T3a_z": 53.12244733433716,
+    "T3b": 0.74682683541331,
+    "T3b_z": 18.07323064224848,
+    "T3c": 0.7474849094567404,
+    "T3c_z": 15.634783995236196
+   },
+   "pass": true
+  },
+  "5_abrupt_change": {
+   "values": {
+    "velocity_h1": [
+     0.014761324317368409,
+     0.014973633798934363,
+     0.014577731306727685,
+     0.16829597372756,
+     0.010790013744255405,
+     0.01086311643853986,
+     0.010639889925552507
+    ],
+    "change_transition": 3,
+    "peak_transition": 3,
+    "peak_ratio": 11.54473012202459
+   },
+   "pass": true
+  },
+  "6_scale_invariance": {
+   "values": {
+    "max_rel_diff_summaries": 0.0,
+    "max_abs_diff_T1_T3": 0.0
+   },
+   "pass": true
+  }
+ },
+ "all_pass": true
+}

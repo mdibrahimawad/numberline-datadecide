@@ -1,0 +1,83 @@
+{
+ "length_unit": "words",
+ "topics": {
+  "cities": {
+   "n_true": 275,
+   "n_false": 275,
+   "length_auc": 0.5152462809917355,
+   "rebalanced": false,
+   "passes": true,
+   "length_by_class": {
+    "0": {
+     "mean": 7.385454545454546,
+     "hist": {
+      "7": "207",
+      "8": "46",
+      "9": "14",
+      "10": "5",
+      "12": "2",
+      "14": "1"
+     }
+    },
+    "1": {
+     "mean": 7.327272727272727,
+     "hist": {
+      "7": "220",
+      "8": "33",
+      "9": "14",
+      "10": "5",
+      "11": "1",
+      "12": "2"
+     }
+    }
+   },
+   "countries": 51,
+   "countries_one_class_only": 0
+  },
+  "sp_en_trans": {
+   "n_true": 177,
+   "n_false": 177,
+   "length_auc": 0.5171885473522934,
+   "rebalanced": false,
+   "passes": true,
+   "length_by_class": {
+    "0": {
+     "mean": 6.209039548022599,
+     "hist": {
+      "6": "140",
+      "7": "37"
+     }
+    },
+    "1": {
+     "mean": 6.163841807909605,
+     "hist": {
+      "6": "148",
+      "7": "29"
+     }
+    }
+   }
+  },
+  "larger_than": {
+   "n_true": 300,
+   "n_false": 300,
+   "length_auc": 0.5,
+   "rebalanced": false,
+   "passes": true,
+   "length_by_class": {
+    "0": {
+     "mean": 5.0,
+     "hist": {
+      "5": "300"
+     }
+    },
+    "1": {
+     "mean": 5.0,
+     "hist": {
+      "5": "300"
+     }
+    }
+   }
+  }
+ },
+ "passes": true
+}
