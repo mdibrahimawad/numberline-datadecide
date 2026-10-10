@@ -92,6 +92,25 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
 - Training data: only Dolma's tokenized files are public (`olmo-data.org`, HTTP 200); the five
   decontaminated corpora return 404, so they use the random-sample plan (a stated deviation).
 
+- How the counts are made (built 2026-10-10, before any Paloma β was measured):
+  - **Dolma: exact.** `runpod_jobs/exact_alpha.py` with `configs/paloma/paloma_dolma_exact_map.json`:
+    the 249 files from olmo-data.org, seed 6198, 71,680,000 sequences of 2,048 tokens, EOS 0,
+    decoded with the tokenizer the files were made with (`allenai/gpt-neox-olmo-dolma-v1_5`).
+    Split into 8 file-disjoint parts that share one training order, so several pods share it;
+    the parts are added up and must hold exactly 146,800,640,000 tokens.
+  - **The other five: random sample** (`runpod_jobs/corpus_sample.py`,
+    `configs/paloma/corpus_sources.json`): files in a seeded random order (seed 6198), within
+    each stratum (RedPajama's subsets) in proportion to its estimated tokens, until 146.8B
+    tokens; the last file counts with the fraction needed. Tokens are estimated by tokenizing
+    every 50th document (+1 EOS per document). Uncompressed .jsonl files over 2 GB are read
+    as 1 GB pieces (lines starting in each piece), so they are sampled in random pieces too.
+  - **Deviations (state them in the paper):** these are the public releases, not Paloma's
+    decontaminated training versions (removed documents are a tiny fraction); RedPajama
+    lacks its 'book' subset (no longer distributed); the Pile is `pile-uncopyrighted` (no
+    Books3 and a few other sets); RefinedWeb is the whole public release (Paloma held out
+    5 %). The sample is random, not the model's exact order; between data seeds E04 found R
+    to move by ±2 (c4) and ±17 (dolma1_7).
+
 ## Steps
 1. **List the models** (laptop):
    `python -c "from huggingface_hub import list_models; [print(m.id) for m in list_models(author='allenai', search='paloma')]"`
@@ -100,8 +119,9 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
    `1f2f020`), tokenized files, seed.
 3. **β** (GPU, ~10 min, < $0.20): `python -m runpod_jobs.beta --fine --models <6 repo ids> …`
    (`src/beta_fine.py` accepts full repo ids).
-4. **Counts** (CPU pods, roughly $5–15): a new runner for "first 150B tokens of a uniform
-   shuffle" of each corpus, with tests, built after step 2.
+4. **Counts** (CPU pods, roughly $5–15, ~1 h): `bash runpod_jobs/paloma_counts.sh <corpus>`
+   on one pod per corpus (3 pods for Dolma), see `docs/runpod.md` § 4b; then
+   `python -m runpod_jobs.fetch_results --kind paloma`.
 5. **Analysis:** `src/paloma_analysis.py`, implementing exactly the criteria above.
 
 ## Context for reading the result

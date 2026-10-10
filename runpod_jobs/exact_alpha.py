@@ -417,7 +417,8 @@ def file_sizes(paths: list[str], work: Path, base_url: str | None = None) -> lis
 
 def membership(recipe: str, file_tokens: list[int], seed: int, work: Path,
                n_instances: int = TRAIN_INSTANCES_1B) -> tuple[Path, int]:
-    """uint8 multiplicity per global chunk for `seed` (0 = not trained on), cached."""
+    """uint8 multiplicity per global chunk for `seed` (0 = not trained on), cached. `recipe`
+    is the cache key: the parts of a split recipe pass the whole recipe's name and share it."""
     folder = work / recipe
     path, meta = folder / f"codes_seed{seed}.npy", folder / f"codes_seed{seed}.json"
     if not meta.exists():
@@ -430,12 +431,41 @@ def membership(recipe: str, file_tokens: list[int], seed: int, work: Path,
     return path, json.loads(meta.read_text())["base"]
 
 
+def part_files(rec: dict, file_tokens: list[int]) -> set[int] | None:
+    """Files this part of a split recipe counts (None: not split). A recipe with
+    "part": [k, n] keeps the whole recipe's file list and training order but counts only
+    its share of the files, so n pods can share one big recipe; the n parts are disjoint,
+    cover every file, and are balanced by size (largest file to the lightest part)."""
+    if "part" not in rec:
+        return None
+    k, n = rec["part"]
+    load, owner = [0] * n, {}
+    for f in sorted(range(len(file_tokens)), key=lambda i: (-file_tokens[i], i)):
+        j = min(range(n), key=lambda b: (load[b], b))
+        owner[f] = j
+        load[j] += file_tokens[f]
+    return {f for f, j in owner.items() if j == k}
+
+
+def part_tokens(rec: dict, file_tokens: list[int]) -> int:
+    keep = part_files(rec, file_tokens)
+    return sum(t for f, t in enumerate(file_tokens) if keep is None or f in keep)
+
+
+def order_key(recipe: str, rec: dict) -> str:
+    """Cache key of the training order: shared by the parts of a split recipe."""
+    return rec.get("membership_of", recipe)
+
+
 def make_tasks(recipe: str, rec: dict, file_tokens: list[int], codes_path: Path,
                task_chunks: int, work: Path) -> list[dict]:
     offsets = chunk_offsets(file_tokens)
     codes = np.load(codes_path, mmap_mode="r")
+    keep = part_files(rec, file_tokens)
     tasks = []
     for f, (path, t) in enumerate(zip(rec["paths"], file_tokens)):
+        if keep is not None and f not in keep:
+            continue
         n = t // SEQUENCE_LENGTH
         for lo in range(0, n, task_chunks):
             hi = min(n, lo + task_chunks)
@@ -512,6 +542,28 @@ def finish_recipe(recipe: str, tasks: list[dict], seed: int, base: int, n_chunks
     print(f"[{recipe}] DONE alpha_ols={s['alpha_ols']:.4f} alpha_mle={s['alpha_mle']:.5f} "
           f"numbers={s['integer_matches']:.3e} tokens={s['tokens'] / 1e9:.2f}B -> {out}", flush=True)
     return summary
+
+
+def merge_parts(out_root: Path, data_map: dict, recipe: str, seed: int) -> tuple[np.ndarray, dict]:
+    """Sum the counts of every part of a split recipe (data-map entries with
+    "membership_of": recipe). Refuses if a part is missing or the parts' tokens do not add
+    up to the recipe's training tokens."""
+    parts = sorted(r for r, rec in data_map["recipes"].items() if rec.get("membership_of") == recipe)
+    if not parts:
+        raise SystemExit(f"no parts of {recipe} in the data map")
+    total, tokens = np.zeros(MAX_N + 1), 0.0
+    for r in parts:
+        folder = out_root / f"exact_100b_{r}"
+        if not (folder / "summary.json").exists():
+            raise SystemExit(f"part {r} has no result yet in {out_root}")
+        with open(folder / f"counts_seed_{seed}.csv") as fh:
+            for row in csv.DictReader(fh):
+                total[int(row["number"])] += int(row["count"])
+        tokens += json.loads((folder / "summary.json").read_text())["per_seed"][str(seed)]["tokens"]
+    want = n_instances(data_map["recipes"][parts[0]]) * SEQUENCE_LENGTH
+    if tokens != want:
+        raise SystemExit(f"{recipe}: parts hold {tokens:.0f} tokens, training used {want}")
+    return total, {"parts": parts, "tokens": tokens}
 
 
 def write_alpha_csv(out_root: Path, seed: int, data_map: dict) -> int:
@@ -608,15 +660,15 @@ def main(argv: list[str] | None = None) -> int:
     max_chunks = max((chunks[r] for r in names), default=0)
     workers = args.workers or default_workers(vcpus, max_chunks)
     if args.upload_hf:  # several pods share the list: biggest first balances their finish times
-        names.sort(key=lambda r: -sum(sizes[r]))
+        names.sort(key=lambda r: -part_tokens(data_map["recipes"][r], sizes[r]))
     else:               # one pod: smallest first, so most recipes are done early
-        names.sort(key=lambda r: sum(sizes[r]))
+        names.sort(key=lambda r: part_tokens(data_map["recipes"][r], sizes[r]))
     tot_h = 0.0
     print(f"[plan] {vcpus} vCPUs, {usable_ram_gb():.0f} GB RAM, {workers} workers, seed {args.seed}, "
           f"{len(names)} recipes")
     for r in names:
-        tok = sum(sizes[r])
-        decode_tok = min(tok, n_instances(data_map["recipes"][r]) * SEQUENCE_LENGTH)
+        tok = part_tokens(data_map["recipes"][r], sizes[r])
+        decode_tok = min(tok, n_instances(data_map["recipes"][r]) * SEQUENCE_LENGTH * tok / sum(sizes[r]))
         cpu_h = decode_tok / (args.tokens_per_s_per_vcpu * vcpus) / 3600
         net_h = tok * 2 / (args.download_gb_per_s * 1e9) / 3600
         h = max(cpu_h, net_h)
@@ -716,7 +768,7 @@ def _pilot(args, names, sizes, data_map, work, workers, vcpus, task_chunks) -> i
     with ProcessPoolExecutor(max_workers=workers) as pool:
         r = names[-1]  # the largest recipe: the one that matters for the projection
         rec = data_map["recipes"][r]
-        codes_path, _ = membership(r, sizes[r], args.seed, work, n_instances(rec))
+        codes_path, _ = membership(order_key(r, rec), sizes[r], args.seed, work, n_instances(rec))
         tasks = make_tasks(r, rec, sizes[r], codes_path, task_chunks, work)
         sample = random.Random(0).sample(tasks, min(args.pilot, len(tasks)))
         for t in sample:
@@ -775,7 +827,7 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
               f"{stats['done_bytes'] / max(1, total_bytes - stats['skipped_bytes']):.1%} of this pod's data  "
               f"ETA {eta:.1f} h{cost}", flush=True)
 
-    total_bytes = sum(sum(sizes[r]) * 2 for r in names)
+    total_bytes = sum(part_tokens(data_map["recipes"][r], sizes[r]) * 2 for r in names)
     # the training order of every recipe is built ahead, one at a time, in a
     # separate process, so the counting workers never wait for it
     prep_pool = ProcessPoolExecutor(max_workers=1)
@@ -783,8 +835,8 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
 
     def ensure_prep(r: str):
         if r not in prep:
-            prep[r] = prep_pool.submit(_prepare, r, sizes[r], args.seed, str(work),
-                                       n_instances(data_map["recipes"][r]))
+            prep[r] = prep_pool.submit(_prepare, order_key(r, data_map["recipes"][r]), sizes[r],
+                                       args.seed, str(work), n_instances(data_map["recipes"][r]))
         return prep[r]
 
     if not args.upload_hf:  # alone: build every training order ahead, in order
@@ -838,7 +890,7 @@ def _run(args, names, sizes, data_map, work, out_root, workers, task_chunks) -> 
 
         for i, r in enumerate(names):
             if args.upload_hf and not hf_take(args.upload_hf, r, args.seed):
-                stats["skipped_bytes"] += sum(sizes[r]) * 2
+                stats["skipped_bytes"] += part_tokens(data_map["recipes"][r], sizes[r]) * 2
                 continue
             if r not in mine:
                 mine.append(r)

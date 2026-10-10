@@ -51,8 +51,9 @@ pip install -q --upgrade pip
 if [ "$MODE" = cpu ]; then
   # modal is only imported for shared helper functions; no Modal account is used
   pip install --progress-bar on "numpy>=2.0" "requests>=2.32" "tokenizers>=0.20" "orjson>=3.10" \
-                 "huggingface_hub>=0.28" "scipy>=1.11" modal
+                 "huggingface_hub>=0.28" "scipy>=1.11" "zstandard>=0.22" "pyarrow>=15.0.0" modal
   python -m runpod_jobs.exact_alpha --help >/dev/null
+  python -m runpod_jobs.corpus_sample --help >/dev/null
 else
   # same pins as modal_app/datadecide_app.py (ai2-olmo needs transformers<4.50)
   # torchvision/torchaudio pinned to match torch 2.6: the template's own (built for its torch)

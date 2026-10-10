@@ -56,43 +56,23 @@ class _Backend:
         return [" ".join(str(int(t)) for t in ids if t != EOS) for ids in batch]
 
 
-def test_http_recipe_with_its_own_eos_and_length_matches_brute_force():
-    for name, fn in REAL.items():
-        setattr(ea, name, fn)
-    for var in ("NO_PROXY", "no_proxy"):  # the local server must not go through a proxy
-        os.environ[var] = ",".join(filter(None, [os.environ.get(var), "127.0.0.1", "localhost"]))
-    ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
+def _files(root: Path) -> dict:
     rng = np.random.default_rng(1)
-    with tempfile.TemporaryDirectory() as tmp:
-        root = Path(tmp) / "srv"
-        files = {}
-        for i, n_chunks in enumerate((30, 55, 47)):
-            toks = rng.integers(1, 3000, size=n_chunks * SEQUENCE_LENGTH + 77).astype(np.uint16)
-            toks[rng.random(len(toks)) < 0.01] = EOS
-            rel = f"preprocessed/mix/part-{i:03d}.npy"
-            (root / rel).parent.mkdir(parents=True, exist_ok=True)
-            toks.tofile(root / rel)                    # headerless uint16, as OLMo writes them
-            files[rel] = toks
-        server = ThreadingHTTPServer(("127.0.0.1", 0), partial(_RangeHandler, directory=str(root)))
-        threading.Thread(target=server.serve_forever, daemon=True).start()
-        try:
-            base = f"http://127.0.0.1:{server.server_address[1]}/"
-            dmap = Path(tmp) / "map.json"
-            dmap.write_text(json.dumps({"recipes": {"paloma-test": {
-                "paths": list(files), "base_url": base, "model_repo": "x/y",
-                "n_instances": N_INSTANCES, "eos_token_id": EOS}}}))
-            out, work = Path(tmp) / "out", Path(tmp) / "work"
-            args = ["--data-map", str(dmap), "--recipes", "paloma-test", "--seed", "6198",
-                    "--workers", "3", "--task-mtokens", "0", "--work-dir", str(work), "--out-dir", str(out)]
-            assert ea.main(args + ["--no-stop-pod"]) == 0
-        finally:
-            server.shutdown()
-        summary = json.loads((out / "exact_100b_paloma-test" / "summary.json").read_text())
-        got = {int(r["number"]): int(r["count"]) for r in
-               csv.DictReader(open(out / "exact_100b_paloma-test" / "counts_seed_6198.csv"))}
+    files = {}
+    for i, n_chunks in enumerate((30, 55, 47, 12, 40)):
+        toks = rng.integers(1, 3000, size=n_chunks * SEQUENCE_LENGTH + 77).astype(np.uint16)
+        toks[rng.random(len(toks)) < 0.01] = EOS
+        rel = f"preprocessed/mix/part-{i:03d}.npy"
+        (root / rel).parent.mkdir(parents=True, exist_ok=True)
+        toks.tofile(root / rel)                    # headerless uint16, as OLMo writes them
+        files[rel] = toks
+    return files
 
+
+def _brute_force(files: dict) -> Counter:
     sizes = [len(files[p]) for p in files]
     mult, _ = membership_codes(sizes, [6198], n_instances=N_INSTANCES)
+    assert int(mult.sum()) == N_INSTANCES
     want, g = Counter(), 0
     for p in files:
         for c in range(len(files[p]) // SEQUENCE_LENGTH):
@@ -102,11 +82,76 @@ def test_http_recipe_with_its_own_eos_and_length_matches_brute_force():
                 for t in files[p][c * SEQUENCE_LENGTH:(c + 1) * SEQUENCE_LENGTH]:
                     if t != EOS and int(t) <= 10000:
                         want[int(t)] += m
-    assert int(mult.sum()) == N_INSTANCES
+    return want
+
+
+def _run_recipes(recipes: dict, names: list[str]):
+    """Serve the files over local HTTP and count `names` from `recipes` (paths filled in)."""
+    for name, fn in REAL.items():
+        setattr(ea, name, fn)
+    for var in ("NO_PROXY", "no_proxy"):  # the local server must not go through a proxy
+        os.environ[var] = ",".join(filter(None, [os.environ.get(var), "127.0.0.1", "localhost"]))
+    ea._tokenizer = lambda repo: SimpleNamespace(backend_tokenizer=_Backend())
+    tmp = Path(tempfile.mkdtemp())
+    root = tmp / "srv"
+    files = _files(root)
+    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(_RangeHandler, directory=str(root)))
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        base = f"http://127.0.0.1:{server.server_address[1]}/"
+        dmap = {"seed": 6198, "recipes": {r: {"paths": list(files), "base_url": base, "model_repo": "x/y",
+                                               "n_instances": N_INSTANCES, "eos_token_id": EOS, **extra}
+                                           for r, extra in recipes.items()}}
+        (tmp / "map.json").write_text(json.dumps(dmap))
+        out, work = tmp / "out", tmp / "work"
+        args = ["--data-map", str(tmp / "map.json"), "--recipes", ",".join(names), "--seed", "6198",
+                "--workers", "3", "--task-mtokens", "0", "--work-dir", str(work), "--out-dir", str(out)]
+        assert ea.main(args + ["--no-stop-pod"]) == 0
+    finally:
+        server.shutdown()
+    return files, dmap, out, work
+
+
+def test_http_recipe_with_its_own_eos_and_length_matches_brute_force():
+    files, _, out, _ = _run_recipes({"paloma-test": {}}, ["paloma-test"])
+    summary = json.loads((out / "exact_100b_paloma-test" / "summary.json").read_text())
+    got = {int(r["number"]): int(r["count"]) for r in
+           csv.DictReader(open(out / "exact_100b_paloma-test" / "counts_seed_6198.csv"))}
     assert summary["per_seed"]["6198"]["tokens"] == N_INSTANCES * SEQUENCE_LENGTH
-    assert {k: v for k, v in got.items() if v} == dict(want)
+    assert {k: v for k, v in got.items() if v} == dict(_brute_force(files))
+
+
+def test_parts_are_disjoint_balanced_and_cover_every_file():
+    sizes = [50, 10, 40, 30, 30, 20, 5, 5, 60]
+    parts = [ea.part_files({"part": [k, 3]}, sizes) for k in range(3)]
+    assert set().union(*parts) == set(range(len(sizes))) and sum(map(len, parts)) == len(sizes)
+    loads = [sum(sizes[f] for f in p) for p in parts]
+    assert max(loads) - min(loads) <= max(sizes) // 2, loads
+    assert ea.part_files({}, sizes) is None
+
+
+def test_split_recipe_parts_add_up_to_the_whole_stream():
+    """3 parts, each counted on its own (as 3 pods would), share one training order and
+    add up to exactly the unsplit count; a missing part is refused."""
+    parts = {f"paloma-test-p{k}of3": {"part": [k, 3], "membership_of": "paloma-test"} for k in range(3)}
+    files, dmap, out, work = _run_recipes(parts, list(parts))
+    assert sorted(p.name for p in work.iterdir() if (p / "codes_seed6198.npy").exists()) == ["paloma-test"]
+    total, info = ea.merge_parts(out, dmap, "paloma-test", 6198)
+    assert info["tokens"] == N_INSTANCES * SEQUENCE_LENGTH
+    assert {k: int(v) for k, v in enumerate(total) if v} == dict(_brute_force(files))
+    import shutil
+
+    shutil.rmtree(out / "exact_100b_paloma-test-p1of3")
+    try:
+        ea.merge_parts(out, dmap, "paloma-test", 6198)
+    except SystemExit as exc:
+        assert "p1of3" in str(exc)
+    else:
+        raise AssertionError("a missing part was accepted")
 
 
 if __name__ == "__main__":
-    test_http_recipe_with_its_own_eos_and_length_matches_brute_force()
-    print("ok")
+    for name, fn in list(globals().items()):
+        if name.startswith("test_"):
+            fn()
+            print(f"ok  {name}")

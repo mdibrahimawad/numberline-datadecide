@@ -18,3 +18,4 @@ alpha.log
 # secrets: never commit tokens
 .env
 *.token
+results/paloma_counts/_hf/

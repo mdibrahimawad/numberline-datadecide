@@ -19,6 +19,7 @@ access. Raw training data and model weights are **not** stored here.
 | `datadecide/count_features.csv` | E07 | 26 count features (incl. R = `F14_n_seen_lt_4000`), α, β, residual | `python -m src.count_features` |
 | `beta_fine/step69369-seed-default/<recipe>.{json,npz}`, `summary.csv` | E06 | 10-group β; `.npz` = per-prompt targets, groups and top-5 PCA scores at every layer, per seed | `runpod_jobs/beta.py --fine` |
 | `beta_fine/fixed_layer_beta.csv`, `beta_fine/frozen_lines.json` | E06, E09 | β at every fixed layer with α, S, R; the frozen DataDecide calibration lines (layer 8) used by E09 | `python -m src.fixed_layer_beta` |
+| `paloma_counts/<corpus>/counts.csv`, `summary.json` | E09 | c(n) for the 6 Paloma training corpora at the training budget (146.8B tokens), with α, S and R (K = 4000); 5 random samples + Dolma's exact stream | `runpod_jobs/paloma_counts.sh`, then `runpod_jobs.fetch_results --kind paloma` |
 | `beta_fine/fine_vs_data.csv` | E06 | fine β joined with exact α, numbers seen, E01 β, family | `python -m src.beta_fine_analysis` |
 
 ## Conventions

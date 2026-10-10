@@ -1,0 +1,43 @@
+{
+ "about": "Public sources for the five Paloma corpora whose decontaminated training files are not public (E09). Each is sampled at random to the training budget (35,000 x 2,048 x 2,048 = 146,800,640,000 tokens of allenai/gpt-neox-olmo-dolma-v1_5). Deviations from Paloma's own versions are listed per corpus.",
+ "budget_tokens": 146800640000,
+ "seed": 6198,
+ "tokenizer": "allenai/gpt-neox-olmo-dolma-v1_5",
+ "corpora": {
+  "c4": {
+   "repo": "allenai/c4",
+   "list": {"template": "en/c4-train.{i:05d}-of-01024.json.gz", "n": 1024},
+   "format": "jsonl.gz", "text_key": "text",
+   "paloma_version": "c4/v0_decon_ppl_suite_v3",
+   "deviation": "not decontaminated against the Paloma evaluation set (a tiny fraction of documents)"
+  },
+  "mc4": {
+   "repo": "allenai/c4",
+   "list": {"template": "multilingual/c4-en.tfrecord-{i:05d}-of-11264.json.gz", "n": 11264},
+   "format": "jsonl.gz", "text_key": "text",
+   "paloma_version": "mc4/en_wimbd_splits_decon_ppl_suite_v3",
+   "deviation": "not decontaminated"
+  },
+  "pile": {
+   "repo": "monology/pile-uncopyrighted",
+   "list": {"dir": "train", "suffix": ".jsonl.zst"},
+   "format": "jsonl.zst", "text_key": "text",
+   "paloma_version": "pile/v0_decon_ppl_suite_v3_fixed",
+   "deviation": "The Pile without Books3 (the original release is no longer distributed); not decontaminated"
+  },
+  "falcon-refinedweb": {
+   "repo": "tiiuae/falcon-refinedweb",
+   "list": {"dir": "data", "suffix": ".parquet"},
+   "format": "parquet", "text_key": "content",
+   "paloma_version": "falcon-refinedweb/v0-0.05-heldout-complement_decon_ppl_suite_v3",
+   "deviation": "the whole public release (Paloma held out 5 %); not decontaminated"
+  },
+  "redpajama": {
+   "repo": "togethercomputer/RedPajama-Data-1T",
+   "url_lists": ["common_crawl", "c4", "github", "arxiv", "wikipedia", "stackexchange"],
+   "format": "auto", "text_key": "text",
+   "paloma_version": "redpajama/v1_decon_ppl_suite_v3",
+   "deviation": "the 'book' subset is no longer distributed and is missing; subsets are sampled in proportion to their estimated tokens; not decontaminated"
+  }
+ }
+}

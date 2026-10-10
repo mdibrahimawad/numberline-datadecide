@@ -5,6 +5,7 @@ Replaces Modal. Two jobs, two kinds of machine:
 | Job | Script | Machine | Why |
 |---|---|---|---|
 | Exact 100B alpha of the 11 recipes still missing | `runpod_jobs/exact_alpha.py` | **CPU pod**, 32 vCPU | download + tokenizer decode; no GPU work |
+| E09: number counts of the 6 Paloma corpora | `runpod_jobs/paloma_counts.sh` | **CPU pods**, 32 vCPU, one per corpus | download + decompress + count |
 | Model beta (final models, training checkpoints) | `runpod_jobs/beta.py` | **GPU pod**, one 24 GB card (RTX A5000 / L4 / 3090 / 4090) | 1B models, several at once on one card |
 
 Checked against the official docs (github.com/runpod/docs, Oct 2026). Pod prices are not in
@@ -206,6 +207,35 @@ beta = 1 (equal gaps leave nothing to explain), which is why the old R^2 looked 
    ```
    Ctrl+B, D. Each model is uploaded when done; the pod deletes itself at the end.
 5. On the Mac: `python -m runpod_jobs.fetch_results --kind beta`.
+
+## 4b. Job C: the 6 Paloma counts (E09, CPU pods in parallel)
+
+What each pod does (`runpod_jobs/paloma_counts.sh <job>`):
+
+| job | how | data read | expected |
+|---|---|---|---|
+| `c4`, `mc4`, `pile`, `falcon-refinedweb`, `redpajama` | `corpus_sample.py`: files in a seeded random order (per subset for RedPajama) until 146.8B tokens, last file used fractionally, no scaling | ~600 GB of text, ~200-300 GB download each | ~20-40 min on 32 vCPU (counting runs at ~20 MB/s per core) |
+| `dolma` | `exact_alpha.py`: the model's exact training stream (seed 6198), split into 8 parts; every pod running `dolma` takes the next free part | ~5-6 TB download in total | ~2 h on one pod; ~40 min with 3 pods |
+
+1. **HF write token** (once): huggingface.co → Settings → Access Tokens → *Create new token* →
+   type **Write** → copy it. In RunPod → **Secrets** → create `hf_token` with that value. Never
+   paste it into chat or into a file in the repo.
+2. **Deploy** 8 CPU pods (5 corpora + 3 for Dolma): Pods → Deploy → **CPU** → compute-optimised,
+   **32 vCPU** (≥ 64 GB RAM) → container disk **50 GB**, no volume → environment variable
+   `HF_TOKEN` = `{{ RUNPOD_SECRET_hf_token }}` → Deploy. Note the $/h.
+3. **On each pod** (Connect → SSH), the same 4 lines with that pod's job:
+   ```bash
+   cd /workspace && (apt-get update -qq && apt-get install -y -qq git tmux) >/dev/null 2>&1; true
+   git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+   cd numberline-datadecide && tmux new -s count
+   bash runpod_jobs/paloma_counts.sh c4 check      # first pod; the others: mc4, pile, falcon-refinedweb, redpajama, dolma
+   ```
+   `check` lists the files and counts a few (1-3 min): paste its last lines to Claude. Then
+   `bash runpod_jobs/paloma_counts.sh c4` (same job name) and `Ctrl-b d`. The pod uploads its
+   result to `numberline-alpha-results` and **deletes itself**; after 3 h it deletes itself
+   whatever happens. The 3 Dolma pods all run `... dolma`.
+4. **On the Mac**: `python -m runpod_jobs.fetch_results --kind paloma` → `results/paloma_counts/`
+   (6 folders; Dolma's 8 parts are added up and checked to hold exactly 146.8B training tokens).
 
 ## 5. Rules for not wasting a dollar
 
