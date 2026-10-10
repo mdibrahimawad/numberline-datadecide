@@ -82,6 +82,15 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
   files are downloadable; otherwise the random-sample plan applies.
 - `runpod_jobs/beta.py` now names outputs by slug, so full repo ids work
   (`tests/test_runpod_beta.py`).
+- The models are gated (accept the terms on each model page; done 2026-10-10). Final checkpoint
+  revision: **`step35000-unsharded`** for all 6 (also step5000 … step30000 every 5k steps).
+- The checkpoints are in the 2023 OLMo format (`model_type: "olmo"`, `pytorch_model.bin`).
+  transformers 4.49 would read that as its native Olmo class and build a default-sized model
+  with random weights; `src/geometry.py` now loads them with ai2-olmo's `hf_olmo` classes and
+  refuses to run if any weight fails to load (`tests/test_legacy_olmo_loading.py`). The beta
+  prefetch no longer skips `*.bin`.
+- Training data: only Dolma's tokenized files are public (`olmo-data.org`, HTTP 200); the five
+  decontaminated corpora return 404, so they use the random-sample plan (a stated deviation).
 
 ## Steps
 1. **List the models** (laptop):

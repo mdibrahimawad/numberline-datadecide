@@ -752,13 +752,48 @@ class GeometryResults:
         return out
 
 
+def _legacy_olmo_config(model_name: str, hf_kwargs: dict) -> dict | None:
+    """config.json of a checkpoint in the 2023 OLMo format (model_type "olmo" with OLMo's own
+    field names such as d_model / n_layers, e.g. the Paloma baselines), else None.
+
+    transformers >= 4.40 maps model_type "olmo" to its native Olmo class, whose weight names
+    differ: loading such a checkpoint through AutoModelForCausalLM would leave the weights
+    randomly initialised with only a warning. These checkpoints are loaded with ai2-olmo's
+    hf_olmo classes instead (same package as DataDecide)."""
+    import json
+    import os
+
+    try:
+        if os.path.isdir(model_name):
+            path = os.path.join(model_name, "config.json")
+        else:
+            from huggingface_hub import hf_hub_download
+
+            path = hf_hub_download(model_name, "config.json", revision=hf_kwargs.get("revision"),
+                                   token=hf_kwargs.get("token"))
+        with open(path) as f:
+            config = json.load(f)
+    except Exception:  # noqa: BLE001 -- no config to inspect: not a legacy OLMo checkpoint
+        return None
+    return config if config.get("model_type") == "olmo" and "d_model" in config else None
+
+
+def _load_legacy_olmo(model_name: str, legacy: dict, hf_kwargs: dict, load_kwargs: dict):
+    from hf_olmo import OLMoConfig, OLMoForCausalLM, OLMoTokenizerFast
+
+    tokenizer = OLMoTokenizerFast.from_pretrained(model_name, **hf_kwargs)
+    fields = {k: v for k, v in legacy.items()
+              if k not in ("model_type", "architectures", "auto_map", "transformers_version")}
+    model, info = OLMoForCausalLM.from_pretrained(model_name, config=OLMoConfig(**fields),
+                                                  output_loading_info=True, **load_kwargs)
+    bad = {k: v for k, v in info.items() if v and k in ("missing_keys", "unexpected_keys", "mismatched_keys")}
+    if bad:
+        raise RuntimeError(f"{model_name}: weights did not load cleanly, refusing to continue: {bad}")
+    return model, tokenizer
+
+
 def _load_model(cfg: GeometryConfig, device: torch.device, hf_token: str | None):
     from transformers import AutoModelForCausalLM, AutoTokenizer
-
-    if cfg.model_name.startswith("allenai/DataDecide-"):
-        # DataDecide checkpoints use the ai2-olmo "hf_olmo" model type; importing
-        # it registers OLMoForCausalLM / OLMoTokenizerFast with the Auto* classes.
-        import hf_olmo  # noqa: F401
 
     hf_kwargs: dict = {}
     if hf_token:
@@ -768,6 +803,24 @@ def _load_model(cfg: GeometryConfig, device: torch.device, hf_token: str | None)
     if cfg.trust_remote_code:
         hf_kwargs["trust_remote_code"] = True
 
+    legacy = _legacy_olmo_config(cfg.model_name, hf_kwargs)
+    if cfg.model_name.startswith("allenai/DataDecide-") or legacy is not None:
+        # DataDecide checkpoints use the ai2-olmo "hf_olmo" model type; importing
+        # it registers OLMoForCausalLM / OLMoTokenizerFast with the Auto* classes.
+        import hf_olmo  # noqa: F401
+
+    dtype = _resolve_dtype(cfg.dtype, device)
+    load_kwargs: dict = {"torch_dtype": dtype, **hf_kwargs}
+    if cfg.device_map is not None:
+        load_kwargs["device_map"] = cfg.device_map
+
+    if legacy is not None:
+        model, tokenizer = _load_legacy_olmo(cfg.model_name, legacy, hf_kwargs, load_kwargs)
+        if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
+            tokenizer.pad_token = tokenizer.eos_token
+        model.config.use_cache = False
+        return (model.to(device) if cfg.device_map is None else model), tokenizer
+
     tokenizer = AutoTokenizer.from_pretrained(
         cfg.model_name,
         use_fast=cfg.tokenizer_use_fast,
@@ -775,11 +828,6 @@ def _load_model(cfg: GeometryConfig, device: torch.device, hf_token: str | None)
     )
     if tokenizer.pad_token_id is None and tokenizer.eos_token_id is not None:
         tokenizer.pad_token = tokenizer.eos_token
-
-    dtype = _resolve_dtype(cfg.dtype, device)
-    load_kwargs: dict = {"torch_dtype": dtype, **hf_kwargs}
-    if cfg.device_map is not None:
-        load_kwargs["device_map"] = cfg.device_map
 
     model = AutoModelForCausalLM.from_pretrained(cfg.model_name, **load_kwargs)
     if hasattr(model.config, "use_cache"):

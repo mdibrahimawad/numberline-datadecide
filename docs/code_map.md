@@ -107,4 +107,5 @@ and the E00 counters.
 | `test_beta_fine.py` | 10-group β: bands, fits recover known β, batching = one-by-one, full run, R² blind spot |
 | `test_count_features.py` | the locked definition of R and the count features |
 | `test_fixed_layer_beta.py` | fixed-layer table, S/R definitions, frozen-line fit |
+| `test_legacy_olmo_loading.py` | 2023-format OLMo checkpoints (Paloma) load their real weights; incomplete checkpoints are refused |
 | `test_runpod_beta.py` | the GPU runner end to end with a fake worker and fake HF (full repo ids -> slug file names, upload, self-delete) |

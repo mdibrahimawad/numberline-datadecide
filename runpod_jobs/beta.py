@@ -45,7 +45,7 @@ def _prefetch(jobs, config, ahead: int, started: dict) -> None:
             time.sleep(2)
         try:
             snapshot_download(repo_id_for(m, config), revision=rev, token=os.environ.get("HF_TOKEN"),
-                              ignore_patterns=["training/*", "*.pt", "*.bin", "*.md"])  # weights only
+                              ignore_patterns=["training/*", "*.pt", "*.md"])  # skip optimizer state; keep *.bin (Paloma weights)
             print(f"[prefetch] {m} @ {rev} downloaded", flush=True)
         except Exception as exc:  # noqa: BLE001 -- the worker will download it itself
             print(f"[prefetch] {m}: {exc}", flush=True)
