@@ -77,6 +77,7 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
 | α_MLE predicts β | r = −0.14 (n = 25) | E03, E05 |
 | The efficient-coding law log₁₀β = 1 + γα with one γ | the fitted slope is ~3× too small and the intercept far from 1; constrained fit R² < 0 | E05 (n = 10) |
 | Pure efficient coding ("infomax", space ∝ count) | r ≈ 0.01 with β | E05 |
+| Efficient coding at a fixed layer, no fitting (Ganguli & Simoncelli: space ∝ count^q; q = 1 infomax, ½ min. absolute error, ⅓ min. squared error) | no single q fits both the level and the differences. q = 1 gets the average β right (0.64 vs 0.72, MAE 0.14) but r = −0.01 across models; q = ½ and ⅓ track the differences (r = +0.80, +0.76 at layer 8; same at layers 6–11) but predict β 2–3× too large (1.34, 2.46). As a ranking, q = ½ is as good as α_OLS (they correlate 0.99; LOO MAE 0.090 vs 0.101 after a fitted line) | `python -m src.efficient_coding`, `results/beta_fine/efficient_coding_L8.csv` |
 | The share of large numbers (1000–9999), years, powers of 2, numbers ending in 0/5 | no relation with β | E07 |
 | Splitting β into 9 fine gaps (neighbouring ⅓-decade groups) | too noisy (fit error ≈ 65 %); use the continuous fit | E06 |
 | Re-selecting the layer with 10 groups | 8/25 models switch layer on near-ties (scores within 0.7–7.7 %), which adds noise; compare at a fixed layer | E06 |
