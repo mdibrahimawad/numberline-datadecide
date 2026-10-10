@@ -2,12 +2,17 @@
 
 The current state of knowledge, newest first in each section. Every number comes from a
 file in `results/` and can be regenerated with the command shown (see each experiment's
-README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
+README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-10.
+
+> **Read item 9 first.** The pre-registered out-of-sample test on the Paloma models (E09)
+> falsified R and found that no DataDecide formula, α included, transfers. Items 4–5 below
+> describe R as it looked *before* that test; they are kept as the record of how the idea
+> arose, not as a current claim.
 
 ## Headline
 
 1. **β is real and measurable.** All 25 models have a clear number line (ρ = 0.90–0.96).
-   β differs strongly between recipes (0.55–1.38), while repeating the measurement with
+   β differs strongly between recipes (0.55–1.38 with the paper-protocol β at each model's own layer; 0.52–1.18 with the 10-group β_cont at fixed layer 8), while repeating the measurement with
    new prompts moves it by only about ±0.015 (E06). Measured at the same layer, the
    old 4-group β and the new 10-group β agree (r = 0.96).
 2. **α (the paper's α_OLS) correlates with β across the 25 models**: r = +0.56
@@ -18,7 +23,7 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
    family (without it, r = 0.22–0.31, not significant). It fails inside the DCLM and
    Falcon families, and models with the *same* α can have very different β
    (dolma1_7 vs dolma1_7-no-reddit: α −1.470 vs −1.469, β 0.98 vs 1.36).
-4. **The best predictor found so far is R, the number of integers 10–9999 seen fewer than
+4. **[Superseded by item 9: falsified out of sample.] Before E09, the best predictor was R, the number of integers 10–9999 seen fewer than
    ~4000 times** in training (E07):
 
    | | α_OLS | R (rarely-seen count) |
@@ -31,7 +36,7 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
 
    Once R is known, α adds nothing. α correlates with β mainly because it correlates
    with R (r = −0.67, p = 0.0003). The fitted line is β ≈ 2.79 − 0.275 × R/1000.
-5. **Interpretation (hypothesis): Bayesian shrinkage / under-exposure.** A number
+5. **[Hypothesis weakened by item 9.] Interpretation: Bayesian shrinkage / under-exposure.** A number
    seen *c* times is learned with weight c/(c+K). Rarely-seen numbers are pulled toward
    a shared default, crowd together, and compress the regions of the line where they
    are dense. This fits the data better than "efficient coding" (space ∝ frequency),

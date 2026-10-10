@@ -12,7 +12,7 @@ integer 0–10000 in **exactly the 100B tokens it was trained on**.
 
 | | |
 |---|---|
-| **Established** | β is real and reproducible (±0.015) and varies 0.52–1.18 across the 25 models (layer 8). The exact training-stream counts are reproducible. |
+| **Established** | β is real and reproducible (±0.015) and varies 0.52–1.18 across the 25 models (10-group β_cont at fixed layer 8; 0.55–1.38 with the paper-protocol β at each model's own layer). The exact training-stream counts are reproducible. |
 | **Within DataDecide** | At one common layer (8), α_OLS correlates with β: r = +0.75, p = 1.8 × 10⁻⁵ (significant at layers 6–11). R and S do about as well (r ≈ 0.6–0.7). α_MLE does not (p = 0.32). Models with the same α can still differ by up to 0.4 in β, mostly when Dolma's math/code is involved. |
 | **Out of sample (E09, pre-registered)** | On the 6 Paloma baselines **no frozen formula transfers**: α is closest (MAE 0.19 vs a 0.15 bar), S overpredicts by ~0.5, **R is falsified** (predicted β ≈ 2–2.6, measured 0.8–1.0). Among the 5 Paloma models, α and β are not related at any clean layer (n = 5). |
 | **Efficient coding** | Infomax (space ∝ count) predicts the average β level (0.64 vs 0.72) but none of the differences; q = ½ ranks models (r = 0.80) at the wrong scale. |
