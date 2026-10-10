@@ -89,6 +89,8 @@ every documented `python -m …` / `modal run …` command and every import keep
 | `beta.py` | β of many models on one GPU pod (`--fine` = E06), prefetch, upload, self-delete | E06 (E01 protocol also possible) |
 | `corpus_sample.py` | random sample of a public corpus sized to a training budget (146.8B tokens for Paloma): seeded file order per stratum, streamed json.gz / jsonl.zst / jsonl / parquet, big .jsonl split into 1 GB byte ranges, tokens estimated from every 50th document, fractional last file; HF upload, self-delete | E09 |
 | `paloma_counts.sh <job> [check\|run]` | one command per pod for the 6 Paloma counts (5 × `corpus_sample`, Dolma = 8 parts of `exact_alpha`) | E09 |
+| `paloma_beta.sh` | E09 β of the 6 Paloma models on one GPU pod in one command: setup, c4 pilot + `check_beta.py` sanity check, the rest, upload, self-delete | E09 |
+| `check_beta.py` | passes a β result only if the model has a clear number line at layers 6-11 and a plausible β at layer 8 | E09 |
 | `fetch_results.py` | download pod results from the private HF datasets to `results/` (`--kind paloma` also adds Dolma's 8 parts up) | E04, E06, E09 |
 | `pod.py` | stop / terminate the current pod safely | E04, E06 |
 
@@ -113,6 +115,7 @@ and the E00 counters.
 | `test_fixed_layer_beta.py` | fixed-layer table, S/R definitions, frozen-line fit |
 | `test_legacy_olmo_loading.py` | 2023-format OLMo checkpoints (Paloma) load their real weights; incomplete checkpoints are refused |
 | `test_runpod_exact_alpha_http.py` | the exact counter on a recipe served over plain HTTP (Paloma Dolma: EOS 0, own length), and a recipe split into parts that add up to the unsplit count |
+| `test_check_beta.py` | the pre-run check passes all 25 real DataDecide results and refuses a model without a number line |
 | `test_paloma_predictions.py` | E09 predictions = frozen lines applied to the corpus summaries (checked by hand), extrapolation flags |
 | `test_corpus_sample.py` | the random-sample counter on real files in every format over local HTTP: prefix + fractional last file, strata in proportion, corpus smaller than the budget, byte-range pieces count each line once |
 | `test_runpod_beta.py` | the GPU runner end to end with a fake worker and fake HF (full repo ids -> slug file names, upload, self-delete) |
