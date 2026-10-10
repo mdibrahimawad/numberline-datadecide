@@ -66,6 +66,33 @@ def test_legacy_olmo_loads_the_real_weights():
         assert len(hs) == 3                                  # embeddings + 2 blocks
 
 
+def test_checkpoint_without_tokenizer_falls_back_to_the_training_tokenizer():
+    if _skip_without_olmo():
+        return
+    import shutil
+
+    import src.geometry as geometry
+
+    with tempfile.TemporaryDirectory() as tmp:
+        ckpt, tok_dir = Path(tmp) / "ckpt", Path(tmp) / "tok"
+        ckpt.mkdir()
+        original = _save_legacy_checkpoint(ckpt)
+        tok_dir.mkdir()
+        for f in list(ckpt.iterdir()):          # move every tokenizer file out of the checkpoint
+            if f.name.startswith(("tokenizer", "special_tokens", "vocab", "merges")):
+                shutil.move(str(f), tok_dir / f.name)
+        saved = geometry.LEGACY_OLMO_TOKENIZER
+        geometry.LEGACY_OLMO_TOKENIZER = str(tok_dir)
+        try:
+            model, tok = _load_model(GeometryConfig(model_name=str(ckpt), dtype="float32", device="cpu"),
+                                     torch.device("cpu"), None)
+        finally:
+            geometry.LEGACY_OLMO_TOKENIZER = saved
+        ids = torch.tensor([tok("12=12,7=")["input_ids"]])
+        with torch.no_grad():
+            assert torch.allclose(original(input_ids=ids).logits, model(input_ids=ids).logits, atol=1e-5)
+
+
 def test_plain_transformers_path_would_not_load_these_weights():
     """Documents the trap the special case avoids: transformers reads model_type "olmo" as its
     native Olmo config, ignores OLMo's field names (d_model, n_layers) and would build a

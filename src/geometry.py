@@ -752,6 +752,9 @@ class GeometryResults:
         return out
 
 
+LEGACY_OLMO_TOKENIZER = "allenai/gpt-neox-olmo-dolma-v1_5"
+
+
 def _legacy_olmo_config(model_name: str, hf_kwargs: dict) -> dict | None:
     """config.json of a checkpoint in the 2023 OLMo format (model_type "olmo" with OLMo's own
     field names such as d_model / n_layers, e.g. the Paloma baselines), else None.
@@ -781,7 +784,14 @@ def _legacy_olmo_config(model_name: str, hf_kwargs: dict) -> dict | None:
 def _load_legacy_olmo(model_name: str, legacy: dict, hf_kwargs: dict, load_kwargs: dict):
     from hf_olmo import OLMoConfig, OLMoForCausalLM, OLMoTokenizerFast
 
-    tokenizer = OLMoTokenizerFast.from_pretrained(model_name, **hf_kwargs)
+    try:
+        tokenizer = OLMoTokenizerFast.from_pretrained(model_name, **hf_kwargs)
+    except (OSError, ValueError) as exc:
+        # some 2023 checkpoints ship no tokenizer files: use the one they were trained with
+        # (gpt-neox-20b-pii-special, published as LEGACY_OLMO_TOKENIZER)
+        print(f"[load] {model_name} has no tokenizer ({type(exc).__name__}); using {LEGACY_OLMO_TOKENIZER}")
+        tokenizer = OLMoTokenizerFast.from_pretrained(
+            LEGACY_OLMO_TOKENIZER, **{k: v for k, v in hf_kwargs.items() if k == "token"})
     fields = {k: v for k, v in legacy.items()
               if k not in ("model_type", "architectures", "auto_map", "transformers_version")}
     model, info = OLMoForCausalLM.from_pretrained(model_name, config=OLMoConfig(**fields),
