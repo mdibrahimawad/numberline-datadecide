@@ -203,8 +203,20 @@ def _check_pieces(docs: list[str], pieces_to_try):
             server.shutdown()
 
 
+def test_rare_k_matches_the_analysis_and_needs_no_analysis_packages():
+    import subprocess
+
+    from src.count_features import RARE_K
+
+    assert cs.RARE_K == RARE_K
+    # the pod's venv has no pandas: importing the counter must not pull it in
+    code = "import sys, runpod_jobs.corpus_sample; sys.exit('pandas' in sys.modules)"
+    assert subprocess.run([sys.executable, "-c", code], cwd=Path(__file__).resolve().parent.parent).returncode == 0
+
+
 if __name__ == "__main__":
     test_prefix_with_fractional_last_file_in_every_format()
     test_strata_get_budget_in_proportion_and_small_corpus_repeats()
     test_big_jsonl_split_into_byte_ranges_counts_every_line_once()
+    test_rare_k_matches_the_analysis_and_needs_no_analysis_packages()
     print("ok")

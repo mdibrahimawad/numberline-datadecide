@@ -34,13 +34,13 @@ import numpy as np
 from modal_app.corpus_alpha_app import MAX_N, _count_text
 from runpod_jobs.exact_alpha import atomic_write, usable_vcpus
 from runpod_jobs.pod import terminate_this_pod
-from src.count_features import RARE_K
 from src.sampling_validation import describe
 
 SOURCES = Path("configs/paloma/corpus_sources.json")
 OUT = Path("results/paloma_counts")
 SAMPLE_EVERY = 50          # tokenize every 50th document to estimate tokens per text byte
 PILOT_FILES = 2            # files per stratum counted first to measure tokens per compressed byte
+RARE_K = 4000              # = src.count_features.RARE_K (not imported: it needs pandas, absent on CPU pods)
 SPLIT_BYTES = 1 << 30      # plain .jsonl files above 2 x this are cut into byte ranges of this size
 
 
