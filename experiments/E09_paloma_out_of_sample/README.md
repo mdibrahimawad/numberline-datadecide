@@ -41,8 +41,9 @@ Three competing formulas, all frozen. The test decides between them. No re-fitti
   prompt seeds 45–47, correct-output filter.
 - **Primary β = `beta_cont` at fixed layer 8** (median over the 3 seeds).
   Layer 8 is the layer the joint EV·|ρ| rule selects most often on DataDecide; it was
-  fixed before seeing Paloma. Secondary: `beta_coarse` at layer 8, and both at the mean
-  over layers 6–10.
+  fixed before seeing Paloma. Secondary: `beta_coarse` at layer 8; both at the mean
+  over layers 6–10; and both at each model's own selected layer (joint EV·|ρ| rule), so
+  the result is shown with and without a fixed layer.
 - Checkpoint: the final released ~150B-token checkpoint of each model.
 - Validity checks (as in E08): acceptance ≥ 80 % per group, median |ρ| ≥ 0.9 at layer 8,
   EV ≥ 0.1, `err_coarse` ≤ 0.4. A model failing a check is reported and excluded, never
