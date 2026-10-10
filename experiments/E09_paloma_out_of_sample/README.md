@@ -111,6 +111,15 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
     5 %). The sample is random, not the model's exact order; between data seeds E04 found R
     to move by ±2 (c4) and ±17 (dolma1_7).
 
+- **Pilot β, Paloma c4 (2026-10-10, before the other 5 were measured):** the model loads and
+  has a clear number line, but deeper than DataDecide's: median |ρ| by layer L6 0.53, L7 0.71,
+  **L8 0.70**, L9 0.85, **L10 0.95**, L11 0.87 (β_cont at L8 = 1.51). By the locked validity
+  check (median |ρ| ≥ 0.9 at layer 8) this model's primary layer-8 β is **invalid** and is
+  reported, not used. If most Paloma models fail it, the primary test cannot be run as
+  planned, and the result rests on the pre-registered secondary analysis (each model at its
+  own selected layer). The runner's load check (`runpod_jobs/check_beta.py`) was relaxed
+  from "≥ 0.75 at all of layers 6-11" (calibrated on DataDecide only) to "≥ 0.9 at some
+  layer 6-11", which only tests that the model works; it does not touch the analysis rules.
 - **RedPajama on hold (2026-10-10):** 536 of the 859 common_crawl files in RedPajama's URL list
   are refused by data.together.xyz (the other subsets are served). The other five counts run
   first; RedPajama gets a decision later (sample the remaining common_crawl files with the
