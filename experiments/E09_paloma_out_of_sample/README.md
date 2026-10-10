@@ -127,6 +127,9 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
 4. **Counts** (CPU pods, roughly $5–15, ~1 h): `bash runpod_jobs/paloma_counts.sh <corpus>`
    on one pod per corpus (3 pods for Dolma), see `docs/runpod.md` § 4b; then
    `python -m runpod_jobs.fetch_results --kind paloma`.
+4b. **Write the predictions down before measuring β:** `python -m src.paloma_predictions`
+   → `results/paloma_counts/predictions.{csv,json}` (frozen lines × each corpus's α_OLS, S, R;
+   flags predictors outside the DataDecide range), committed before step 3 runs.
 5. **Analysis:** `src/paloma_analysis.py`, implementing exactly the criteria above.
 
 ## Context for reading the result

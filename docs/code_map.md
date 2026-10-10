@@ -50,6 +50,7 @@ every documented `python -m …` / `modal run …` command and every import keep
 | `beta_fine_analysis.py` | fine β vs exact α / numbers seen → `results/beta_fine/fine_vs_data.csv` | E06 |
 | `count_features.py` | 26 count-shape features incl. R (`F14_n_seen_lt_4000`) → `results/datadecide/count_features.csv` | E07 |
 | `fixed_layer_beta.py` | β at every fixed layer + the frozen DataDecide lines for E09 → `results/beta_fine/{fixed_layer_beta.csv,frozen_lines.json}` | E06, E09 |
+| `paloma_predictions.py` | E09: the β each frozen line predicts for the Paloma models, written before β is measured → `results/paloma_counts/predictions.{csv,json}` | E09 |
 
 ## src/ — prior work (E00)
 
@@ -111,5 +112,6 @@ and the E00 counters.
 | `test_fixed_layer_beta.py` | fixed-layer table, S/R definitions, frozen-line fit |
 | `test_legacy_olmo_loading.py` | 2023-format OLMo checkpoints (Paloma) load their real weights; incomplete checkpoints are refused |
 | `test_runpod_exact_alpha_http.py` | the exact counter on a recipe served over plain HTTP (Paloma Dolma: EOS 0, own length), and a recipe split into parts that add up to the unsplit count |
+| `test_paloma_predictions.py` | E09 predictions = frozen lines applied to the corpus summaries (checked by hand), extrapolation flags |
 | `test_corpus_sample.py` | the random-sample counter on real files in every format over local HTTP: prefix + fractional last file, strata in proportion, corpus smaller than the budget, byte-range pieces count each line once |
 | `test_runpod_beta.py` | the GPU runner end to end with a fake worker and fake HF (full repo ids -> slug file names, upload, self-delete) |
