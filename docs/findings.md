@@ -56,6 +56,7 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-08.
    the best of 26 features tried on the same 25 models (it passes Bonferroni, and the
    threshold can be anywhere in 1000–8000). The confirmation test is planned
    (E08: training checkpoints, where α and content are fixed but R changes).
+   **Update 2026-10-10: the out-of-sample test (item 9) falsified R.**
 
 9. **Out-of-sample test on the 6 Paloma models (E09, pre-registered): no formula
    transfers.** Only 3 models pass the locked layer-8 validity checks. On them, α_OLS has the

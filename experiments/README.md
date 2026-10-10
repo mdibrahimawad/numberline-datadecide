@@ -16,7 +16,7 @@ number, problems met). Code lives in the shared packages (`src/`, `modal_app/`,
 | [E06](E06_fine_beta/) | Fine β (10 groups) | A more precise, reproducible β | done | seed noise ±0.015; same-layer α link r = 0.63; layer choice fragile |
 | [E07](E07_count_features_rarely_seen/) | Count features and R | What in the counts explains β beyond α? | done (exploratory) | R = #numbers seen < 4000 times: ρ = −0.73, absorbs α |
 | [E08](E08_checkpoint_test/) | Checkpoint test | Does β follow R during training, with α fixed? | **planned; predictions pre-registered** | — |
-| [E09](E09_paloma_out_of_sample/) | Paloma out-of-sample test | Do formulas frozen on DataDecide predict β of 6 new models? | **planned; pre-registered** | — |
+| [E09](E09_paloma_out_of_sample/) | Paloma out-of-sample test | Do formulas frozen on DataDecide predict β of 6 new models? | **done** | no formula transfers; α closest (MAE 0.19), S overpredicts, R falsified; only 3 models valid at layer 8 |
 
 ## Dependencies between experiments
 

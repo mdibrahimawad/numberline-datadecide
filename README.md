@@ -8,14 +8,15 @@ architecture, size, tokenizer and training length, with only the pretraining dat
 differing. For each model we measure β from its hidden states, and we count every
 integer 0–10000 in **exactly the 100B tokens it was trained on**.
 
-## Where things stand (2026-10-08)
+## Where things stand (2026-10-10)
 
 | | |
 |---|---|
-| **Established** | β is real and reproducible (±0.015) and varies 0.55–1.38 across the 25 models. The exact training-stream counts are reproducible: any 100B sample has the recipe's α, and the data seed doesn't matter. |
-| **α (power-law slope)** | correlates with β (r = +0.56, p = 0.003) in the predicted direction, but it is carried by the Dolma family and fails inside other families. Not the direct driver. |
-| **Strongest candidate** | **R = how many integers 10–9999 the model saw fewer than 4,000 times** (and its smooth version S = Σ c/(c+4000), Bayesian shrinkage). With the paper-protocol β: ρ = −0.73, holds within families, and absorbs α (with R in the model, α has p = 0.47). |
-| **Caveat** | Exploratory, confounded with code/math content (Dolma), and layer-dependent: with every model at the same layer, α, R and S are about equally good (r ≈ 0.6–0.75). Deciding tests are pre-registered: **Paloma (E09)** and the **checkpoint test (E08)**. |
+| **Established** | β is real and reproducible (±0.015) and varies 0.52–1.18 across the 25 models (layer 8). The exact training-stream counts are reproducible. |
+| **Within DataDecide** | At one common layer (8), α_OLS correlates with β: r = +0.75, p = 1.8 × 10⁻⁵ (significant at layers 6–11). R and S do about as well (r ≈ 0.6–0.7). α_MLE does not (p = 0.32). Models with the same α can still differ by up to 0.4 in β, mostly when Dolma's math/code is involved. |
+| **Out of sample (E09, pre-registered)** | On the 6 Paloma baselines **no frozen formula transfers**: α is closest (MAE 0.19 vs a 0.15 bar), S overpredicts by ~0.5, **R is falsified** (predicted β ≈ 2–2.6, measured 0.8–1.0). Among the 5 Paloma models, α and β are not related at any clean layer (n = 5). |
+| **Efficient coding** | Infomax (space ∝ count) predicts the average β level (0.64 vs 0.72) but none of the differences; q = ½ ranks models (r = 0.80) at the wrong scale. |
+| **Open** | Is α a cause or a correlate (content confound, e.g. math)? Training-seed noise of β. Checkpoint test (E08, pre-registered). |
 
 Details: [`docs/findings.md`](docs/findings.md).
 
@@ -47,7 +48,7 @@ Details: [`docs/findings.md`](docs/findings.md).
 | [E06](experiments/E06_fine_beta/) | Fine β: 10 groups, reproducible, per-prompt data saved | done |
 | [E07](experiments/E07_count_features_rarely_seen/) | Count features: the rarely-seen count R | done (exploratory) |
 | [E08](experiments/E08_checkpoint_test/) | Checkpoint test: does β follow R during training? | planned, pre-registered |
-| [E09](experiments/E09_paloma_out_of_sample/) | Paloma: do formulas frozen on DataDecide predict 6 new models? | planned, pre-registered |
+| [E09](experiments/E09_paloma_out_of_sample/) | Paloma: do formulas frozen on DataDecide predict 6 new models? | done: no formula transfers; R falsified |
 
 ## Repository layout
 

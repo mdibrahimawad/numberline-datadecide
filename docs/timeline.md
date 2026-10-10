@@ -65,8 +65,14 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
   equally well; "R absorbs α" was layer-dependent.
 - **E09 pre-registered**: three frozen predictors (α, S, R) to be tested on the 6 Paloma baselines.
 
+- **E09 run end to end**: 146.8B-token counts of 5 Paloma corpora on RunPod CPU pods
+  (`runpod_jobs/corpus_sample.py`, Dolma exact in 8 parts), frozen predictions committed before
+  β, β of the 6 models on one GPU pod (`runpod_jobs/paloma_beta.sh`), scored by
+  `src/paloma_analysis.py`: only 3 models valid at layer 8; no formula transfers; R falsified.
+- Efficient-coding test at a fixed layer (`src/efficient_coding.py`); multi-cutoff R tried and
+  rejected as overfit; `main` made the only branch.
+
 ## Next
-- **E09**: Paloma out-of-sample test (β, then 150B-token counts per corpus).
 - **E08**: the checkpoint test (R changes during training while α stays fixed);
   definitions and predictions are pre-registered in `experiments/E08_checkpoint_test/README.md`.
 - Training-seed noise of β (seeds `-4`, `-5`).

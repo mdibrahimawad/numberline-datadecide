@@ -46,12 +46,19 @@ earlier conversations. Everything needed to continue is in this repository.
   what the output should look like), because cloud tooling is new to them.
 - Costs stated up front, with a worst case.
 
-## Where to pick up (as of 2026-10-08)
-1. **E08 checkpoint test**: the definitions and predictions are pre-registered in its README (review, then freeze before collecting data).
-   First step: list the available checkpoint revisions on Hugging Face (command in the
-   README), then exact prefix counts (CPU), then β per checkpoint (GPU, ~$0.50).
-2. **Training-seed noise**: β of the aux-seed final checkpoints, to know how much β
-   moves with training randomness.
-3. **Fixed-layer β**: recompute β at one common layer for all 25 models from
-   `results/beta_fine/step69369-seed-default/<recipe>.npz` (no GPU).
-4. (done 2026-10-10) `alpha-sampling` became `main`; the other branches were deleted.
+## Where to pick up (as of 2026-10-10)
+Done on 2026-10-10: fixed-layer β (`src/fixed_layer_beta.py`, α-vs-β table per layer in
+`paper/tables/alpha_beta_by_layer.tex`), efficient-coding test (`src/efficient_coding.py`),
+E09 Paloma test end to end (counts → frozen predictions → β → scores; result in the E09
+README: no formula transfers, R falsified), `main` made the only branch.
+
+Open next steps:
+1. **E08 checkpoint test**: pre-registered in its README (review, then freeze). Note E09
+   falsified R, so E08's R-based predictions should be re-read before running.
+2. **Training-seed noise**: β of the aux-seed final checkpoints, to know how much β moves
+   with training randomness (explains pairs like dolma1_7 vs dolma1_7-no-reddit?).
+3. **Causal test of α** (proposed, not designed): train small models on one corpus whose
+   numbers are rewritten to set α, everything else equal; measure β.
+4. **RedPajama counts** (E09, on hold): 536 of 859 common_crawl files are refused by
+   data.together.xyz; options are listed in the E09 README.
+5. Commit `results/sampling_validation/slimpajama/` from the owner's laptop (E02 outputs).
