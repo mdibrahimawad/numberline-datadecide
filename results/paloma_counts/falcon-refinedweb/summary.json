@@ -1,0 +1,38 @@
+{
+  "corpus": "falcon-refinedweb",
+  "method": "random sample sized to the training budget (runpod_jobs.corpus_sample)",
+  "budget_tokens": 146800640000,
+  "tokens_est": 146800640000.0,
+  "seed": 6198,
+  "tokenizer": "allenai/gpt-neox-olmo-dolma-v1_5",
+  "source": {
+    "repo": "tiiuae/falcon-refinedweb",
+    "list": {
+      "dir": "data",
+      "suffix": ".parquet"
+    },
+    "format": "parquet",
+    "text_key": "content",
+    "paloma_version": "falcon-refinedweb/v0-0.05-heldout-complement_decon_ppl_suite_v3",
+    "deviation": "the whole public release (Paloma held out 5 %); not decontaminated"
+  },
+  "files_used": 1399.9212334402428,
+  "docs": 244872379.23213384,
+  "text_bytes": 637512825785.5299,
+  "compressed_bytes": 423747988434.49115,
+  "per_stratum": {
+    "all": {
+      "target_tokens": 146800640000.0,
+      "files_used": 1399.9212334402428
+    }
+  },
+  "unavailable_files": [],
+  "alpha_ols": -1.4206323438669513,
+  "r2": 0.7850556168818734,
+  "alpha_mle": -1.0874909405728577,
+  "alpha_mle_fisher_se": 6.664155599411707e-06,
+  "integer_matches": 3110752699.0,
+  "support": 1.0,
+  "S_K4000": 6455.922537364592,
+  "R_K4000": 2588
+}

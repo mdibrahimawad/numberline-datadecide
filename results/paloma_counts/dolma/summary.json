@@ -1,0 +1,25 @@
+{
+  "corpus": "dolma",
+  "method": "exact training stream (runpod_jobs.exact_alpha, 8 parts added up)",
+  "tokens": 146800640000.0,
+  "parts": [
+    "paloma-dolma-p0of8",
+    "paloma-dolma-p1of8",
+    "paloma-dolma-p2of8",
+    "paloma-dolma-p3of8",
+    "paloma-dolma-p4of8",
+    "paloma-dolma-p5of8",
+    "paloma-dolma-p6of8",
+    "paloma-dolma-p7of8"
+  ],
+  "seed": 6198,
+  "data_map": "configs/paloma/paloma_dolma_exact_map.json",
+  "alpha_ols": -1.356729335344716,
+  "r2": 0.80004123693736,
+  "alpha_mle": -1.1023762339974115,
+  "alpha_mle_fisher_se": 7.34750861921736e-06,
+  "integer_matches": 2770034933.0,
+  "support": 1.0,
+  "S_K4000": 6646.467617303817,
+  "R_K4000": 1836
+}

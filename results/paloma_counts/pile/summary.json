@@ -1,0 +1,38 @@
+{
+  "corpus": "pile",
+  "method": "random sample sized to the training budget (runpod_jobs.corpus_sample)",
+  "budget_tokens": 146800640000,
+  "tokens_est": 146800640000.0,
+  "seed": 6198,
+  "tokenizer": "allenai/gpt-neox-olmo-dolma-v1_5",
+  "source": {
+    "repo": "monology/pile-uncopyrighted",
+    "list": {
+      "dir": "train",
+      "suffix": ".jsonl.zst"
+    },
+    "format": "jsonl.zst",
+    "text_key": "text",
+    "paloma_version": "pile/v0_decon_ppl_suite_v3_fixed",
+    "deviation": "The Pile without Books3 (the original release is no longer distributed); not decontaminated"
+  },
+  "files_used": 17.376494778060845,
+  "docs": 102536893.64307858,
+  "text_bytes": 573507788665.4347,
+  "compressed_bytes": 193885921102.97476,
+  "per_stratum": {
+    "all": {
+      "target_tokens": 146800640000.0,
+      "files_used": 17.376494778060845
+    }
+  },
+  "unavailable_files": [],
+  "alpha_ols": -1.4964638878279086,
+  "r2": 0.877161423126583,
+  "alpha_mle": -1.1688338181982931,
+  "alpha_mle_fisher_se": 5.4571575211204925e-06,
+  "integer_matches": 5469427177.0,
+  "support": 1.0,
+  "S_K4000": 7746.9006956075655,
+  "R_K4000": 0
+}

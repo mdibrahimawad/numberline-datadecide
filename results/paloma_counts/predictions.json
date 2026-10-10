@@ -1,0 +1,103 @@
+{
+  "written_at": "2026-10-10T16:16:39+00:00",
+  "git_commit": "640134b0203e5c8dbac082168726d497c2b56dbe",
+  "layer": 8,
+  "K": 4000,
+  "note": "written before any Paloma beta was measured (E09 pre-registration)",
+  "datadecide_range": {
+    "alpha_ols": [
+      -1.761699229647942,
+      -1.4290428295012545
+    ],
+    "S": [
+      2969.8422219401928,
+      5368.9113892993
+    ],
+    "R": [
+      5707.0,
+      7735.0
+    ]
+  },
+  "predictions": [
+    {
+      "corpus": "c4",
+      "model": "allenai/paloma-1b-baseline-c4",
+      "alpha_ols": -1.461433578080032,
+      "alpha_ols_outside_datadecide": false,
+      "pred_beta_cont_from_alpha_ols": 0.9282618938284637,
+      "pred_beta_coarse_from_alpha_ols": 0.9240245623168422,
+      "S": 5617.172630315221,
+      "S_outside_datadecide": true,
+      "pred_beta_cont_from_S": 0.9851051498139759,
+      "pred_beta_coarse_from_S": 0.9912496048944966,
+      "R": 5184.0,
+      "R_outside_datadecide": true,
+      "pred_beta_cont_from_R": 1.220023466085805,
+      "pred_beta_coarse_from_R": 1.189457114377563
+    },
+    {
+      "corpus": "dolma",
+      "model": "allenai/paloma-1b-baseline-dolma",
+      "alpha_ols": -1.356729335344716,
+      "alpha_ols_outside_datadecide": true,
+      "pred_beta_cont_from_alpha_ols": 1.0820815475115635,
+      "pred_beta_coarse_from_alpha_ols": 1.0399885814337353,
+      "S": 6646.467617303817,
+      "S_outside_datadecide": true,
+      "pred_beta_cont_from_S": 1.1946330176871158,
+      "pred_beta_coarse_from_S": 1.1684902252588822,
+      "R": 1836.0,
+      "R_outside_datadecide": true,
+      "pred_beta_cont_from_R": 2.105096736300536,
+      "pred_beta_coarse_from_R": 1.937239870860435
+    },
+    {
+      "corpus": "falcon-refinedweb",
+      "model": "allenai/paloma-1b-baseline-falcon-refinedweb",
+      "alpha_ols": -1.4206323438669513,
+      "alpha_ols_outside_datadecide": true,
+      "pred_beta_cont_from_alpha_ols": 0.9882024612070412,
+      "pred_beta_coarse_from_alpha_ols": 0.9692135153207748,
+      "S": 6455.922537364592,
+      "S_outside_datadecide": true,
+      "pred_beta_cont_from_S": 1.155844813296662,
+      "pred_beta_coarse_from_S": 1.1356790986112948,
+      "R": 2588.0,
+      "R_outside_datadecide": true,
+      "pred_beta_cont_from_R": 1.9062989169452562,
+      "pred_beta_coarse_from_R": 1.769279108352932
+    },
+    {
+      "corpus": "mc4",
+      "model": "allenai/paloma-1b-baseline-mc4",
+      "alpha_ols": -1.2656755950323326,
+      "alpha_ols_outside_datadecide": true,
+      "pred_beta_cont_from_alpha_ols": 1.2158474239986075,
+      "pred_beta_coarse_from_alpha_ols": 1.1408341384656702,
+      "S": 8340.687879018275,
+      "S_outside_datadecide": true,
+      "pred_beta_cont_from_S": 1.5395160333744702,
+      "pred_beta_coarse_from_S": 1.4602284091771034,
+      "R": 0.0,
+      "R_outside_datadecide": true,
+      "pred_beta_cont_from_R": 2.590459497386034,
+      "pred_beta_coarse_from_R": 2.347314285705881
+    },
+    {
+      "corpus": "pile",
+      "model": "allenai/paloma-1b-baseline-pile",
+      "alpha_ols": -1.4964638878279086,
+      "alpha_ols_outside_datadecide": false,
+      "pred_beta_cont_from_alpha_ols": 0.876799317212047,
+      "pred_beta_coarse_from_alpha_ols": 0.8852271324978567,
+      "S": 7746.9006956075655,
+      "S_outside_datadecide": true,
+      "pred_beta_cont_from_S": 1.4186420719900443,
+      "pred_beta_coarse_from_S": 1.3579805501254967,
+      "R": 0.0,
+      "R_outside_datadecide": true,
+      "pred_beta_cont_from_R": 2.590459497386034,
+      "pred_beta_coarse_from_R": 2.347314285705881
+    }
+  ]
+}

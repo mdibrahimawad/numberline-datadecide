@@ -1,0 +1,38 @@
+{
+  "corpus": "c4",
+  "method": "random sample sized to the training budget (runpod_jobs.corpus_sample)",
+  "budget_tokens": 146800640000,
+  "tokens_est": 146800640000.0,
+  "seed": 6198,
+  "tokenizer": "allenai/gpt-neox-olmo-dolma-v1_5",
+  "source": {
+    "repo": "allenai/c4",
+    "list": {
+      "template": "en/c4-train.{i:05d}-of-01024.json.gz",
+      "n": 1024
+    },
+    "format": "jsonl.gz",
+    "text_key": "text",
+    "paloma_version": "c4/v0_decon_ppl_suite_v3",
+    "deviation": "not decontaminated against the Paloma evaluation set (a tiny fraction of documents)"
+  },
+  "files_used": 860.2069755641372,
+  "docs": 306506612.91208667,
+  "text_bytes": 664742699553.684,
+  "compressed_bytes": 274502618410.97455,
+  "per_stratum": {
+    "all": {
+      "target_tokens": 146800640000.0,
+      "files_used": 860.2069755641372
+    }
+  },
+  "unavailable_files": [],
+  "alpha_ols": -1.461433578080032,
+  "r2": 0.7558446964331513,
+  "alpha_mle": -1.0709825380418638,
+  "alpha_mle_fisher_se": 7.784309194793709e-06,
+  "integer_matches": 2243530226.0,
+  "support": 1.0,
+  "S_K4000": 5617.172630315221,
+  "R_K4000": 5184
+}
