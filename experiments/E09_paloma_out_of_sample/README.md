@@ -111,6 +111,11 @@ amount), the β_coarse and layer-6–10 versions, and α_MLE.
     5 %). The sample is random, not the model's exact order; between data seeds E04 found R
     to move by ±2 (c4) and ±17 (dolma1_7).
 
+- **RedPajama on hold (2026-10-10):** 536 of the 859 common_crawl files in RedPajama's URL list
+  are refused by data.together.xyz (the other subsets are served). The other five counts run
+  first; RedPajama gets a decision later (sample the remaining common_crawl files with the
+  official subset shares, use SlimPajama as a stated substitute, or test on 5 models).
+
 ## Steps
 1. **List the models** (laptop):
    `python -c "from huggingface_hub import list_models; [print(m.id) for m in list_models(author='allenai', search='paloma')]"`

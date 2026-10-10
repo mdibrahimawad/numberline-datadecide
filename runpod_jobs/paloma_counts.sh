@@ -4,6 +4,7 @@
 #   bash runpod_jobs/paloma_counts.sh <job> [check|run] [max hours]
 #
 #   job:   all                                               every corpus below, one after another, on this pod
+#          c4,mc4,dolma                                      a comma list: those, in that order, on this pod
 #          c4 | mc4 | pile | falcon-refinedweb | redpajama   (random sample, runpod_jobs.corpus_sample)
 #          dolma                                             (exact training stream, runpod_jobs.exact_alpha;
 #                                                             several pods may run it: its 8 parts are shared
@@ -12,14 +13,15 @@
 #   run:   the full count (default); each result is uploaded to the private HF dataset
 #          numberline-alpha-results; at the end the pod deletes itself (only if everything
 #          succeeded). It deletes itself after [max hours] whatever happens
-#          (default 3 for one job, 8 for all).
+#          (default 3 for one job, 10 for several).
 #
 # Needs HF_TOKEN (a write token) in the environment. Results come back to the Mac with
 #   python -m runpod_jobs.fetch_results --kind paloma
 set -uo pipefail
 JOB="${1:?usage: paloma_counts.sh <all|c4|mc4|pile|falcon-refinedweb|redpajama|dolma> [check|run] [max hours]}"
 MODE="${2:-run}"
-HOURS="${3:-$([ "$JOB" = all ] && echo 8 || echo 3)}"
+MULTI=$([ "$JOB" = all ] || [[ "$JOB" == *,* ]] && echo 1 || echo "")
+HOURS="${3:-$([ -n "$MULTI" ] && echo 10 || echo 3)}"
 CORPORA=(c4 mc4 pile falcon-refinedweb redpajama)
 cd "$(dirname "$0")/.."
 : "${HF_TOKEN:?export HF_TOKEN=... (a Hugging Face WRITE token) first}"
@@ -31,7 +33,7 @@ export HF_HOME=/workspace/hf_cache
 mkdir -p logs
 DMAP=configs/paloma/paloma_dolma_exact_map.json
 # one job's own "delete the pod" is used only when it is the only job; `all` deletes at the end
-SOLO=$([ "$JOB" = all ] && echo "" || echo "--delete-pod-when-done")
+SOLO=$([ -n "$MULTI" ] && echo "" || echo "--delete-pod-when-done")
 
 one() {  # one job in MODE; returns its exit code
   local job=$1
@@ -58,7 +60,7 @@ one() {  # one job in MODE; returns its exit code
 if [ "$JOB" = all ]; then
   JOBS=("${CORPORA[@]}" dolma)
 else
-  JOBS=("$JOB")
+  IFS=, read -r -a JOBS <<< "$JOB"
 fi
 declare -A RESULT
 for j in "${JOBS[@]}"; do
@@ -73,7 +75,7 @@ for j in "${JOBS[@]}"; do
   echo "  $j: ${RESULT[$j]}"
   [ "${RESULT[$j]}" = OK ] || failed=1
 done
-if [ "$JOB" = all ] && [ "$MODE" = run ]; then
+if [ -n "$MULTI" ] && [ "$MODE" = run ]; then
   if [ $failed = 0 ]; then
     python -c "from runpod_jobs.pod import terminate_this_pod; terminate_this_pod('all Paloma counts uploaded')"
   else
