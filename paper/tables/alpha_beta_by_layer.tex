@@ -1,0 +1,63 @@
+%% alpha vs beta at every fixed layer, 25 DataDecide 1B models (E06 protocol).
+%% Generated from results/beta_fine/fixed_layer_beta.csv; compiles on its own (e.g. Overleaf).
+\documentclass[11pt]{article}
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{booktabs,threeparttable,amsmath}
+\begin{document}
+\begin{table}[ht]
+\centering
+\begin{threeparttable}
+\caption{Data exponent $\alpha$ versus number-line compression $\beta$, measured at the \emph{same}
+layer in all 25 DataDecide 1B models ($n=25$ at every layer).}
+\label{tab:alpha-beta-by-layer}
+\begin{tabular}{rcc cc cc}
+\toprule
+ & Monotonicity & Median & \multicolumn{2}{c}{Pearson} & \multicolumn{2}{c}{Spearman} \\
+\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Layer & $|\rho_{n,\mathrm{PC1}}|$ & $\beta$ & $r$ & $p$ & $\rho_s$ & $p$ \\
+\midrule
+    1$^\dagger$ & 0.07 & 0.20 & $+0.35$ & 0.090 & $+0.32$ & 0.117 \\
+    2 & 0.90 & 0.93 & $-0.05$ & 0.799 & $-0.03$ & 0.878 \\
+    3 & 0.96 & 0.65 & $-0.35$ & 0.084 & $-0.37$ & 0.069 \\
+    4 & 0.96 & 0.69 & $-0.00$ & 0.987 & $-0.09$ & 0.677 \\
+    5 & 0.96 & 0.65 & $+0.51$ & 0.010 & $+0.30$ & 0.149 \\
+    6 & 0.95 & 0.64 & \textbf{$+0.68$} & $1.9\times10^{-4}$ & $+0.56$ & 0.004 \\
+    7 & 0.95 & 0.64 & \textbf{$+0.67$} & $2.7\times10^{-4}$ & $+0.53$ & 0.007 \\
+    8 & 0.94 & 0.66 & \textbf{$+0.75$} & $1.8\times10^{-5}$ & \textbf{$+0.71$} & $7.6\times10^{-5}$ \\
+    9 & 0.94 & 0.71 & \textbf{$+0.64$} & $5.9\times10^{-4}$ & $+0.54$ & 0.005 \\
+    10 & 0.94 & 0.72 & \textbf{$+0.61$} & 0.001 & $+0.45$ & 0.023 \\
+    11 & 0.94 & 0.70 & \textbf{$+0.66$} & $3.8\times10^{-4}$ & \textbf{$+0.59$} & 0.002 \\
+    12 & 0.89 & 0.63 & $+0.48$ & 0.016 & $+0.49$ & 0.014 \\
+    13$^\dagger$ & 0.44 & 0.53 & $-0.37$ & 0.065 & $-0.14$ & 0.504 \\
+    14$^\dagger$ & 0.30 & 0.28 & $+0.26$ & 0.214 & $+0.27$ & 0.184 \\
+    15$^\dagger$ & 0.30 & 0.21 & $-0.17$ & 0.416 & $-0.20$ & 0.349 \\
+    16$^\dagger$ & 0.57 & 0.40 & $-0.35$ & 0.085 & $+0.12$ & 0.553 \\
+\bottomrule
+\end{tabular}
+\begin{tablenotes}\footnotesize
+\item \textbf{Models.} The 25 DataDecide 1B models (Ai2): same architecture (16 layers), same
+training length (100B tokens), different pre-training corpora. One point per model.
+\item \textbf{$\alpha$ (data exponent).} From the exact 100B-token stream each model was trained on,
+$c(n)$ = how often the integer $n$ appears as a whole number in the text ($1\le n\le 10^4$).
+$\alpha$ is the slope of the least-squares line of $\log c(n)$ on $\log n$
+($c(n)\propto n^{\alpha}$; $\alpha<0$; a flatter, less negative $\alpha$ means large numbers are
+relatively more frequent).
+\item \textbf{$\beta$ (number-line compression).} Prompts \texttt{c1=c1,c2=c2,c3=c3,n=} with $n$
+in 10 magnitude bands from 10 to 10\,000 (100 correctly answered prompts per band and seed,
+3 seeds). At each layer the hidden state of the last token is projected on its first principal
+component (PC1), and PC1 $= a + s\,\beta^{\log_{10} n}$ is fitted over all prompts. $\beta$ is the
+factor by which the gap between consecutive decades changes: $\beta=1$ is a logarithmic number
+line (every decade gets equal space), $\beta<1$ compresses large numbers more than a logarithm,
+$\beta>1$ moves towards a linear line. Per model: median over the 3 seeds.
+\item \textbf{Monotonicity.} Median over models of $|\text{Spearman}(n,\mathrm{PC1})|$: how well that
+layer orders the numbers along PC1 (1 = perfectly ordered). $^\dagger$\,Below 0.85: no clear
+number line at that layer, so $\beta$ there is not meaningful.
+\item \textbf{Pearson $r$} measures a straight-line relation between $\alpha$ and $\beta$ across
+the 25 models; \textbf{Spearman $\rho_s$} only asks whether a higher $\alpha$ goes with a higher
+$\beta$ (rank order), and is robust to single outlying models. $p$: two-sided test of zero
+correlation. \textbf{Bold}: significant after Bonferroni correction for 16 layers
+($p<0.05/16=0.0031$).
+\end{tablenotes}
+\end{threeparttable}
+\end{table}
+\end{document}
