@@ -13,8 +13,8 @@ earlier conversations. Everything needed to continue is in this repository.
 6. `docs/infrastructure.md`: before spending money or touching cloud accounts.
 
 ## Working rules this project follows
-- **Branch:** work on `alpha-sampling` (not yet merged into `main`). Pull before
-  working: `git pull --no-rebase --no-edit origin alpha-sampling`.
+- **Branch:** `main`, the only branch. Pull before working:
+  `git pull --no-rebase --no-edit origin main`.
 - **One experiment, one folder:** a new experiment gets `experiments/E##_<name>/` with a
   `README.md` (summary: question, method, how to run, headline result, status) and, once
   it has results, a `DETAILS.md`. Code goes in `src/` (local analysis), `modal_app/` or
@@ -54,4 +54,4 @@ earlier conversations. Everything needed to continue is in this repository.
    moves with training randomness.
 3. **Fixed-layer β**: recompute β at one common layer for all 25 models from
    `results/beta_fine/step69369-seed-default/<recipe>.npz` (no GPU).
-4. **Merge `alpha-sampling` into `main`** via a pull request once the owner agrees.
+4. (done 2026-10-10) `alpha-sampling` became `main`; the other branches were deleted.

@@ -68,7 +68,7 @@ paper/         LaTeX appendix + figures from the prior-work write-up
 ## Quick start
 
 ```bash
-git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+git clone https://github.com/mdibrahimawad/numberline-datadecide.git
 cd numberline-datadecide
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
@@ -85,7 +85,7 @@ Cloud jobs (Modal, RunPod) and their costs are described in each experiment's RE
 [`docs/infrastructure.md`](docs/infrastructure.md).
 
 ## Ground rules
-- Work on branch `alpha-sampling`. Each new experiment gets an `experiments/E##_*` folder,
+- Work on branch `main` (the only branch). Each new experiment gets an `experiments/E##_*` folder,
   and every new result updates `docs/findings.md` in the same commit.
 - Lock definitions and predictions before testing a hypothesis; never cherry-pick models,
   layers or subsets.

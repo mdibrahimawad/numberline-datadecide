@@ -1,7 +1,7 @@
 # Timeline
 
 What was done, in order, with the decision behind each step. Commit hashes are on
-branch `alpha-sampling` unless noted. Dates are when the work landed in git.
+branch `alpha-sampling` (merged into `main` on 2026-10-10, now the only branch) unless noted. Dates are when the work landed in git.
 
 ## Before 2026-10-05: prior work (E00)
 The original repository (uploaded to `main` on 2026-10-05) covered:

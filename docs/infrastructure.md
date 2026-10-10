@@ -8,7 +8,7 @@ Tokens go into environment variables or the provider's secret store only.
 
 ```
 GitHub  mdibrahimawad/numberline-datadecide   code + small results (this repo)
-  └─ branch alpha-sampling                     all current work (see "Branches")
+  └─ branch main                               everything (the only branch, see "Branches")
 Hugging Face (user mdibrahimawad)
   ├─ datasets/mdibrahimawad/numberline-alpha-results   (private) exact-alpha outputs from RunPod
   └─ datasets/mdibrahimawad/numberline-beta-results    (private) fine-beta outputs from RunPod
@@ -21,16 +21,12 @@ Laptop  MacBook (M4), conda base env, repo at ~/numberline-datadecide
 ## GitHub
 
 - Repo: `https://github.com/mdibrahimawad/numberline-datadecide`.
-- **Branches**:
-
-  | Branch | Content |
-  |---|---|
-  | `main` | the original upload (prior work, E00) |
-  | `datadecide-sweep` | E01 code (correct-output filter + DataDecide β sweep) |
-  | **`alpha-sampling`** | **everything since** (built on `datadecide-sweep` + a merge of `main`). Work here. Not yet merged into `main`. |
-  | `claude/intelligent-babbage-kxhr4c` | a session branch created by the Claude Code environment; unused |
+- **Branch: `main` only.** On 2026-10-10 all work (`alpha-sampling`, which already contained
+  `datadecide-sweep` and the original `main`) became `main`, and the other branches
+  (`alpha-sampling`, `datadecide-sweep`, `claude/intelligent-babbage-kxhr4c`) were deleted.
+  Their full history is kept in `main`'s commits.
 - The Claude GitHub App is installed on the repo (lets a Claude session push).
-- When a push is rejected because the remote has new commits: `git pull --no-rebase --no-edit origin alpha-sampling`, then push again.
+- When a push is rejected because the remote has new commits: `git pull --no-rebase --no-edit origin main`, then push again.
 
 ## Hugging Face
 
@@ -110,7 +106,7 @@ Full beginner guide: `docs/runpod.md`. Summary:
 ## Starting over on a new machine
 
 ```bash
-git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+git clone https://github.com/mdibrahimawad/numberline-datadecide.git
 cd numberline-datadecide
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt                      # analysis + tests

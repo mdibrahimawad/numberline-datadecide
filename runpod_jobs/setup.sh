@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # One-time setup inside a fresh RunPod pod. Usage (from /workspace):
-#   git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+#   git clone https://github.com/mdibrahimawad/numberline-datadecide.git
 #   cd numberline-datadecide && bash runpod_jobs/setup.sh cpu     # CPU pod: alpha counting
 #   cd numberline-datadecide && bash runpod_jobs/setup.sh gpu     # GPU pod: model beta
 # Packages go into /workspace/venv-<mode> (the volume disk), so a stopped and

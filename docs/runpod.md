@@ -109,7 +109,7 @@ is CPU- or download-bound so you can size it right.
    ```bash
    cd /workspace
    command -v git || (apt-get update && apt-get install -y git)    # bare images lack git
-   git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+   git clone https://github.com/mdibrahimawad/numberline-datadecide.git
    cd numberline-datadecide && bash runpod_jobs/setup.sh cpu
    source /workspace/venv-cpu/bin/activate
    echo ${HF_TOKEN:+HF_TOKEN is set}  # set via the pod's env var {{ RUNPOD_SECRET_hf_token }};
@@ -190,7 +190,7 @@ beta = 1 (equal gaps leave nothing to explain), which is why the old R^2 looked 
 2. Connect (SSH command from the Connect tab), then:
    ```bash
    mkdir -p /workspace && cd /workspace
-   git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+   git clone https://github.com/mdibrahimawad/numberline-datadecide.git
    cd numberline-datadecide && bash runpod_jobs/setup.sh gpu
    tmux new -s beta
    source /workspace/venv-gpu/bin/activate && export HF_HOME=/workspace/hf_cache
@@ -231,7 +231,7 @@ What each pod does (`runpod_jobs/paloma_counts.sh <job>`):
 3. **On each pod** (Connect → SSH), the same 4 lines with that pod's job:
    ```bash
    cd /workspace && (apt-get update -qq && apt-get install -y -qq git tmux) >/dev/null 2>&1; true
-   git clone -b alpha-sampling https://github.com/mdibrahimawad/numberline-datadecide.git
+   git clone https://github.com/mdibrahimawad/numberline-datadecide.git
    cd numberline-datadecide && tmux new -s count
    bash runpod_jobs/paloma_counts.sh c4 check      # first pod; the others: mc4, pile, falcon-refinedweb, redpajama, dolma
    ```
