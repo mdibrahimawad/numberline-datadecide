@@ -1,46 +1,83 @@
 #!/usr/bin/env bash
-# E09 number counts for one Paloma training corpus, on a CPU pod. One pod per job; several
-# pods may run "dolma" (its 8 parts are shared out through claims on Hugging Face).
+# E09 number counts for the Paloma training corpora, on a CPU pod.
 #
 #   bash runpod_jobs/paloma_counts.sh <job> [check|run] [max hours]
 #
-#   job:   c4 | mc4 | pile | falcon-refinedweb | redpajama   (random sample, runpod_jobs.corpus_sample)
-#          dolma                                             (exact training stream, runpod_jobs.exact_alpha)
+#   job:   all                                               every corpus below, one after another, on this pod
+#          c4 | mc4 | pile | falcon-refinedweb | redpajama   (random sample, runpod_jobs.corpus_sample)
+#          dolma                                             (exact training stream, runpod_jobs.exact_alpha;
+#                                                             several pods may run it: its 8 parts are shared
+#                                                             out through claims on Hugging Face)
 #   check: list the files, count a few, print speed and stop (a few cents)
-#   run:   the full count (default); uploads to the private HF dataset numberline-alpha-results,
-#          then deletes this pod. It deletes itself after [max hours] (default 3) whatever happens.
+#   run:   the full count (default); each result is uploaded to the private HF dataset
+#          numberline-alpha-results; at the end the pod deletes itself (only if everything
+#          succeeded). It deletes itself after [max hours] whatever happens
+#          (default 3 for one job, 8 for all).
 #
 # Needs HF_TOKEN (a write token) in the environment. Results come back to the Mac with
 #   python -m runpod_jobs.fetch_results --kind paloma
-set -euo pipefail
-JOB="${1:?usage: paloma_counts.sh <c4|mc4|pile|falcon-refinedweb|redpajama|dolma> [check|run] [max hours]}"
+set -uo pipefail
+JOB="${1:?usage: paloma_counts.sh <all|c4|mc4|pile|falcon-refinedweb|redpajama|dolma> [check|run] [max hours]}"
 MODE="${2:-run}"
-HOURS="${3:-3}"
+HOURS="${3:-$([ "$JOB" = all ] && echo 8 || echo 3)}"
+CORPORA=(c4 mc4 pile falcon-refinedweb redpajama)
 cd "$(dirname "$0")/.."
 : "${HF_TOKEN:?export HF_TOKEN=... (a Hugging Face WRITE token) first}"
 [ -x /workspace/venv-cpu/bin/python ] && /workspace/venv-cpu/bin/python -c "import zstandard, pyarrow" 2>/dev/null \
-  || bash runpod_jobs/setup.sh cpu
+  || bash runpod_jobs/setup.sh cpu || exit 1
 # shellcheck disable=SC1091
 source /workspace/venv-cpu/bin/activate
-export HF_HOME=/workspace/hf_cache HF_HUB_ENABLE_HF_TRANSFER=0
+export HF_HOME=/workspace/hf_cache
 mkdir -p logs
+DMAP=configs/paloma/paloma_dolma_exact_map.json
+# one job's own "delete the pod" is used only when it is the only job; `all` deletes at the end
+SOLO=$([ "$JOB" = all ] && echo "" || echo "--delete-pod-when-done")
 
-if [ "$JOB" = dolma ]; then
-  PARTS=$(python -c "import json; print(','.join(json.load(open('configs/paloma/paloma_dolma_exact_map.json'))['recipes']))")
-  CMD=(python -m runpod_jobs.exact_alpha --data-map configs/paloma/paloma_dolma_exact_map.json
-       --recipes "$PARTS" --seed 6198 --out-dir results/paloma_counts --work-dir /workspace/paloma_work)
-  if [ "$MODE" = check ]; then
-    "${CMD[@]}" --dry-run
-    "${CMD[@]}" --pilot 32
-    exit 0
+one() {  # one job in MODE; returns its exit code
+  local job=$1
+  if [ "$job" = dolma ]; then
+    local parts
+    parts=$(python -c "import json; print(','.join(json.load(open('$DMAP'))['recipes']))")
+    local cmd=(python -m runpod_jobs.exact_alpha --data-map "$DMAP" --recipes "$parts" --seed 6198
+               --out-dir results/paloma_counts --work-dir /workspace/paloma_work)
+    if [ "$MODE" = check ]; then
+      "${cmd[@]}" --dry-run && "${cmd[@]}" --pilot 32
+    else
+      "${cmd[@]}" --upload-hf numberline-alpha-results --no-stop-pod $SOLO --max-hours "$HOURS"
+    fi
+  else
+    local cmd=(python -m runpod_jobs.corpus_sample --corpus "$job")
+    if [ "$MODE" = check ]; then
+      "${cmd[@]}" --dry-run && "${cmd[@]}" --pilot 2
+    else
+      "${cmd[@]}" --upload-hf numberline-alpha-results $SOLO --max-hours "$HOURS"
+    fi
   fi
-  "${CMD[@]}" --upload-hf numberline-alpha-results --delete-pod-when-done --max-hours "$HOURS" 2>&1 | tee "logs/$JOB.log"
+}
+
+if [ "$JOB" = all ]; then
+  JOBS=("${CORPORA[@]}" dolma)
 else
-  CMD=(python -m runpod_jobs.corpus_sample --corpus "$JOB")
-  if [ "$MODE" = check ]; then
-    "${CMD[@]}" --dry-run
-    "${CMD[@]}" --pilot 2
-    exit 0
-  fi
-  "${CMD[@]}" --upload-hf numberline-alpha-results --delete-pod-when-done --max-hours "$HOURS" 2>&1 | tee "logs/$JOB.log"
+  JOBS=("$JOB")
 fi
+declare -A RESULT
+for j in "${JOBS[@]}"; do
+  echo "===== $j ($MODE) ====="
+  one "$j" 2>&1 | tee "logs/$j.$MODE.log"
+  rc=${PIPESTATUS[0]}
+  RESULT[$j]=$([ "$rc" = 0 ] && echo OK || echo FAILED)
+done
+echo "===== summary ($MODE) ====="
+failed=0
+for j in "${JOBS[@]}"; do
+  echo "  $j: ${RESULT[$j]}"
+  [ "${RESULT[$j]}" = OK ] || failed=1
+done
+if [ "$JOB" = all ] && [ "$MODE" = run ]; then
+  if [ $failed = 0 ]; then
+    python -c "from runpod_jobs.pod import terminate_this_pod; terminate_this_pod('all Paloma counts uploaded')"
+  else
+    echo "  some jobs failed: the pod is kept (it still deletes itself after $HOURS h). Paste the summary to Claude."
+  fi
+fi
+exit $failed

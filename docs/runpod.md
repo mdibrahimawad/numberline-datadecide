@@ -210,6 +210,11 @@ beta = 1 (equal gaps leave nothing to explain), which is why the old R^2 looked 
 
 ## 4b. Job C: the 6 Paloma counts (E09, CPU pods in parallel)
 
+**Simplest: one pod does everything** — `bash runpod_jobs/paloma_counts.sh all check`, then
+`bash runpod_jobs/paloma_counts.sh all` (~3-4 h, ~$3-4 on 32 vCPU; it deletes itself once all 6
+are uploaded). To finish sooner, open one more pod and run `... dolma` there: the Dolma parts
+are shared automatically. The many-pod layout below is the fastest (~1 h, same total cost).
+
 What each pod does (`runpod_jobs/paloma_counts.sh <job>`):
 
 | job | how | data read | expected |
