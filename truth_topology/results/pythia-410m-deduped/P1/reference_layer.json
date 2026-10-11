@@ -1,0 +1,1 @@
+{"reference_layer": 13, "rule": "argmax over layers of mean L1_auc over the last 3 checkpoints"}

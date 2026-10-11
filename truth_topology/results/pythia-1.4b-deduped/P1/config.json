@@ -1,0 +1,83 @@
+{
+ "ROOT": "/workspace/repo/truth_topology",
+ "WORK": "/workspace/tt",
+ "RAW": "/workspace/tt/raw",
+ "STATES": "/workspace/tt/states",
+ "RESULTS": "/workspace/repo/truth_topology/results",
+ "FIGURES": "/workspace/repo/truth_topology/figures",
+ "MODELS": {
+  "pythia-1.4b-deduped": "EleutherAI/pythia-1.4b-deduped",
+  "pythia-410m-deduped": "EleutherAI/pythia-410m-deduped",
+  "pythia-6.9b": "EleutherAI/pythia-6.9b"
+ },
+ "STEPS": [
+  0,
+  512,
+  1000,
+  3000,
+  5000,
+  10000,
+  20000,
+  40000,
+  60000,
+  80000,
+  100000,
+  110000,
+  120000,
+  130000,
+  143000
+ ],
+ "EARLY_STEPS": [
+  64,
+  128,
+  256
+ ],
+ "FIRST_THIRD_STEP": 40000,
+ "GOT_COMMIT": "5d1c630c44f7e50bda7ad86d601ccadf9abc5ddb",
+ "GOT_URL": "https://raw.githubusercontent.com/saprmarks/geometry-of-truth/5d1c630c44f7e50bda7ad86d601ccadf9abc5ddb/datasets/",
+ "P1_TOPICS": [
+  "cities",
+  "sp_en_trans",
+  "companies_true_false"
+ ],
+ "P1_PER_CLASS": 300,
+ "P2_N_RELATIONS": 10,
+ "P2_N_PAIRS": 600,
+ "P2_CONTEXT": 3,
+ "LENGTH_AUC_MAX": 0.6,
+ "WORDS_AUC_MAX": 0.6,
+ "SEED_DATA": 0,
+ "SEEDS_SUBSAMPLE": [
+  0,
+  1
+ ],
+ "SEED_PERM": 12345,
+ "LR_C": 1.0,
+ "LR_MAX_ITER": 2000,
+ "CV_FOLDS": 5,
+ "N_NULL_LINEAR": 5,
+ "B": 64,
+ "M": 160,
+ "N_NULL_T1": 5,
+ "NORM_REF_N": 500,
+ "N_PERM_MST": 1000,
+ "N_PERM_CONC": 2000,
+ "N_BOOT": 1000,
+ "CORR_PRUNE": 0.5,
+ "KEY_FEATURES": [
+  "h0_death_mean",
+  "h1_n_bars",
+  "h1_pers_mean",
+  "h1_entropy"
+ ],
+ "REF_LAYER_LAST_K": 3,
+ "ONSET_CONSECUTIVE": 2,
+ "PALETTE": [
+  "#2a78d6",
+  "#eb6834",
+  "#1baf7a",
+  "#eda100"
+ ],
+ "model": "pythia-1.4b-deduped",
+ "input": "P1"
+}

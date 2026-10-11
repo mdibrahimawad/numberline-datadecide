@@ -1,0 +1,11 @@
+metric,layer,seed,onset_step,onset_index,sig_at_step0
+B1_loglik_auc,-1,-1,3000.0,3.0,False
+L1_auc,13,-1,5000.0,4.0,False
+L2_auc,13,-1,512.0,1.0,False
+L1_within_auc,13,-1,5000.0,4.0,False
+L3_auc,13,-1,5000.0,4.0,False
+T1_acc,13,0,100000.0,10.0,False
+T1_acc,13,1,10000.0,5.0,False
+T3a_topic_homophily,13,-1,0.0,0.0,True
+T3b_within_truth_homophily,13,-1,5000.0,4.0,False
+T3c_cross_truth_homophily,13,-1,,,False

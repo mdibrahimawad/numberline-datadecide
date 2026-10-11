@@ -1,5 +1,5 @@
 {
- "length_unit": "words",
+ "length_unit": "tokens",
  "relations": [
   "P30",
   "P27",
@@ -13,6 +13,6 @@
   "P136"
  ],
  "n": 1200,
- "length_auc": 0.5573611111111112,
+ "length_auc": 0.5293972222222223,
  "passes": true
 }
