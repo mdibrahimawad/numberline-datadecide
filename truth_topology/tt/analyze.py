@@ -36,13 +36,28 @@ class Paths:
         self.states = C.STATES / model / inp
         self.items = C.STATES / inp / "items.csv"
         self.res = C.RESULTS / model / inp
+        from .data import items_hash
+        self.sha = items_hash(inp)
+        tag = self.res / "items_sha.txt"
+        if self.res.exists() and (not tag.exists() or tag.read_text().strip() != self.sha):
+            import shutil
+            shutil.rmtree(self.res)        # results of a different item set: start over
+        self.res.mkdir(parents=True, exist_ok=True)
+        tag.write_text(self.sha)
         self.cells = self.res / "cells"
         self.summ = self.res / "summaries"
         for p in (self.res, self.cells, self.summ):
             p.mkdir(parents=True, exist_ok=True)
 
     def steps(self):
-        return sorted(int(p.stem[4:]) for p in self.states.glob("step*.npz") if ".tmp" not in p.name)
+        out = []
+        for p in self.states.glob("step*.npz"):
+            if ".tmp" in p.name:
+                continue
+            z = np.load(p)
+            if "items_sha" in z.files and str(z["items_sha"]) == self.sha:
+                out.append(int(p.stem[4:]))
+        return sorted(out)
 
 
 def load_items(P):

@@ -42,7 +42,9 @@ PY
     python - <<'PY'
 import pandas as pd, sys
 on = pd.read_csv("results/pythia-410m-deduped/P1/onset.csv")
-bad = on[on.sig_at_step0 == True]
+truth = ["L1_auc", "L2_auc", "L1_within_auc", "L3_auc", "T1_acc", "T3b_within_truth_homophily",
+         "T3c_cross_truth_homophily", "B1_loglik_auc"]   # T3a is topic structure: expected at step 0
+bad = on[(on.sig_at_step0 == True) & on.metric.isin(truth)]
 if len(bad):
     sys.exit("GATE FAILED: significant at step 0 (untrained model) in the pilot:\n" + bad.to_string())
 print("pilot gate passed")

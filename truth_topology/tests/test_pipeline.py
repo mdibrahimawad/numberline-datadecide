@@ -21,12 +21,14 @@ def small(tmp_path, monkeypatch):
     it = pd.DataFrame({"item_id": range(n), "text": "x", "label": y, "topic": topics})
     (C.STATES / "P1").mkdir(parents=True)
     it.to_csv(C.STATES / "P1" / "items.csv", index=False)
+    from tt.data import items_hash
+    sha = items_hash("P1")
     out = C.STATES / "m" / "P1"
     out.mkdir(parents=True)
     for i, step in enumerate([0, 1000, 40000, 143000]):
         H = rng.standard_normal((3, n, d))
         H[1:, :, 0] += i * (y - .5)              # truth grows with training at layers 1-2
-        np.savez(out / f"step{step}.npz", H=H.astype(np.float16), loglik=rng.standard_normal(n) + i * y)
+        np.savez(out / f"step{step}.npz", H=H.astype(np.float16), loglik=rng.standard_normal(n) + i * y, items_sha=sha)
     return y, topics
 
 
@@ -55,3 +57,9 @@ def test_end_to_end(small):
     assert (C.FIGURES / "f2.png").exists()
     # resumability: a second run does nothing and changes nothing
     A.stage_cells(P, "m", "P1", n_jobs=1)
+    # a new item set invalidates old states and results
+    it = pd.read_csv(C.STATES / "P1" / "items.csv")
+    it.loc[0, "text"] = "changed"
+    it.to_csv(C.STATES / "P1" / "items.csv", index=False)
+    P2 = A.Paths("m", "P1")
+    assert P2.steps() == [] and not any(P2.cells.iterdir())

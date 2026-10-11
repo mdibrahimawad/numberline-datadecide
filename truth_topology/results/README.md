@@ -25,7 +25,7 @@ A null on all four (topology rises in lockstep with the probe) is a legitimate r
 ## Fixed analysis choices
 
 All in `tt/config.py`: checkpoints (Ravfogel et al.'s 15), P1 topics `cities`, `sp_en_trans`,
-`larger_than` (≤ 300 per class per topic), B = 64 subsamples of m = 160, subsample seeds 0
+`larger_than` (≤ 300 per class per topic; `larger_than` later replaced, see the end of this file), B = 64 subsamples of m = 160, subsample seeds 0
 (primary) and 1, N_NULL_T1 = 5 mixed-vs-mixed splits, 1000 within-topic permutations for T3, 2000
 checkpoint-order permutations for T2-C, onset = 2 consecutive checkpoints above the null 95th
 percentile.
@@ -50,4 +50,20 @@ the T1 gap can be interpreted, as the brief says, and its maximum is about 0.3.
 
 ## Changes after seeing data
 
-(none yet)
+1. **2026-10-11, after the pilot (pythia-410m-deduped, steps 0/3000/143000): `larger_than` replaced
+   by `companies_true_false`.** The step-0 control fired for L1, L2, L1_within and T3b. Per topic
+   (layer 12) it came entirely from `larger_than`: probe AUC ≈ 1.0 at step 0 and 3000, T3b 0.81 at
+   step 0, while `cities` and `sp_en_trans` were at chance (AUC 0.49 / 0.52 at step 3000, T3b 0.45 / 0.49
+   at step 0) and rose only later (AUC 0.93 / 0.84 at step 143000). A probe on word unigrams + bigrams,
+   with no model at all, already reaches AUC 0.97 on `larger_than` ("fifty-one *is larger than*" vs
+   "*than* fifty-one"), so the topic measures word order, not learned truth. Replacement chosen by a
+   rule fixed before seeing any model data for it: the words-only probe AUC must be ≤ 0.6
+   (`companies_true_false` 0.30; `common_claim` 0.61 failed; `smaller_than` 0.97 failed). This rule
+   is now part of the data gate (`WORDS_AUC_MAX` in `tt/config.py`, `words_auc` in
+   `results/confounds_P1.json`). The pilot results of the old item set are discarded automatically
+   (states and results are tagged with a hash of `items.csv`).
+2. **Same date: the automatic step-0 gate no longer includes T3a (topic homophily).** Topics differ
+   in their words, so topic structure is expected in an untrained model; T3a is not a truth measure.
+   The gate covers only the truth measures (L1, L2, L1_within, L3, T1, T3b, T3c, B1).
+
+Synthetic validation was rerun on the new item set (`validation/validation.json`).

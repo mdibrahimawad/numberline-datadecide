@@ -42,6 +42,22 @@ def length_fn(tokenizer_name: str | None):
     return (lambda s: len(tok(s)["input_ids"])), "tokens"
 
 
+def words_auc(texts, labels, seed: int = 0) -> float:
+    """CV AUC of a logistic regression on word unigrams + bigrams (no model at all). Only values
+    above 0.5 count as a shortcut: the paired true/false design makes word probes anti-learn
+    (AUC << 0.5) when a subject's true and false statements fall in different folds."""
+    from sklearn.feature_extraction.text import CountVectorizer
+    X = CountVectorizer(token_pattern=r"[^\s.']+", ngram_range=(1, 2)).fit_transform(list(texts))
+    cv = StratifiedKFold(C.CV_FOLDS, shuffle=True, random_state=seed)
+    p = cross_val_predict(LogisticRegression(max_iter=2000), X, labels, cv=cv, method="decision_function")
+    return float(roc_auc_score(labels, p))
+
+
+def items_hash(input_name: str) -> str:
+    import hashlib
+    return hashlib.sha256((C.STATES / input_name / "items.csv").read_bytes()).hexdigest()[:16]
+
+
 def length_auc(lengths: np.ndarray, labels: np.ndarray, seed: int = 0) -> float:
     """CV AUC of a logistic regression predicting truth from length (and length^2)."""
     x = np.c_[lengths, lengths ** 2].astype(float)
@@ -106,8 +122,10 @@ def build_p1(tokenizer: str | None):
             lens = s.statement.map(nlen).to_numpy()
             auc = length_auc(lens, s.label.to_numpy())
             rebalanced = True
+        wauc = words_auc(s.statement, s.label.to_numpy())
         r = {"n_true": int((s.label == 1).sum()), "n_false": int((s.label == 0).sum()),
-             "length_auc": auc, "rebalanced": rebalanced, "passes": auc <= C.LENGTH_AUC_MAX,
+             "length_auc": auc, "rebalanced": rebalanced, "words_auc": wauc,
+             "passes": auc <= C.LENGTH_AUC_MAX and wauc <= C.WORDS_AUC_MAX,
              "length_by_class": {str(k): {"mean": float(np.mean(lens[s.label.to_numpy() == k])),
                                           "hist": dict(pd.Series(lens[s.label.to_numpy() == k]).value_counts().sort_index().astype(int).astype(str))}
                                  for k in (0, 1)}}
@@ -193,7 +211,7 @@ def main():
         json.dump(rep, open(C.RESULTS / f"confounds_{name}.json", "w"), indent=1)
         print(name, len(items), "items; gate", "PASS" if rep["passes"] else "FAIL", json.dumps(
             {k: v for k, v in rep.items() if k != "topics"} if name == "P2" else
-            {t: (r["n_true"], r["n_false"], round(r["length_auc"], 3), r["rebalanced"]) for t, r in rep["topics"].items()}))
+            {t: (r["n_true"], r["n_false"], round(r["length_auc"], 3), round(r["words_auc"], 3), r["rebalanced"]) for t, r in rep["topics"].items()}))
 
 
 if __name__ == "__main__":

@@ -68,7 +68,7 @@ Copy `results/` and `figures/` back (or commit them; the big per-cell files are 
 ## What was reused from the reference repos
 
 - **geometry-of-truth** (Marks & Tegmark, commit `5d1c630`): the datasets `cities`, `sp_en_trans`,
-  `larger_than` and `counterfact.json`, downloaded at runtime (the repo has no licence file, so the
+  `companies_true_false` and `counterfact.json` (`larger_than` was dropped after the pilot), downloaded at runtime (the repo has no licence file, so the
   data are not copied here). The mass-mean probe follows their `MMProbe` (difference of class means).
 - **Malhotra et al.** (MIT): B = 64 / m = 160, the velocity, concentration and Gaussian-floor design,
   and the convention of finite bars only with empty → 0. **Their `summary.py` was not reused.** Its 41

@@ -29,12 +29,15 @@ FIRST_THIRD_STEP = 40000                                        # T2-C: velocity
 # ---- data (Marks & Tegmark geometry-of-truth, pinned commit) ----
 GOT_COMMIT = "5d1c630c44f7e50bda7ad86d601ccadf9abc5ddb"
 GOT_URL = f"https://raw.githubusercontent.com/saprmarks/geometry-of-truth/{GOT_COMMIT}/datasets/"
-P1_TOPICS = ["cities", "sp_en_trans", "larger_than"]
+# larger_than was the third topic until the pilot: it is solvable from the words alone (bigram
+# probe AUC 0.97; untrained Pythia AUC ~1.0), see results/README.md "Changes after seeing data"
+P1_TOPICS = ["cities", "sp_en_trans", "companies_true_false"]
 P1_PER_CLASS = 300
 P2_N_RELATIONS = 10            # most frequent CounterFact relations
 P2_N_PAIRS = 600               # matched (true-context, false-context) pairs -> 1200 sequences
 P2_CONTEXT = 3                 # statements before the final one
 LENGTH_AUC_MAX = 0.6           # confound gate: length alone must not predict truth above this
+WORDS_AUC_MAX = 0.6            # confound gate: a bag-of-unigrams+bigrams probe must not exceed this
 
 # ---- seeds ----
 SEED_DATA = 0

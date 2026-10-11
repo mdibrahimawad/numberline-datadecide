@@ -122,8 +122,17 @@ def main():
     tok.padding_side = "right"
     items = {i: pd.read_csv(C.STATES / i / "items.csv") for i in a.inputs}
 
+    from .data import items_hash
+    sha = {i: items_hash(i) for i in a.inputs}
+
+    def current(f, inp):  # exists and was extracted for the current items.csv
+        if not f.exists():
+            return False
+        z = np.load(f)
+        return "items_sha" in z.files and str(z["items_sha"]) == sha[inp]
+
     def todo(step):
-        return [i for i in a.inputs if not (C.STATES / a.model / i / f"step{step}.npz").exists()]
+        return [i for i in a.inputs if not current(C.STATES / a.model / i / f"step{step}.npz", i)]
 
     steps = [s for s in a.steps if todo(s)]
     log.info("model %s: %d checkpoints to do: %s", a.model, len(steps), steps)
@@ -140,7 +149,7 @@ def main():
                 out = C.STATES / a.model / inp
                 out.mkdir(parents=True, exist_ok=True)
                 tmp = out / f"step{step}.tmp.npz"
-                np.savez(tmp, H=H, step=step, model=a.model, dtype=a.dtype, **extra)
+                np.savez(tmp, H=H, step=step, model=a.model, dtype=a.dtype, items_sha=sha[inp], **extra)
                 os.replace(tmp, out / f"step{step}.npz")
                 log.info("%s %s step%d: H %s, %s", a.model, inp, step, H.shape,
                          {k: round(float(v.mean()), 4) for k, v in extra.items()})
