@@ -1,0 +1,77 @@
+# E10: forecasting memorization from early-checkpoint topology (experiments/E10_memorization_topology).
+# Every seed, model, revision, layer list, normalisation, S_f and T used by memtopo/.
+# Fixed before any real result was seen; changes after that go in REPORT.md "Deviations".
+
+out_root: /workspace/memtopo_run      # data/ features/ results/ figures/ logs/ scans/ live here
+hf_home: /workspace/hf
+refs_dir: /workspace/refs
+
+data:
+  repo: EleutherAI/pile-deduped-pythia-preshuffled
+  seq_len: 2049                 # tokens per training sequence
+  batch_size: 1024              # sequences per optimizer step
+  dtype: uint16
+  pool_steps: [1000, 5999]      # inclusive; every sequence seen once before all S_f
+  train_steps: [1000, 3999]     # train / CV
+  test_steps: [4000, 5999]      # out-of-time test (all headline numbers)
+  pool_size: 300000
+  pool_seed: 0
+  unigram_steps: [0, 999]       # 1,024,000 sequences for unigram frequencies (outside the pool)
+  # epoch boundary search (section 4): coarse scan, then bisection
+  epoch_scan: {start: 88000, stop: 112000, every: 250, baseline_steps: [20000, 40000, 60000, 80000]}
+  epoch_ref_steps: [0, 5999]    # reference shingles come from these (locally downloaded) steps
+  shingle_len: 32
+  alignment_n: 200
+
+labels:
+  evals_repo: EleutherAI/pythia-memorized-evals
+  prompt_len: 32
+  cont_len: 32
+  secondary_target: 143000
+  fragility_n: 2000             # random pooled sequences re-checked at 143000
+  greedy_check_n: 2000          # teacher-forced argmax vs real KV-cache greedy decode
+  precision: fp32               # forward passes in fp32 (brief section 4)
+  batch: 256
+
+case_control:
+  neg_ratio: 5
+  seeds: [0, 1]                 # two negative-subsample seeds (control 6)
+
+features:
+  # layers are 1-indexed block outputs (pre final-LN, read with forward hooks).
+  # Reference list for 16 layers; other depths use round-half-up(L * l / 16).
+  ref_layers_16: [3, 5, 8, 10, 13, 16]
+  normalisation: median_pairwise   # centre, divide by median pairwise distance (primary)
+  also_raw: true                   # secondary analysis on raw clouds
+  maxdim: 1
+  wasserstein_p: 2
+  probe_pca: 256
+  minkprob_k: 0.2
+  ph_workers: 30
+
+analysis:
+  bootstrap: 2000
+  permutations: 2000
+  bal128_draws: 100
+  bal128_folds: 6
+  recall_at_precision: 0.9
+  inner_cv_folds: 5
+  lr_Cs: [0.001, 0.01, 0.1, 1.0, 10.0]
+  prune_corr: 0.5
+  seed: 0
+
+models:
+  1b:
+    name: EleutherAI/pythia-1b-deduped
+    evals_split: deduped.1b
+    forecast_steps: [10000, 23000]
+  410m:
+    name: EleutherAI/pythia-410m-deduped
+    evals_split: deduped.410m
+    forecast_steps: [10000, 23000]
+  6.9b:                          # optional stage 2 (S_f = 23000 only)
+    name: EleutherAI/pythia-6.9b-deduped
+    evals_split: deduped.6.9b
+    forecast_steps: [23000]
+
+forbidden_models: ["pythia-2.8b", "-v0"]

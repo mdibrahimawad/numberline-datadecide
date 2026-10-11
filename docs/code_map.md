@@ -14,7 +14,8 @@ experiments/         one folder per experiment: README (summary) + DETAILS (full
 configs/             DataDecide model list and recipe → training-file map
 src/                 library + local CLIs (analysis, geometry probe, samplers)
 modal_app/           Modal cloud entrypoints (E00–E04)
-runpod_jobs/         RunPod runners (E04 last 11 recipes, E06)
+runpod_jobs/         RunPod runners (E04 last 11 recipes, E06; memtopo_setup.sh for E10)
+memtopo/             E10 only: memorization forecasting with topology (see experiments/E10_memorization_topology/README.md)
 utils/               small helpers used by src/ (prompts, regex, dataset streaming, MLflow)
 tests/               offline tests (python -m pytest -q tests)
 results/             committed outputs, one subfolder per experiment (see results/README.md)
