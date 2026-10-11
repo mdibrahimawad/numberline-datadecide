@@ -10,17 +10,17 @@ The full specification is [`EXPERIMENT_BRIEF.md`](EXPERIMENT_BRIEF.md). The pre-
 and every fixed choice are in [`results/README.md`](results/README.md). Results will go in
 [`REPORT.md`](REPORT.md).
 
-## Status (2026-10-10)
+## Status (2026-10-11)
 
-| Phase (brief §10) | State |
-|---|---|
-| 1 Setup: code, refs read | done (what was reused: below) |
-| 2 Data: P1, P2 + confound check | done with word counts (all pass); **rerun on the pod with the Pythia tokenizer** (`run_pipeline.sh data`) |
-| 3 Validation: synthetic tests 1–6 | **all pass** (n = 1504, d = 2048) → `figures/fig0_validation.png` |
-| 4 Pilot: 410m, steps 0/3000/143000 | to run on a GPU pod (Hugging Face is not reachable from the machine where this was written) |
-| 5 Full run: 1.4b then 410m, P1 | to run |
-| 6 Replication: P2 on 1.4b (6.9b optional) | to run |
-| 7 Report | after 4–6 |
+**The pilot is complete.** Pythia-1.4B and 410M, P1, 15 checkpoints; P2 replication on 1.4B. Results
+and hypothesis verdicts are in [`REPORT.md`](REPORT.md).
+
+- Within-topic truth structure grows with training (probe and MST homophily).
+- Cross-topic structure is weak.
+- Topological velocity adds little beyond geometry.
+- Class-shape differences are small and partly present at initialisation.
+
+Not run: Pythia-6.9B, HSIC (L4), the dense early checkpoints.
 
 ## Run on a RunPod GPU pod
 
