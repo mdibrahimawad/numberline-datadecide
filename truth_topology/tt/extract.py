@@ -71,6 +71,20 @@ def run_batch(model, enc, read_pos):
     return H, res.logits
 
 
+def pad_batch(tok, texts):
+    """Right-padded input_ids + attention_mask built by hand (no reliance on the tokenizer's pad
+    token, whose handling differs across transformers versions). Pad positions are masked and
+    never read: the read position is the last real token."""
+    ids = [tok(t, add_special_tokens=True)["input_ids"] for t in texts]
+    L = max(len(x) for x in ids)
+    input_ids = torch.zeros((len(ids), L), dtype=torch.long)
+    mask = torch.zeros((len(ids), L), dtype=torch.long)
+    for i, x in enumerate(ids):
+        input_ids[i, :len(x)] = torch.tensor(x)
+        mask[i, :len(x)] = 1
+    return {"input_ids": input_ids, "attention_mask": mask}
+
+
 def extract_one(model, tok, items: pd.DataFrame, input_name: str, batch: int):
     dev = next(model.parameters()).device
     n = len(items)
@@ -78,8 +92,7 @@ def extract_one(model, tok, items: pd.DataFrame, input_name: str, batch: int):
                           (["loglik"] if input_name == "P1" else ["p_correct", "top1_correct", "entropy"])}
     for s in range(0, n, batch):
         chunk = items.iloc[s:s + batch]
-        enc = tok(list(chunk.text), return_tensors="pt", padding=True)  # right padding
-        enc = {k: v.to(dev) for k, v in enc.items()}
+        enc = {k: v.to(dev) for k, v in pad_batch(tok, list(chunk.text)).items()}
         lengths = enc["attention_mask"].sum(1)
         read_pos = lengths - 1
         H, logits = run_batch(model, enc, read_pos)
@@ -118,8 +131,6 @@ def main():
     from transformers import AutoTokenizer
     tok = AutoTokenizer.from_pretrained(C.MODELS[a.model], revision="step143000",
                                         cache_dir=C.WORK / "hf_ckpt" / a.model / "tokenizer")
-    tok.pad_token = tok.eos_token
-    tok.padding_side = "right"
     items = {i: pd.read_csv(C.STATES / i / "items.csv") for i in a.inputs}
 
     from .data import items_hash
