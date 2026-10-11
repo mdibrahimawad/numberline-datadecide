@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The phases of the brief (section 10), with their gates. Every step is resumable: rerun the same
 # command after a pod restart. Run inside tmux:  tmux new -s tt
+#   bash scripts/run_pipeline.sh all            (everything, stops at a failed gate)
 #   bash scripts/run_pipeline.sh data|validate|pilot|full|p2|report
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -28,6 +29,28 @@ case $phase in
     python -m tt.extract --model $M --inputs P2 --dtype ${DTYPE:-float32}
     python -m tt.analyze --model $M --input P2 --stages cells velocity aggregate floor
     python -m tt.figures --model $M --input P2 ;;
+  all)       # everything in order; stops at the first failed gate
+    bash "$0" data
+    python - <<'PY'
+import json, glob, sys
+bad = [f for f in glob.glob("results/confounds_*.json") if not json.load(open(f))["passes"]]
+sys.exit(f"GATE FAILED (length confound): {bad}" if bad else 0)
+PY
+    bash "$0" validate
+    python -c "import json,sys; r=json.load(open('results/validation/validation.json')); sys.exit(0 if r['all_pass'] else 'GATE FAILED: synthetic validation, see results/validation/validation.json')"
+    bash "$0" pilot
+    python - <<'PY'
+import pandas as pd, sys
+on = pd.read_csv("results/pythia-410m-deduped/P1/onset.csv")
+bad = on[on.sig_at_step0 == True]
+if len(bad):
+    sys.exit("GATE FAILED: significant at step 0 (untrained model) in the pilot:\n" + bad.to_string())
+print("pilot gate passed")
+PY
+    bash "$0" full
+    bash "$0" p2
+    bash "$0" report
+    echo "ALL DONE: results/ and figures/" ;;
   report)
     python -m tt.report
     python -m tt.novelty || echo "novelty check failed (network?)" ;;
