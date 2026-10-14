@@ -145,3 +145,44 @@ Stage B options (to be chosen and pre-registered): (a) the same vectors for Star
 OpenLLaMA-3B (already extracted, on Modal; replication across models, $0); (b) Crystal
 intermediate checkpoints (LLM360 released them with data order: exposure grows while
 everything else is fixed); (c) several prompts per number to measure the noise floor.
+
+## Stage B-A: replication on StarCoderBase-3B and OpenLLaMA-3B (pre-registered 2026-10-14)
+**Written before any vector of these two models was exported or looked at.** Code: `src/e10_confirm.py`
+(runs exactly P1–P5 below and prints pass / fail). Results go in a separate section below, with
+any deviation from this plan and its reason. This section must not change after the export.
+
+**Data.** The existing full-range extractions of the `topology_number_line` project (same 10,000
+prompt texts as Crystal, last token, native tokenizers), Modal volume `numberline-zigzag-results`,
+folders `openllama-3b_fullrange_1_10000_ctx1234_k4_seed42` and
+`starcoderbase-3b_fullrange_1_10000_ctx1234_k4_seed42`. Exported like Crystal: centred float16,
+check of distance error ≤ 1 %. The export also copies each model's `dataset.json` (tokenization).
+
+**Layers (same relative depths as Crystal 8, 16, 24, 27, 32 of 0–32; round(f × last level)):**
+OpenLLaMA-3B (levels 0–26): **7, 13, 20, 22, 26**. StarCoderBase-3B (levels 0–36): **9, 18, 27, 30, 36**.
+
+**Counts.** SlimPajama-627B for both. For OpenLLaMA (trained on RedPajama) this is the
+deduplicated version of its corpus: **OpenLLaMA is the primary replication.** StarCoderBase was
+trained on code (The Stack), for which we have no counts: its results are **secondary (proxy
+counts)** and cannot decide the replication.
+
+**Tokenization check.** From `dataset.json`: every 4-digit target must be 4 single-digit tokens.
+Numbers that are not are listed and excluded from P1–P3 (reported, not silently dropped).
+
+**Tests** (group definitions as in stage A; `CONTROL = block_digits_plain`: ordinary 4-digit numbers,
+no 1500–2099, no multiples of 10, no special-pattern numbers, thirds by count left after
+block + tens digit + last digit; 120-point subsamples, 2 per block per tier, K = 20; null = 200
+within-block shuffles of the tier labels):
+
+| ID | Measure | Predicted | Pass rule |
+|---|---|---|---|
+| P1 | H0 mean death, high − low third, raw vectors | > 0 | z ≥ 2 at ≥ 3 of the 5 layers |
+| P2 | same, vectors scaled to length 1 (direction only) | > 0 | z ≥ 2 at ≥ 3 of the 5 layers |
+| P3 | Spearman(frequency left after block + digits, vector length), same numbers | > 0 | block-bootstrap 95 % CI above 0 at ≥ 3 of 5 layers |
+| P4 | isolation z (10-NN distance vs ordinary numbers of the same block) of x000, repdigits, powers of 2, years 1950–2025, at the first layer | > 0 | mean z > 1 for ≥ 3 of the 4 categories |
+| P5 | years 1900–2025 vs 156 windows of 126 consecutive ordinary numbers, first layer: overall spread and scale-free H0 total | spread up, H0 total down | spread z > 2 and H0-total z < −2 |
+
+**Decision rule.** The stage-A spacing finding "replicates" if **P1 passes in OpenLLaMA**. P2 decides
+whether it is more than vector length. P3–P5 are reported for both models. Crystal's own stage-A
+values on the same tests (for reference, not a test): P1 z 6.1 / 4.7 / 3.4 / 3.3 / 2.4; P2 3.4 / 2.6 /
+1.9 / 2.1 / 2.7; P4 at L8 4.4 / 6.7 / 3.4 / 2.5; P5 at L8 +8.4 / −9.2.
+Anything beyond P1–P5 run on the new models is exploratory and labelled so.

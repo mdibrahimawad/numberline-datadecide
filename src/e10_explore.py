@@ -122,7 +122,9 @@ _X: dict[int, np.ndarray] = {}
 _SCALE: dict[int, float] = {}
 
 
-def _init(vec_dir, unit=False):
+def _init(vec_dir, unit=False, layers=None):
+    if layers is not None:
+        LAYERS[:] = layers
     for L in LAYERS:
         X = np.load(os.path.join(vec_dir, f"layer_{L:02d}.npz"))["X"].astype(np.float32)
         if unit:                                              # direction only: remove vector length
@@ -354,13 +356,15 @@ def main():
     ap.add_argument("--only", default="ABCDE")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--unit", action="store_true", help="rescale every vector to length 1 (direction only)")
+    ap.add_argument("--layers", default="8,16,24,27,32", help="layer files layer_LL.npz to analyse")
     ap.add_argument("--controls", default="block,block_digits", help="tier definitions for B and C")
     a = ap.parse_args()
+    LAYERS[:] = [int(x) for x in a.layers.split(",")]      # module-level list, read by the workers
     os.makedirs(a.out, exist_ok=True)
     cnt = load_counts()
     pd.concat([matched_tiers(cnt, c).assign(control=c) for c in ("block", "block_digits")]).to_csv(
         os.path.join(a.out, "matched_tiers.csv"), index=False)
-    with Pool(a.workers, initializer=_init, initargs=(a.vectors, a.unit)) as pool:
+    with Pool(a.workers, initializer=_init, initargs=(a.vectors, a.unit, LAYERS)) as pool:
         if "A" in a.only:
             profiles(pool, cnt).to_csv(os.path.join(a.out, "A_profiles.csv"), index=False); print("A done", flush=True)
         for ctl in a.controls.split(","):
