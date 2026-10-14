@@ -1,0 +1,59 @@
+{
+  "model": "starcoderbase-3b",
+  "layers": [
+    9,
+    18,
+    27,
+    30,
+    36
+  ],
+  "control": "block_digits_plain",
+  "results": {
+    "P1_raw": {
+      "z": {
+        "9": 5.76,
+        "18": 3.7,
+        "27": 3.67,
+        "30": 3.26,
+        "36": 2.37
+      },
+      "passed": true
+    },
+    "P2_direction_only": {
+      "z": {
+        "9": 2.69,
+        "18": 3.39,
+        "27": 3.16,
+        "30": 2.71,
+        "36": 3.44
+      },
+      "passed": true
+    },
+    "P3_norm": {
+      "rho": {
+        "9": 0.053,
+        "18": 0.031,
+        "27": 0.045,
+        "30": 0.031,
+        "36": -0.01
+      },
+      "passed": true
+    },
+    "P4_special": {
+      "z_first_layer": {
+        "thousands x000": 0.57,
+        "years 1950-2025": 1.4,
+        "repdigits 1111-9999": 4.28,
+        "powers of 2": -0.26
+      },
+      "passed": false
+    },
+    "P5_years": {
+      "layer": 9,
+      "spread_z": 2.0923667120830243,
+      "h0_total_scalefree_z": 2.0925948423271703,
+      "n_null": 156,
+      "passed": false
+    }
+  }
+}
