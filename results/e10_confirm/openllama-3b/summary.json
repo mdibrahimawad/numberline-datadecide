@@ -1,0 +1,59 @@
+{
+  "model": "openllama-3b",
+  "layers": [
+    7,
+    13,
+    20,
+    22,
+    26
+  ],
+  "control": "block_digits_plain",
+  "results": {
+    "P1_raw": {
+      "z": {
+        "7": 3.87,
+        "13": 1.79,
+        "20": 2.47,
+        "22": 2.37,
+        "26": 1.49
+      },
+      "passed": true
+    },
+    "P2_direction_only": {
+      "z": {
+        "7": 0.02,
+        "13": 0.32,
+        "20": -0.0,
+        "22": 0.23,
+        "26": 0.47
+      },
+      "passed": false
+    },
+    "P3_norm": {
+      "rho": {
+        "7": 0.023,
+        "13": 0.023,
+        "20": 0.031,
+        "22": 0.028,
+        "26": 0.004
+      },
+      "passed": false
+    },
+    "P4_special": {
+      "z_first_layer": {
+        "thousands x000": 3.75,
+        "years 1950-2025": 3.18,
+        "repdigits 1111-9999": 0.61,
+        "powers of 2": 1.05
+      },
+      "passed": true
+    },
+    "P5_years": {
+      "layer": 7,
+      "spread_z": 4.425928625049055,
+      "h0_total_scalefree_z": -8.166391114766506,
+      "n_null": 156,
+      "passed": true
+    }
+  }
+}
