@@ -46,7 +46,13 @@ earlier conversations. Everything needed to continue is in this repository.
   what the output should look like), because cloud tooling is new to them.
 - Costs stated up front, with a worst case.
 
-## Where to pick up (as of 2026-10-10)
+## Where to pick up (as of 2026-10-14)
+Done on 2026-10-14: **E10 stage A** (exploratory topology of single numbers vs frequency, Crystal
+vectors from `mdibrahimawad/topology_number_line`, `data/crystal_vectors/`); results and the list of
+candidates to lock are in `experiments/E10_frequency_topology/README.md`. Next: choose and
+pre-register E10 stage B. The owner does not want any model training.
+
+### Earlier (2026-10-10)
 Done on 2026-10-10: fixed-layer β (`src/fixed_layer_beta.py`, α-vs-β table per layer in
 `paper/tables/alpha_beta_by_layer.tex`), efficient-coding test (`src/efficient_coding.py`),
 E09 Paloma test end to end (counts → frozen predictions → β → scores; result in the E09

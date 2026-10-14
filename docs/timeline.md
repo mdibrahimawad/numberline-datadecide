@@ -72,7 +72,19 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
 - Efficient-coding test at a fixed layer (`src/efficient_coding.py`); multi-cutoff R tried and
   rejected as overfit; `main` made the only branch.
 
+## 2026-10-14
+- **New direction (E10)**: topology (persistent homology) of single numbers vs their training
+  frequency, inspired by Fay et al. (ICLR 2026), Malhotra et al. (2026), TOHA (ACL 2026). No
+  model training. Crystal vectors (1–10,000, layers 8/16/24/27/32) exported from the
+  `topology_number_line` Modal volume to that repo (`data/crystal_vectors/`).
+- **E10 stage A run** (`src/topo_features.py`, `src/e10_explore.py`): 41 barcode features,
+  magnitude- and digit-matched frequency thirds, per-number geometry, special numbers, years.
+  Result: small "frequent → further apart" effect, mostly vector length; special numbers isolated.
+  *Decision: lock the surviving measures before any confirmation run (stage B).*
+
 ## Next
+- **E10 stage B**: pick the confirmation data (StarCoder/OpenLLaMA vectors, Crystal checkpoints,
+  more prompts per number) and pre-register the candidates listed in the E10 README.
 - **E08**: the checkpoint test (R changes during training while α stays fixed);
   definitions and predictions are pre-registered in `experiments/E08_checkpoint_test/README.md`.
 - Training-seed noise of β (seeds `-4`, `-5`).

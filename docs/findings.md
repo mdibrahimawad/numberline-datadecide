@@ -2,7 +2,7 @@
 
 The current state of knowledge, newest first in each section. Every number comes from a
 file in `results/` and can be regenerated with the command shown (see each experiment's
-README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-10.
+README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
 
 > **Read item 9 first.** The pre-registered out-of-sample test on the Paloma models (E09)
 > falsified R and found that no DataDecide formula, α included, transfers. Items 4–5 below
@@ -70,6 +70,16 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-10.
    compression" prediction of S/R goes the wrong way. Across all 5 counted models none of
    the predictors ranks them. Details: `experiments/E09_paloma_out_of_sample/README.md` → Result.
 
+10. **New direction, E10 (exploratory, one model): frequency and the topology of single numbers.**
+   In Crystal (digit-level tokenizer), among 4-digit numbers matched for magnitude and digit
+   form, the more frequent third sits slightly further apart than the rare third at every
+   layer (H0 mean death z +9.5 … +2.8; +6.1 … +2.4 without special-pattern numbers; a set
+   classifier on 41 barcode features reaches held-out AUC 0.75–0.93). Much of it is vector
+   length (direction only: z +1.9 … +3.4, not significant after correction). Special numbers
+   (repdigits, x000, powers of 2, years) are isolated, years form decade clusters at layer 8.
+   Loops (H1) show no frequency effect beyond special numbers. Candidates to confirm are
+   listed in `experiments/E10_frequency_topology/README.md`.
+
 ## What holds up (with evidence)
 
 | Claim | Evidence | Experiment |
@@ -113,6 +123,10 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-10.
    0.20–0.37. R was checked on the old-layer β; a fixed-layer analysis from the saved
    per-prompt PCA scores is free to run.
 
+6. **(E10) Does exposure give a number more room?** Stage A finds a small, consistent "more
+   frequent → further apart" effect at fixed magnitude and digit form, mostly vector length.
+   It needs confirmation on other models and on checkpoints, and a prompt-noise floor.
+
 ## How the picture evolved
 
 The conclusions changed as more recipes were counted. Kept here so old messages and
@@ -128,3 +142,5 @@ notes can be understood in context:
 | New β (E06) | 25 | β reproducible; same-layer α link r = 0.63; re-selected layers weaken it | layer near-ties |
 | Count features (E07) | 25 | R (rarely-seen count) is the best predictor and absorbs α | 26 features tested |
 | Fixed-layer β (2026-10-10) | 25 | at one common layer α, R and S are about equal (r 0.6–0.75); "R absorbs α" was layer-dependent | removes the per-model layer choice |
+| E09 (2026-10-10) | 6 new | no formula transfers; R falsified | out-of-sample test |
+| E10 stage A (2026-10-14) | 1 model, 10,000 numbers | per-number view: frequent numbers slightly further apart at fixed magnitude and digit form, mostly vector length; special numbers isolated | move from one β per model to one point per number |
