@@ -44,6 +44,16 @@ def load_counts() -> np.ndarray:
     return c.values.astype(float)
 
 
+SPECIAL_EXTRA = {1024, 2048, 4096, 8192, 1234, 2345, 3456, 4567, 5678, 6789, 4321, 5432, 6543, 7654, 8765, 9876}
+
+
+def is_special_pattern(n: np.ndarray) -> np.ndarray:
+    """Numbers whose digits are 'memorable': at most two distinct digits (1121, 5555, 3443),
+    digit runs (1234, 4321) or powers of two. They are frequent *and* distinctive."""
+    s = pd.Series(np.asarray(n).astype(str))
+    return (s.map(lambda x: len(set(x)) <= 2) | s.astype(int).isin(SPECIAL_EXTRA)).values
+
+
 def matched_tiers(cnt: np.ndarray, control: str = "block") -> pd.DataFrame:
     """Ordinary 4-digit numbers (no 1500-2099, no multiples of 10) split into thirds by count
     inside their own block of 100 (e.g. 5300-5399): tier 0 = rarest third, 2 = most frequent.
@@ -52,8 +62,12 @@ def matched_tiers(cnt: np.ndarray, control: str = "block") -> pd.DataFrame:
     control="block": rank on the raw count. The frequent third is then enriched in numbers
         ending in 1 or 5 (digit form and frequency are mixed).
     control="block_digits": rank on the count left over after an additive fit
-        log10 count ~ block + tens digit + last digit (holds digit form fixed as well)."""
+        log10 count ~ block + tens digit + last digit (holds digit form fixed as well).
+    suffix "_plain" (e.g. "block_digits_plain"): also drop special-pattern numbers first."""
     n = FOUR[~year_zone(FOUR) & (FOUR % 10 != 0)]
+    if control.endswith("_plain"):
+        n = n[~is_special_pattern(n)]
+        control = control[: -len("_plain")]
     df = pd.DataFrame({"n": n, "block": n // 100, "logc": np.log10(cnt[n] + 1)})
     key = df["logc"]
     if control == "block_digits":
@@ -108,9 +122,11 @@ _X: dict[int, np.ndarray] = {}
 _SCALE: dict[int, float] = {}
 
 
-def _init(vec_dir):
+def _init(vec_dir, unit=False):
     for L in LAYERS:
         X = np.load(os.path.join(vec_dir, f"layer_{L:02d}.npz"))["X"].astype(np.float32)
+        if unit:                                              # direction only: remove vector length
+            X = X / np.linalg.norm(X, axis=1, keepdims=True)
         _X[L] = X
         rs = np.random.default_rng(0).choice(FOUR, 1000, replace=False)
         _SCALE[L] = float(np.median(pdist(X[rs - 1])))      # layer scale: typical 4-digit distance
@@ -337,15 +353,17 @@ def main():
     ap.add_argument("--out", default="results/e10_explore")
     ap.add_argument("--only", default="ABCDE")
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--unit", action="store_true", help="rescale every vector to length 1 (direction only)")
+    ap.add_argument("--controls", default="block,block_digits", help="tier definitions for B and C")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     cnt = load_counts()
     pd.concat([matched_tiers(cnt, c).assign(control=c) for c in ("block", "block_digits")]).to_csv(
         os.path.join(a.out, "matched_tiers.csv"), index=False)
-    with Pool(a.workers, initializer=_init, initargs=(a.vectors,)) as pool:
+    with Pool(a.workers, initializer=_init, initargs=(a.vectors, a.unit)) as pool:
         if "A" in a.only:
             profiles(pool, cnt).to_csv(os.path.join(a.out, "A_profiles.csv"), index=False); print("A done", flush=True)
-        for ctl in ("block", "block_digits"):
+        for ctl in a.controls.split(","):
             if "B" in a.only:
                 tier_test(pool, cnt, ctl).to_csv(os.path.join(a.out, f"B_tier_test_{ctl}.csv"), index=False); print("B", ctl, "done", flush=True)
             if "C" in a.only:
