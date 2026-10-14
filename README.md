@@ -49,7 +49,7 @@ Details: [`docs/findings.md`](docs/findings.md).
 | [E07](experiments/E07_count_features_rarely_seen/) | Count features: the rarely-seen count R | done (exploratory) |
 | [E08](experiments/E08_checkpoint_test/) | Checkpoint test: does β follow R during training? | planned, pre-registered |
 | [E09](experiments/E09_paloma_out_of_sample/) | Paloma: do formulas frozen on DataDecide predict 6 new models? | done: no formula transfers; R falsified |
-| [E10](experiments/E10_frequency_topology/) | Frequency and topology of single numbers (Crystal) | stage A done (exploratory) |
+| [E10](experiments/E10_frequency_topology/) | Frequency and topology of single numbers (Crystal) | exploration + pre-registered replication done: small spacing effect replicates |
 
 ## Repository layout
 

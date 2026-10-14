@@ -1,10 +1,10 @@
-# E10: Frequency and the topology of number representations (stage A, exploratory)
+# E10: Frequency and the topology of number representations
 
 **Question:** do numbers that appear more often in the training data get a different shape
 (topology / local geometry) inside the model than equally large numbers that appear rarely?
-**Status:** stage A (exploration on existing data) done, 2026-10-14. Nothing here is a
-confirmed result: measures that look real are listed under "Candidates to lock" and must be
-pre-registered and tested on new data (stage B, checkpoints) before being claimed.
+**Status:** stage A (exploration, Crystal) and stage B-A (pre-registered replication on OpenLLaMA-3B
+and StarCoderBase-3B) done, 2026-10-14. Stage A results are exploratory; only the stage B-A section
+reports pre-registered tests.
 
 ## Why
 E09 showed that recipe-level summaries of the counts (α, S, R) do not predict β out of
@@ -186,3 +186,41 @@ whether it is more than vector length. P3–P5 are reported for both models. Cry
 values on the same tests (for reference, not a test): P1 z 6.1 / 4.7 / 3.4 / 3.3 / 2.4; P2 3.4 / 2.6 /
 1.9 / 2.1 / 2.7; P4 at L8 4.4 / 6.7 / 3.4 / 2.5; P5 at L8 +8.4 / −9.2.
 Anything beyond P1–P5 run on the new models is exploratory and labelled so.
+
+## Stage B-A: results (run 2026-10-14, exactly as pre-registered in commit `6a00de9`)
+`python -m src.e10_confirm --model <m> --vectors <topology_number_line>/data/<m>_vectors --layers <…>
+--out results/e10_confirm/<m>` → `results/e10_confirm/<m>/` (`summary.json` + one table per test).
+**Deviations from the plan: none.** Tokenization check: in both models every 4-digit target is
+4 single-digit tokens followed by `=`; no number excluded.
+
+| Test | OpenLLaMA-3B (primary; levels 7/13/20/22/26) | StarCoderBase-3B (proxy counts; 9/18/27/30/36) | Crystal stage A (reference) |
+|---|---|---|---|
+| P1 spacing, raw (z) | +3.9 / +1.8 / +2.5 / +2.4 / +1.5 → **pass** (3 of 5) | +5.8 / +3.7 / +3.7 / +3.3 / +2.4 → **pass** | +6.1 / +4.7 / +3.4 / +3.3 / +2.4 |
+| P2 spacing, direction only (z) | +0.0 / +0.3 / 0.0 / +0.2 / +0.5 → **fail** | +2.7 / +3.4 / +3.2 / +2.7 / +3.4 → **pass** | +3.4 / +2.6 / +1.9 / +2.1 / +2.7 |
+| P3 frequency vs vector length (ρ) | +0.023 / +0.023 / +0.031 / +0.028 / +0.004; CI > 0 at 1 layer → **fail** | +0.053 / +0.031 / +0.045 / +0.031 / −0.010; CI > 0 at 3 → **pass** | +0.02…+0.06 (stage A, D) |
+| P4 isolation z, first layer: x000 / years 1950–2025 / repdigits / powers of 2 | +3.8 / +3.2 / +0.6 / +1.05 → **pass** (3 of 4) | +0.6 / +1.4 / +4.3 / −0.3 → **fail** (2 of 4) | +4.4 / +2.5 / +6.7 / +3.4 |
+| P5 years vs 156 windows, first layer: spread z / scale-free H0 total z | +4.4 / −8.2 → **pass** | +2.1 / **+2.1** → **fail** | +8.4 / −9.2 |
+
+**Decision (pre-registered rule): the stage-A spacing finding replicates in OpenLLaMA (P1 passes),
+but there it is not a change of direction (P2 fails) and not a clear per-number vector-length
+effect either (P3 fails).** It is a small, set-level effect. StarCoder (proxy counts) shows it more
+clearly, in both raw and direction-only form.
+
+**Reading the five tests together:**
+- *Frequent ordinary numbers get slightly more room* (P1): positive in all 15 model × layer cells,
+  z ≥ 2 in 12 of 15. The most consistent result of E10, but small (thirds differ only ~1.6× in
+  count; per number ρ ≈ 0.02–0.05).
+- *Whether that room is direction or length* differs by model (P2: Crystal moderate, OpenLLaMA none,
+  StarCoder clear). No general claim can be made.
+- *Special numbers stand out* in every model, but **which** ones differs (x000 and years in
+  OpenLLaMA, repdigits in StarCoder, all four in Crystal).
+- *Years as clustered "fewer, larger features"* holds in the two models trained on web text
+  (Crystal, OpenLLaMA) and not in the code model (StarCoder: years spread out but not clustered).
+
+**What this means for E10.** The topological (H1, loops) view added nothing; the signal is in local
+spacing (H0), which is ordinary geometry. The candidates for a paper are (i) the small but
+reproducible exposure → spacing effect at fixed magnitude and digit form, and (ii) the
+model-dependent structure of special numbers (years clustering in web-text models). Both are
+correlational, from final checkpoints, with one prompt per number; the next tests that could make
+them stronger are checkpoints (does the spacing grow as exposure grows?) and several prompts per
+number (noise floor).

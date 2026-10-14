@@ -81,10 +81,16 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
   magnitude- and digit-matched frequency thirds, per-number geometry, special numbers, years.
   Result: small "frequent → further apart" effect, mostly vector length; special numbers isolated.
   *Decision: lock the surviving measures before any confirmation run (stage B).*
+- **E10 stage B-A pre-registered** (`6a00de9`, `src/e10_confirm.py`): five tests (P1–P5) with pass rules,
+  on OpenLLaMA-3B (primary) and StarCoderBase-3B (proxy counts), written before their vectors were
+  exported. Vectors exported by the owner to `topology_number_line/data/<model>_vectors/`.
+- **E10 stage B-A run**: OpenLLaMA P1 pass, P2 fail, P3 fail, P4 pass, P5 pass; StarCoder P1–P3 pass,
+  P4 and P5 fail. *Decision: the spacing effect replicates but is small and its form is
+  model-dependent; next candidates are checkpoints and a per-number prompt-noise floor.*
 
 ## Next
-- **E10 stage B**: pick the confirmation data (StarCoder/OpenLLaMA vectors, Crystal checkpoints,
-  more prompts per number) and pre-register the candidates listed in the E10 README.
+- **E10 next**: checkpoints (does the spacing grow with exposure?) and several prompts per number
+  (noise floor); both need GPU extraction and their own pre-registration.
 - **E08**: the checkpoint test (R changes during training while α stays fixed);
   definitions and predictions are pre-registered in `experiments/E08_checkpoint_test/README.md`.
 - Training-seed noise of β (seeds `-4`, `-5`).

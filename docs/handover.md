@@ -49,8 +49,10 @@ earlier conversations. Everything needed to continue is in this repository.
 ## Where to pick up (as of 2026-10-14)
 Done on 2026-10-14: **E10 stage A** (exploratory topology of single numbers vs frequency, Crystal
 vectors from `mdibrahimawad/topology_number_line`, `data/crystal_vectors/`); results and the list of
-candidates to lock are in `experiments/E10_frequency_topology/README.md`. Next: choose and
-pre-register E10 stage B. The owner does not want any model training.
+candidates to lock are in `experiments/E10_frequency_topology/README.md`. **E10 stage B-A** (pre-registered
+replication on OpenLLaMA-3B and StarCoderBase-3B) is done too: the spacing effect replicates but is
+small and model-dependent in form. Next: decide whether to run checkpoints / several prompts per number
+(GPU, needs a new pre-registration). The owner does not want any model training.
 
 ### Earlier (2026-10-10)
 Done on 2026-10-10: fixed-layer β (`src/fixed_layer_beta.py`, α-vs-β table per layer in

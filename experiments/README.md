@@ -17,7 +17,7 @@ number, problems met). Code lives in the shared packages (`src/`, `modal_app/`,
 | [E07](E07_count_features_rarely_seen/) | Count features and R | What in the counts explains β beyond α? | done (exploratory) | R = #numbers seen < 4000 times: ρ = −0.73, absorbs α (paper-protocol β only; at a fixed layer α ≈ R; **R falsified out of sample in E09**) |
 | [E08](E08_checkpoint_test/) | Checkpoint test | Does β follow R during training, with α fixed? | **planned; predictions pre-registered** | — |
 | [E09](E09_paloma_out_of_sample/) | Paloma out-of-sample test | Do formulas frozen on DataDecide predict β of 6 new models? | **done** | no formula transfers; α closest (MAE 0.19), S overpredicts, R falsified; only 3 models valid at layer 8 |
-| [E10](E10_frequency_topology/) | Frequency and topology of single numbers (stage A) | Do frequent numbers get a different shape than equally large rare ones? | **stage A done (exploratory)** | frequent numbers slightly further apart at fixed size and digit form (mostly vector length); special numbers isolated; H1 no effect |
+| [E10](E10_frequency_topology/) | Frequency and topology of single numbers (stage A) | Do frequent numbers get a different shape than equally large rare ones? | **stage A + pre-registered replication done** | frequent numbers slightly further apart at fixed size and digit form, replicated in OpenLLaMA and StarCoder (small; direction vs length model-dependent); special numbers isolated; H1 no effect |
 
 ## Dependencies between experiments
 

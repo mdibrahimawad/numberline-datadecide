@@ -70,15 +70,17 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    compression" prediction of S/R goes the wrong way. Across all 5 counted models none of
    the predictors ranks them. Details: `experiments/E09_paloma_out_of_sample/README.md` → Result.
 
-10. **New direction, E10 (exploratory, one model): frequency and the topology of single numbers.**
-   In Crystal (digit-level tokenizer), among 4-digit numbers matched for magnitude and digit
-   form, the more frequent third sits slightly further apart than the rare third at every
-   layer (H0 mean death z +9.5 … +2.8; +6.1 … +2.4 without special-pattern numbers; a set
-   classifier on 41 barcode features reaches held-out AUC 0.75–0.93). Much of it is vector
-   length (direction only: z +1.9 … +3.4, not significant after correction). Special numbers
-   (repdigits, x000, powers of 2, years) are isolated, years form decade clusters at layer 8.
-   Loops (H1) show no frequency effect beyond special numbers. Candidates to confirm are
-   listed in `experiments/E10_frequency_topology/README.md`.
+10. **New direction, E10: frequency and the shape of single numbers.** Stage A (Crystal, exploratory)
+   found that among 4-digit numbers matched for magnitude and digit form, the more frequent third
+   sits slightly further apart. **Pre-registered replication (stage B-A):** it replicates in
+   OpenLLaMA-3B (primary; P1 z ≥ 2 at 3 of 5 layers, positive at all) and in StarCoderBase-3B
+   (proxy counts; all 5 layers); across the three models it is positive in all 15 model × layer
+   cells. But it is small, and whether it is direction or vector length depends on the model
+   (OpenLLaMA: no direction effect, no clear length effect). Special numbers (x000, years,
+   repdigits, powers of 2) are isolated in every model, but which ones differs by model. Years form
+   decade clusters ("fewer, larger features") in the web-text models (Crystal, OpenLLaMA), not in
+   the code model. Loops (H1) carry no frequency signal. Details:
+   `experiments/E10_frequency_topology/README.md`.
 
 ## What holds up (with evidence)
 
@@ -123,9 +125,10 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    0.20–0.37. R was checked on the old-layer β; a fixed-layer analysis from the saved
    per-prompt PCA scores is free to run.
 
-6. **(E10) Does exposure give a number more room?** Stage A finds a small, consistent "more
-   frequent → further apart" effect at fixed magnitude and digit form, mostly vector length.
-   It needs confirmation on other models and on checkpoints, and a prompt-noise floor.
+6. **(E10) Does exposure give a number more room?** A small "more frequent → further apart"
+   effect at fixed magnitude and digit form replicates across three models (pre-registered for
+   two), but its form (direction vs length) is model-dependent. Open: does it grow with exposure
+   during training (checkpoints)? How large is the prompt noise per number?
 
 ## How the picture evolved
 
@@ -144,3 +147,4 @@ notes can be understood in context:
 | Fixed-layer β (2026-10-10) | 25 | at one common layer α, R and S are about equal (r 0.6–0.75); "R absorbs α" was layer-dependent | removes the per-model layer choice |
 | E09 (2026-10-10) | 6 new | no formula transfers; R falsified | out-of-sample test |
 | E10 stage A (2026-10-14) | 1 model, 10,000 numbers | per-number view: frequent numbers slightly further apart at fixed magnitude and digit form, mostly vector length; special numbers isolated | move from one β per model to one point per number |
+| E10 stage B-A (2026-10-14) | +2 models, pre-registered | spacing effect replicates (small); direction-vs-length and which special numbers stand out are model-dependent; year clusters only in web-text models | replication on OpenLLaMA-3B and StarCoderBase-3B |
