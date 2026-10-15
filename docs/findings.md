@@ -79,7 +79,9 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    (OpenLLaMA: no direction effect, no clear length effect). Special numbers (x000, years,
    repdigits, powers of 2) are isolated in every model, but which ones differs by model. Years form
    decade clusters ("fewer, larger features") in the web-text models (Crystal, OpenLLaMA), not in
-   the code model. Loops (H1) carry no frequency signal. Details:
+   the code model. Loops (H1) carry no frequency signal. Stage C (exploratory): number topology simplifies with
+   depth in all three models; the three models' topology of the same numbers converges in late
+   layers (RTD); no last-digit circle and no year loop. Details and the list of PH observations:
    `experiments/E10_frequency_topology/README.md`.
 
 ## What holds up (with evidence)

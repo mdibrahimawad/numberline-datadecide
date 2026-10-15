@@ -2,8 +2,8 @@
 
 **Question:** do numbers that appear more often in the training data get a different shape
 (topology / local geometry) inside the model than equally large numbers that appear rarely?
-**Status:** stage A (exploration, Crystal) and stage B-A (pre-registered replication on OpenLLaMA-3B
-and StarCoderBase-3B) done, 2026-10-14. Stage A results are exploratory; only the stage B-A section
+**Status:** stage A (exploration, Crystal), stage B-A (pre-registered replication on OpenLLaMA-3B
+and StarCoderBase-3B) and stage C (topology-only questions, exploratory) done, 2026-10-15. Stage A results are exploratory; only the stage B-A section
 reports pre-registered tests.
 
 ## Why
@@ -224,3 +224,50 @@ model-dependent structure of special numbers (years clustering in web-text model
 correlational, from final checkpoints, with one prompt per number; the next tests that could make
 them stronger are checkpoints (does the spacing grow as exposure grows?) and several prompts per
 number (noise floor).
+
+## Stage C: questions only topology can ask (exploratory, all three models, 2026-10-15)
+`python -m src.e10_topology --data <topology_number_line>/data` → `results/e10_topology/`.
+Same relative depths in every model (~25 %, ~50 %, ~75 %, ~84 %, last). Sanity checks on known
+shapes (a ring of 10 points gives a loop in digit order that wraps 9 → 0; a line gives none;
+RTD(A, A) = 0, small for a noisy copy, large for a shuffled copy) passed before running.
+
+**T0, PH across depth (random sets of 300 four-digit numbers, scale-free):** in every model the
+number of H1 loops roughly halves from ~25 % depth to the late layers (Crystal 386 → 165,
+OpenLLaMA 308 → 181, StarCoder 372 → 159), H1 entropy falls, and the scale-free H0 spacing falls
+(Crystal 0.70 → 0.49): deeper layers have fewer loops and tighter clusters. This is the
+"networks simplify topology with depth" pattern (Naitzat et al. 2020), seen here for numbers, and
+fits the leading-digit grouping of late layers found in `topology_number_line`.
+
+**T1, last-digit circle:** centroids of the 10 last-digit classes (block means removed) form **no
+loop** in any model or layer (relative H1 persistence 0.00–0.08, same as random labels) and are
+mostly not in digit order. The tens digit is in order (share 0.5–0.9) but as a **line**, not a loop.
+Frequent and rare thirds do not differ. So, after a 4-digit number read digit by digit, there is no
+period-10 circle at the `=` position (the "helix" results are on single-token numbers).
+
+**T2, years:** year endings (19x0…19x9) form no loop; the 13 decades 1900s…2020s form a **line**
+(decade loop 0.00–0.06), like ordinary ranges. Years are an ordered line of decade clusters, not a circle.
+
+**T3, RTD between models on the same 120 numbers (lower = more similar topology):** matched
+numbers are always more similar than a shuffled correspondence, and the agreement is **strongest in
+late layers**: matched / shuffled RTD
+
+| Pair | ~25 % | ~50 % | ~75 % | ~84 % | last |
+|---|---|---|---|---|---|
+| Crystal vs OpenLLaMA | 0.67 | 0.80 | 0.83 | 0.27 | 0.49 |
+| Crystal vs StarCoder | 0.58 | 0.72 | 0.83 | 0.28 | 0.30 |
+| OpenLLaMA vs StarCoder | 0.81 | 0.66 | 0.27 | 0.34 | 0.38 |
+
+(Crystal's ~75 % layer, L24, is the exception.) Frequency: models agree slightly *more* on frequent
+numbers at ~25 % depth (high − low RTD −0.18, Wilcoxon p = 0.02) and slightly *less* at ~75–84 %
+(+0.39, p = 0.003; +0.25, p = 0.0008): no consistent direction, no claim.
+
+## Observations through the PH lens (all of E10)
+| # | Observation | Status | Known? |
+|---|---|---|---|
+| 1 | Topology of numbers simplifies with depth: H1 loops halve, points gather in tighter clusters (all 3 models) | exploratory, consistent in 3 models | known for networks in general (Naitzat et al. 2020); new for numbers in LLMs as far as we found |
+| 2 | Different models give the same numbers increasingly similar topology in late layers (RTD 0.27–0.38 of chance) | exploratory, 3 pairs | related to convergent number features (Fu et al. 2026); not shown with RTD |
+| 3 | Years are "fewer, larger features" (spread out, clustered by decade, an ordered line, no loop) in web-text models, not in the code model | pre-registered (P5) in 2 models | the topological-compression signature of Fay et al., here from data, not attacks |
+| 4 | Special numbers (x000, years, repdigits, powers of 2) are isolated points in H0; which ones depends on the model | pre-registered (P4) | partly known (frequent tokens are outliers); new as an H0 observation on numbers |
+| 5 | Frequent ordinary numbers sit slightly further apart (H0) at fixed size and digit form | pre-registered (P1) in 2 models | new as far as we found; small |
+| 6 | No last-digit circle (H1) after digit-by-digit numbers; tens digit is a line | exploratory, 3 models | contrasts with the helix of single-token numbers (Kantamneni & Tegmark 2025) |
+| 7 | H1 carries no frequency signal | stage A + C | — |

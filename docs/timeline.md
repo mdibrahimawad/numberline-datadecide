@@ -88,6 +88,11 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
   P4 and P5 fail. *Decision: the spacing effect replicates but is small and its form is
   model-dependent; next candidates are checkpoints and a per-number prompt-noise floor.*
 
+## 2026-10-15
+- **E10 stage C** (`src/e10_topology.py`, exploratory): PH across depth, last-digit circle, year
+  endings, RTD between models. Topology simplifies with depth; models converge in late layers; no
+  digit or year loops; no consistent frequency effect on cross-model agreement.
+
 ## Next
 - **E10 next**: checkpoints (does the spacing grow with exposure?) and several prompts per number
   (noise floor); both need GPU extraction and their own pre-registration.
