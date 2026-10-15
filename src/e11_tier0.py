@@ -361,6 +361,32 @@ def h16(pool):
     return pd.DataFrame(pool.map(_h16_cell, cells()))
 
 
+def _grid_cell(args):
+    """H29 follow-up: are the 100 two-digit endings a torus (2 dominant loops + a void) or a grid
+    (many equal short loops)? Compared with ideal 10x10 grid and torus point sets; plus how much of
+    the ending centroids is additive in tens digit + units digit."""
+    m, d = args
+    X, _ = load(m, d)
+    nums = FOUR[~ex.year_zone(FOUR)]; V = X[nums - 1].copy()
+    for blk in np.unique(nums // 100):
+        i = nums // 100 == blk; V[i] -= V[i].mean(0)
+    C = np.stack([V[nums % 100 == e].mean(0) for e in range(100)]).astype(np.float64)
+    dg = ripser(squareform(pdist(C)), distance_matrix=True, maxdim=2)["dgms"]
+    rel = lambda x: np.sort((x[:, 1] - x[:, 0]) / x[:, 1])[::-1] if len(x) else np.zeros(2)
+    h1, h2 = rel(dg[1]), rel(dg[2])
+    T = np.stack([C[[10 * a + b for b in range(10)]].mean(0) for a in range(10)])
+    U = np.stack([C[[10 * a + b for a in range(10)]].mean(0) for b in range(10)])
+    A = np.stack([T[e // 10] + U[e % 10] - C.mean(0) for e in range(100)])
+    return dict(model=m, depth=DEPTH[d], tokenizer=TOKENIZER[m], h1_bars_over_0p1=int(np.sum(h1 > 0.1)),
+                h1_top1=float(h1[0]), h1_top2=float(h1[1]), h1_top3=float(h1[2]) if len(h1) > 2 else 0.0,
+                h2_top1=float(h2[0]), dominance_top2_over_top3=float((h1[0] + h1[1]) / 2 / max(h1[2], 1e-9)) if len(h1) > 2 else 0.0,
+                additive_r2=float(1 - ((C - A) ** 2).sum() / ((C - C.mean(0)) ** 2).sum()))
+
+
+def grid(pool):
+    return pd.DataFrame(pool.map(_grid_cell, cells()))
+
+
 def main():
     global DATA
     ap = argparse.ArgumentParser()
@@ -379,8 +405,8 @@ def main():
                 t.to_csv(f"{a.out}/H6_neighbourhoods.csv", index=False); chance.to_csv(f"{a.out}/H6_chance.csv", index=False)
                 jac.to_csv(f"{a.out}/H14_knn_jaccard.csv", index=False)
             else:
-                fn = {"h8": h8, "h9": h9, "loops": loops, "years": years, "h16": h16, "h12": h1_h2, "h34": h3_h4}[key]
-                name = {"h8": "H8_favourite_numbers", "h9": "H9_clusters", "loops": "H18_H20_H29_loops",
+                fn = {"grid": grid, "h8": h8, "h9": h9, "loops": loops, "years": years, "h16": h16, "h12": h1_h2, "h34": h3_h4}[key]
+                name = {"grid": "H29_grid_vs_torus", "h8": "H8_favourite_numbers", "h9": "H9_clusters", "loops": "H18_H20_H29_loops",
                         "years": "H10_years", "h16": "H16_outlier_dims", "h12": "H1_H2_crowding_cell_level",
                         "h34": "H3_H4_H28_gauss_floor_and_ID"}[key]
                 fn(pool).to_csv(f"{a.out}/{name}.csv", index=False)
