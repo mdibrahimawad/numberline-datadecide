@@ -20,6 +20,7 @@ from scipy.spatial.distance import pdist, squareform
 
 import src.e10_explore as ex
 from src.e10_graded_analysis import GRID, INK, INK2, SURF, _style
+from src.topo_features import diagrams
 
 RARE, FREQ, NULL = "#eb6834", "#2a78d6", "#b9b8b2"
 
@@ -194,21 +195,71 @@ def fig_years(vec, outdir):
     fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_A6_years.png"), dpi=160); plt.close(fig)
 
 
+def fig_barcodes(vec, outdir, cnt, L=8, seed=5):
+    """One rare and one frequent set of 120 numbers (2 per block, the same 60 blocks): their H0 and H1 barcodes."""
+    mt = ex.matched_tiers(cnt, "block_digits")
+    sub = ex.tier_subsample(mt, mt["tier"].values, np.random.default_rng(seed))
+    X, s = layer(vec, L)
+    fig, axes = plt.subplots(2, 2, figsize=(11, 6.5), gridspec_kw=dict(height_ratios=[1.6, 1]))
+    for j, (t, col, lab) in enumerate(((0, RARE, "rare set"), (2, FREQ, "frequent set"))):
+        dg = diagrams(X[sub[t] - 1], s)
+        h0 = np.sort(dg[0][np.isfinite(dg[0][:, 1]), 1])
+        ax = axes[0, j]
+        ax.hlines(np.arange(len(h0)), 0, h0, color=col, lw=1.4)
+        ax.axvline(h0.mean(), color=INK, lw=1.2, ls="--")
+        ax.text(h0.mean(), len(h0) + 2, f" mean H0 death = {h0.mean():.3f}", fontsize=8, va="bottom")
+        ax.set_xlim(0, 1.15); ax.set_ylim(-2, len(h0) + 12); ax.set_yticks([])
+        ax.set_title(f"layer {L}, {lab}: 119 H0 bars (one per merge), sorted", fontsize=9, loc="left")
+        ax.set_xlabel("radius (Euclidean distance ÷ layer's typical distance)")
+        h1 = dg[1][np.argsort(dg[1][:, 0])]
+        ax = axes[1, j]
+        ax.hlines(np.arange(len(h1)), h1[:, 0], h1[:, 1], color=col, lw=1.4)
+        ax.set_xlim(0, 1.15); ax.set_yticks([])
+        ax.set_title(f"{lab}: {len(h1)} H1 bars (loops), birth → death", fontsize=9, loc="left")
+        ax.set_xlabel("radius (Euclidean distance ÷ layer's typical distance)")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_A0_barcodes.png"), dpi=160); plt.close(fig)
+
+
+def fig_densities(outdir):
+    """Fay-style grid: distribution over 50 sets of four barcode features, rare vs frequent third, per layer."""
+    from scipy.stats import gaussian_kde
+    A = pd.read_csv("results/e10_explore/A_profiles.csv")
+    feats = [("H0_death_mean", "mean H0 death (mean gap)"), ("H1_birth_mean", "mean births of 1-bars"),
+             ("H1_life_mean", "mean persistence of 1-bars"), ("H1_count", "number of 1-bars")]
+    fig, axes = plt.subplots(len(feats), 5, figsize=(12, 8))
+    for i, (f, lab) in enumerate(feats):
+        for j, L in enumerate(ex.LAYERS):
+            ax = axes[i, j]
+            vals = {t: A[(A.layer == L) & (A.group == f"blockdigit_{t}")][f].values for t in ("low", "high")}
+            lo = min(v.min() for v in vals.values()); hi = max(v.max() for v in vals.values()); pad = 0.15 * (hi - lo)
+            grid = np.linspace(lo - pad, hi + pad, 200)
+            for t, col, name in (("low", RARE, "rare third"), ("high", FREQ, "frequent third")):
+                y = gaussian_kde(vals[t])(grid)
+                ax.fill_between(grid, y, color=col, alpha=0.35, lw=0); ax.plot(grid, y, color=col, lw=1.5, label=name)
+            ax.set_yticks([]); ax.tick_params(labelsize=7)
+            if i == 0: ax.set_title(f"layer {L}", fontsize=10)
+            if j == 0: ax.set_ylabel(lab, fontsize=8)
+    axes[0, 0].legend(frameon=False, fontsize=7.5, loc="upper left")
+    fig.suptitle("Each curve = spread of a barcode feature over 50 sets of 120 numbers (block + digit matched)", fontsize=9, x=0.01, ha="left")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_A4_feature_densities.png"), dpi=160); plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vectors", required=True)
     ap.add_argument("--out", default="results/e10_explore/figures")
-    ap.add_argument("--skip-z", action="store_true", help="only redraw the special-number and year figures")
+    ap.add_argument("--only", default="profiles,special,years,z,barcodes,densities")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     _style(plt)
     cnt = ex.load_counts()
-    if a.skip_z:
-        fig_special(a.vectors, a.out); fig_years(a.vectors, a.out); return
-    fig_profiles(a.out)
-    fig_special(a.vectors, a.out)
-    fig_years(a.vectors, a.out)
-    print("z (re-drawn null):", fig_z(a.vectors, a.out, cnt), flush=True)
+    only = a.only.split(",")
+    if "barcodes" in only: fig_barcodes(a.vectors, a.out, cnt)
+    if "densities" in only: fig_densities(a.out)
+    if "profiles" in only: fig_profiles(a.out)
+    if "special" in only: fig_special(a.vectors, a.out)
+    if "years" in only: fig_years(a.vectors, a.out)
+    if "z" in only: print("z (re-drawn null):", fig_z(a.vectors, a.out, cnt), flush=True)
 
 
 if __name__ == "__main__":
