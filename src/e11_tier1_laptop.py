@@ -10,7 +10,7 @@ Parts (each can be run alone with --part):
   randinit    H11: the same 2,100 numbers, original prompt texts, through RANDOMLY INITIALISED
               copies of Qwen2.5-1.5B, SmolLM2-1.7B, Pythia-1.4B and OLMo-2-1B (architecture only,
               seed 0; only configs and tokenizers are downloaded).
-  behaviour   H7: "which is larger" for 2,000 pairs of 4-digit numbers in the same block of 100,
+  behaviour   H7: "which is larger" for 1,000 pairs of 4-digit numbers in the same block of 100,
               Qwen2.5-1.5B and Pythia-1.4B: log-probability margin of the correct answer.
 
 Outputs per model: <out>/<part>/<model>/layer_LL.npz (X float16 centred, mean, target, prompt_seed),
@@ -137,13 +137,32 @@ def part_randinit(out, nums, prompts_path):
         del model
 
 
-def part_behaviour(out, seed=7):
+def seq_logprobs(model, tok, dev, contexts, conts, batch=32):
+    """Sum of log-probabilities of each continuation given its context (batched, right padding)."""
     import torch
+    seqs = [tok(c + x)["input_ids"] for c, x in zip(contexts, conts)]
+    starts = [len(tok(c)["input_ids"]) for c in contexts]
+    pad = tok.pad_token_id if tok.pad_token_id is not None else 0
+    out = np.zeros(len(seqs))
+    for s in range(0, len(seqs), batch):
+        chunk = range(s, min(s + batch, len(seqs))); n = max(len(seqs[i]) for i in chunk)
+        ids = torch.full((len(chunk), n), pad, dtype=torch.long); mask = torch.zeros_like(ids)
+        for r, i in enumerate(chunk):
+            ids[r, :len(seqs[i])] = torch.tensor(seqs[i]); mask[r, :len(seqs[i])] = 1
+        with torch.no_grad():
+            lp = model(input_ids=ids.to(dev), attention_mask=mask.to(dev)).logits.float().log_softmax(-1).cpu().numpy()
+        for r, i in enumerate(chunk):
+            out[i] = sum(lp[r, j - 1, seqs[i][j]] for j in range(starts[i], len(seqs[i])))
+    return out
+
+
+def part_behaviour(out, seed=7, n_pairs=1000):
+    import pandas as pd
     import src.e10_explore as ex
     rng = np.random.default_rng(seed)
     pool = ex.FOUR[~ex.year_zone(ex.FOUR)]
     pairs = []
-    while len(pairs) < 2000:
+    while len(pairs) < n_pairs:
         a = int(rng.choice(pool)); b = int(a // 100 * 100 + rng.integers(0, 100))
         if a != b and not (1500 <= b <= 2099):
             pairs.append((a, b))
@@ -151,20 +170,14 @@ def part_behaviour(out, seed=7):
     os.makedirs(os.path.join(out, "behaviour"), exist_ok=True)
     for name, mid in MODELS_PROMPTS.items():
         tok, model, dev = load(mid)
-        rows = []
-        for a, b in pairs:
-            ctx = shots + f"Which is larger: {a} or {b}? Answer:"
-            lp = {}
-            for cand in (a, b):
-                ids = tok(ctx + f" {cand}")["input_ids"]; n_ctx = len(tok(ctx)["input_ids"])
-                with torch.no_grad():
-                    logits = model(torch.tensor([ids]).to(dev)).logits[0].float().log_softmax(-1).cpu().numpy()
-                lp[cand] = float(sum(logits[i - 1, ids[i]] for i in range(n_ctx, len(ids))))
-            big, small = max(a, b), min(a, b)
-            rows.append(dict(a=a, b=b, larger=big, margin=lp[big] - lp[small], correct=lp[big] > lp[small]))
-        import pandas as pd
-        pd.DataFrame(rows).to_csv(os.path.join(out, "behaviour", f"{name}.csv"), index=False)
-        print(f"{name}: behaviour accuracy {np.mean([r['correct'] for r in rows]):.3f}", flush=True)
+        ctx = [shots + f"Which is larger: {a} or {b}? Answer:" for a, b in pairs]
+        big = [max(p) for p in pairs]; small = [min(p) for p in pairs]
+        lp_big = seq_logprobs(model, tok, dev, ctx, [f" {x}" for x in big])
+        lp_small = seq_logprobs(model, tok, dev, ctx, [f" {x}" for x in small])
+        df = pd.DataFrame(dict(a=[p[0] for p in pairs], b=[p[1] for p in pairs], larger=big,
+                               margin=lp_big - lp_small, correct=lp_big > lp_small))
+        df.to_csv(os.path.join(out, "behaviour", f"{name}.csv"), index=False)
+        print(f"{name}: behaviour accuracy {df.correct.mean():.3f}", flush=True)
         del model
 
 
