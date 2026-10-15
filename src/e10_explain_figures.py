@@ -325,6 +325,44 @@ def fig_three_models(outdir):
     fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_B1_three_models_length_vs_direction.png"), dpi=160); plt.close(fig)
 
 
+def starcoder_gaps(outdir, cnt, data="/home/user/mdibrahimawad/topology_number_line/data/starcoderbase-3b_vectors", K=50, seed=8):
+    """StarCoderBase-3B: mean H0 death (mean gap) of rare vs frequent sets, raw vectors vs length set to 1.
+    Same 50 pairs of sets (same blocks) for both versions; distances / the layer's typical 4-digit distance."""
+    from scipy.stats import gaussian_kde
+    mt = ex.matched_tiers(cnt, "block_digits_plain")
+    rng = np.random.default_rng(seed)
+    subs = [ex.tier_subsample(mt, mt["tier"].values, rng) for _ in range(K)]
+    rows = []
+    for L in (9, 18, 27, 30, 36):
+        X0 = np.load(os.path.join(data, f"layer_{L:02d}.npz"))["X"].astype(np.float32)
+        for version, X in (("raw", X0), ("length 1", X0 / np.linalg.norm(X0, axis=1, keepdims=True))):
+            rs = np.random.default_rng(0).choice(ex.FOUR, 1000, replace=False)
+            s = float(np.median(pdist(X[rs - 1])))
+            for k, sub in enumerate(subs):
+                for t, name in ((0, "rare"), (2, "frequent")):
+                    rows.append(dict(layer=L, version=version, set=k, group=name, mean_gap=mst_edges(X[sub[t] - 1]).mean() / s))
+    df = pd.DataFrame(rows); df.to_csv(os.path.join(outdir, "starcoder_mean_gap_raw_vs_length1.csv"), index=False)
+    fig, axes = plt.subplots(1, 2, figsize=(11, 3.8))
+    for ax, version in zip(axes, ("raw", "length 1")):
+        d = df[(df.layer == 30) & (df.version == version)]
+        vals = {g: d[d.group == g].mean_gap.values for g in ("rare", "frequent")}
+        lo = min(v.min() for v in vals.values()); hi = max(v.max() for v in vals.values()); pad = 0.15 * (hi - lo)
+        grid = np.linspace(lo - pad, hi + pad, 200)
+        for g, col in (("rare", RARE), ("frequent", FREQ)):
+            y = gaussian_kde(vals[g])(grid)
+            ax.fill_between(grid, y, color=col, alpha=0.35, lw=0); ax.plot(grid, y, color=col, lw=1.8, label=f"{g}: mean {vals[g].mean():.3f}")
+            ax.axvline(vals[g].mean(), color=col, lw=1.2, ls="--")
+        win = (vals["frequent"][:, None] > vals["rare"][None, :]).mean()
+        ax.set_yticks([]); ax.set_xlabel("mean H0 death (mean gap) of a set of 120 numbers")
+        ttl = "raw vectors (length + angle)" if version == "raw" else "every vector set to length 1 (angle only)"
+        ax.set_title(f"StarCoderBase-3B layer 30, {ttl}\nfrequent set has the bigger gap in {100 * win:.0f}% of rare/frequent pairs", fontsize=9, loc="left")
+        ax.legend(frameon=False, fontsize=8, loc="upper left")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_B2_starcoder_L30_gap_raw_vs_length1.png"), dpi=160); plt.close(fig)
+    t = df.groupby(["layer", "version", "group"]).mean_gap.mean().unstack()
+    t["frequent_minus_rare_%"] = 100 * (t["frequent"] / t["rare"] - 1)
+    return t
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vectors", required=True)
@@ -335,6 +373,7 @@ def main():
     _style(plt)
     cnt = ex.load_counts()
     only = a.only.split(",")
+    if "starcoder" in only: print(starcoder_gaps(a.out, cnt).round(4).to_string(), flush=True)
     if "three" in only: fig_three_models(a.out)
     if "length" in only: print("length % frequent vs rare:", fig_length(a.vectors, a.out, cnt), flush=True)
     if "barcodes" in only: fig_barcodes(a.vectors, a.out, cnt)
