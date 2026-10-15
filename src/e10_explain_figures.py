@@ -375,6 +375,9 @@ def main():
     cnt = ex.load_counts()
     only = a.only.split(",")
     if "starcoder" in only: print(starcoder_gaps(a.out, cnt).round(4).to_string(), flush=True)
+    if "openllama" in only:
+        print(starcoder_gaps(a.out, cnt, data=a.vectors.replace("crystal_vectors", "openllama-3b_vectors"), layers=(7, 13, 20, 22, 26),
+                             show=22, name="OpenLLaMA-3B", tag="openllama").round(4).to_string(), flush=True)
     if "crystal" in only:
         print(starcoder_gaps(a.out, cnt, data=a.vectors, layers=tuple(ex.LAYERS), show=27, name="LLM360 Crystal", tag="crystal").round(4).to_string(), flush=True)
     if "three" in only: fig_three_models(a.out)
