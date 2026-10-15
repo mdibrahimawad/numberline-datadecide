@@ -413,3 +413,31 @@ per third, K = 20; null = 200 within-block shuffles of the third labels):
 
 **Decision rule.** B replicates if F2 passes in **both** Qwen2.5 and SmolLM2; "mixed" if in one; "not
 replicated" if in neither. If F1 fails in a model, F2 there is reported but cannot support B.
+
+## Stage F: results (run 2026-10-15, exactly as pre-registered in commit `6d7d195`)
+`python -m src.e10_confirm --model <m> --vectors <topology_number_line>/data/<m>_vectors --layers <…> --out results/e10_confirm/<m>`.
+Deviations: none. z of H0 mean death, frequent − rare third, at the five relative depths (~25 / 50 / 75 / 84 % / last):
+
+| Model | F1 raw | F2 length 1 (angle only) | Role |
+|---|---|---|---|
+| Qwen2.5-1.5B | +2.0 / +6.9 / +4.5 / +5.4 / +4.7 → **pass** | −1.7 / −0.0 / +1.5 / **+4.5** / **+3.0** → **fail** (2 of 5) | decides |
+| SmolLM2-1.7B | +4.0 / +3.0 / +1.3 / +2.4 / +2.6 → **pass** | −0.7 / +0.2 / −0.6 / +1.1 / +0.8 → **fail** (0 of 5) | decides |
+| Pythia-1.4B | +4.4 / +2.6 / +3.6 / +3.7 / +0.9 → pass | +1.8 / −0.8 / +1.6 / +2.0 / +0.1 → fail (0 of 5 at ≥ 2) | reported |
+| OLMo-2-1B | +3.3 / +3.2 / +3.5 / +1.2 / −1.1 → pass | +1.8 / −0.6 / −0.6 / −0.8 / −0.6 → fail | reported |
+
+**Decision (pre-registered rule): B is not replicated** (F2 fails in both Qwen2.5 and SmolLM2). The raw
+spacing effect (F1) replicates in all four. Over all seven models: raw spacing passes in 7 of 7; the
+angle-only part passes in Crystal (discovery data, not a test) and StarCoder (proxy counts), and fails in
+OpenLLaMA, Qwen2.5, SmolLM2, Pythia and OLMo-2. The one consistent exception is the late layers of Qwen2.5
+(z +4.5 and +3.0 at ~84 % and last), in line with the scale-free result already seen there (E11 H2).
+
+Mean gap of 50 fresh set pairs, frequent vs rare, raw → length 1 (descriptive, `src/e10_explain_figures.py`;
+values within about ±0.5 % are inside the set-to-set noise): Qwen2.5 +1.3→+0.5, +3.2→+0.5, +2.1→+0.8, +2.7→+1.9,
++2.1→+1.4 %; SmolLM2 +1.1→−0.1, +1.8→+0.1, +1.1→+0.4, +1.9→+1.1, +1.9→+0.5 %.
+
+Reported only (P3–P5): vector length vs frequency (P3) passes in Pythia and OLMo-2, fails in Qwen2.5 and
+SmolLM2; special-number isolation (P4) passes in SmolLM2, Pythia, OLMo-2; years "fewer, larger features"
+(P5) passes in Qwen2.5, SmolLM2 and Pythia, fails in OLMo-2.
+
+**Reading.** Frequent numbers get more room in every model tested; that this is more than vector length is
+model- and depth-dependent (clear only in StarCoder and in the deepest layers of Qwen2.5) and is not claimed.

@@ -1,0 +1,59 @@
+{
+  "model": "pythia-1.4b",
+  "layers": [
+    6,
+    12,
+    18,
+    20,
+    24
+  ],
+  "control": "block_digits_plain",
+  "results": {
+    "P1_raw": {
+      "z": {
+        "6": 4.41,
+        "12": 2.6,
+        "18": 3.56,
+        "20": 3.65,
+        "24": 0.91
+      },
+      "passed": true
+    },
+    "P2_direction_only": {
+      "z": {
+        "6": 1.81,
+        "12": -0.8,
+        "18": 1.6,
+        "20": 1.98,
+        "24": 0.06
+      },
+      "passed": false
+    },
+    "P3_norm": {
+      "rho": {
+        "6": 0.037,
+        "12": 0.055,
+        "18": 0.061,
+        "20": 0.05,
+        "24": 0.013
+      },
+      "passed": true
+    },
+    "P4_special": {
+      "z_first_layer": {
+        "thousands x000": 7.22,
+        "years 1950-2025": 1.82,
+        "repdigits 1111-9999": 4.02,
+        "powers of 2": 1.35
+      },
+      "passed": true
+    },
+    "P5_years": {
+      "layer": 6,
+      "spread_z": 5.512745572640023,
+      "h0_total_scalefree_z": -5.322870515153407,
+      "n_null": 156,
+      "passed": true
+    }
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "model": "qwen2.5-1.5b",
+  "layers": [
+    7,
+    14,
+    21,
+    24,
+    28
+  ],
+  "control": "block_digits_plain",
+  "results": {
+    "P1_raw": {
+      "z": {
+        "7": 2.01,
+        "14": 6.91,
+        "21": 4.53,
+        "24": 5.37,
+        "28": 4.71
+      },
+      "passed": true
+    },
+    "P2_direction_only": {
+      "z": {
+        "7": -1.66,
+        "14": -0.05,
+        "21": 1.46,
+        "24": 4.51,
+        "28": 3.02
+      },
+      "passed": false
+    },
+    "P3_norm": {
+      "rho": {
+        "7": 0.031,
+        "14": 0.088,
+        "21": 0.044,
+        "24": 0.008,
+        "28": 0.003
+      },
+      "passed": false
+    },
+    "P4_special": {
+      "z_first_layer": {
+        "thousands x000": 0.71,
+        "years 1950-2025": 2.64,
+        "repdigits 1111-9999": 2.27,
+        "powers of 2": 0.83
+      },
+      "passed": false
+    },
+    "P5_years": {
+      "layer": 7,
+      "spread_z": 6.076158326618289,
+      "h0_total_scalefree_z": -5.8309317304222015,
+      "n_null": 156,
+      "passed": true
+    }
+  }
+}

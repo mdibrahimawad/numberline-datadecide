@@ -1,0 +1,59 @@
+{
+  "model": "olmo2-1b",
+  "layers": [
+    4,
+    8,
+    12,
+    14,
+    16
+  ],
+  "control": "block_digits_plain",
+  "results": {
+    "P1_raw": {
+      "z": {
+        "4": 3.25,
+        "8": 3.18,
+        "12": 3.49,
+        "14": 1.19,
+        "16": -1.05
+      },
+      "passed": true
+    },
+    "P2_direction_only": {
+      "z": {
+        "4": 1.82,
+        "8": -0.63,
+        "12": -0.62,
+        "14": -0.84,
+        "16": -0.58
+      },
+      "passed": false
+    },
+    "P3_norm": {
+      "rho": {
+        "4": 0.021,
+        "8": 0.037,
+        "12": 0.034,
+        "14": 0.043,
+        "16": -0.051
+      },
+      "passed": true
+    },
+    "P4_special": {
+      "z_first_layer": {
+        "thousands x000": 1.07,
+        "years 1950-2025": 2.43,
+        "repdigits 1111-9999": 2.04,
+        "powers of 2": 1.66
+      },
+      "passed": true
+    },
+    "P5_years": {
+      "layer": 4,
+      "spread_z": 2.3599547305722552,
+      "h0_total_scalefree_z": -1.6308970224441766,
+      "n_null": 156,
+      "passed": false
+    }
+  }
+}
