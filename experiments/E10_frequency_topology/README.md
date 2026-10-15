@@ -271,3 +271,26 @@ numbers at ~25 % depth (high − low RTD −0.18, Wilcoxon p = 0.02) and slightl
 | 5 | Frequent ordinary numbers sit slightly further apart (H0) at fixed size and digit form | pre-registered (P1) in 2 models | new as far as we found; small |
 | 6 | No last-digit circle (H1) after digit-by-digit numbers; tens digit is a line | exploratory, 3 models | contrasts with the helix of single-token numbers (Kantamneni & Tegmark 2025) |
 | 7 | H1 carries no frequency signal | stage A + C | — |
+
+## Stage D: do models converge on the topology of numbers in late layers? (pre-registered 2026-10-15)
+**Written before any vector of the new models exists.** Tests stage C observation 2 on new models.
+Code: extraction `src/extract_number_vectors.py` (run by the owner on a laptop), test
+`src/e10_convergence.py` (exactly the procedure below). Must not change after the new vectors exist.
+
+**New models** (ungated, ~1–2B, different number tokenization): `Qwen/Qwen2.5-1.5B` (single digits),
+`HuggingFaceTB/SmolLM2-1.7B` (single digits), `EleutherAI/pythia-1.4b` (multi-digit BPE),
+`allenai/OLMo-2-0425-1B` (up to 3-digit chunks). Same 10,000 prompt texts as stages A–C, last-token
+hidden state, levels at the same relative depths (round(f × number of layers), f = 8/32, 16/32, 24/32,
+27/32, 1), float32 inference, stored centred float16. If a model fails to download or run, it is
+reported and dropped, not replaced by another chosen after seeing results.
+
+**Measure.** For each pair of models and depth: RTD (`src/e10_topology.rtd`) on the same 120 ordinary
+4-digit numbers (2 per block, 60 random blocks; no 1500–2099, no multiples of 10, no special-pattern
+numbers), divided by RTD with the second model's points shuffled; mean over K = 10 sets (seed 7).
+Per pair: early = mean ratio at ~25 % and ~50 %; late = mean ratio at ~84 % and last.
+
+**Prediction:** late < early. **Primary test:** over the pairs that include at least one new model
+(18 pairs with 4 new models), one-sided sign test p < 0.05 (with 18 pairs: late < early in ≥ 13).
+Pairs share models, so they are not independent; the result is reported per pair as well.
+Reference (stage C models, already seen, not part of the test): late 0.28–0.35 vs early 0.67–0.75 in
+all 3 pairs.
