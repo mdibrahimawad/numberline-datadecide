@@ -244,6 +244,49 @@ def fig_densities(outdir):
     fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_A4_feature_densities.png"), dpi=160); plt.close(fig)
 
 
+def fig_length(vec, outdir, cnt):
+    """Finding 2: how much of the extra space is vector length. (a) toy picture, (b) length of frequent vs rare
+    vectors per layer, (c) spacing z with raw vectors vs vectors scaled to length 1."""
+    mt = ex.matched_tiers(cnt, "block_digits_plain")
+    fig, axes = plt.subplots(1, 3, figsize=(13, 3.9), gridspec_kw=dict(width_ratios=[1, 1.1, 1.1]))
+    ax = axes[0]
+    ang = np.deg2rad(np.array([60, 75, 90, 105, 120]))
+    for r, col, lab in ((1.0, RARE, "shorter vectors"), (1.35, FREQ, "longer vectors")):
+        ax.plot(r * np.cos(ang), r * np.sin(ang), "o-", color=col, ms=8, lw=1.2, label=f"{lab}: gaps {2 * r * np.sin(np.deg2rad(7.5)):.2f}")
+        for a in ang:
+            ax.plot([0, r * np.cos(a)], [0, r * np.sin(a)], color=col, lw=0.6, alpha=0.5)
+    ax.plot(0, 0, "o", color=INK, ms=5); ax.text(0.04, -0.08, "centre", fontsize=8)
+    ax.set_aspect("equal"); ax.set_xlim(-0.9, 0.9); ax.set_ylim(-0.15, 1.95); ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
+    ax.set_title("same directions, longer arrows → bigger gaps", fontsize=9, loc="left")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper center")
+    ax = axes[1]
+    rows = []
+    for L in ex.LAYERS:
+        X, _ = layer(vec, L)
+        nrm = np.linalg.norm(X, axis=1)
+        r = {t: nrm[mt["n"].values[mt["tier"].values == t] - 1].mean() for t in (0, 2)}
+        rows.append(100 * (r[2] / r[0] - 1))
+    ax.bar(range(5), rows, color=FREQ, width=0.6)
+    for k, v in enumerate(rows):
+        ax.text(k, v, f"+{v:.1f}%", ha="center", va="bottom", fontsize=8)
+    ax.set_xticks(range(5), [f"L{L}" for L in ex.LAYERS]); ax.set_ylabel("frequent vs rare third (%)")
+    ax.set_title("vector length: frequent numbers' arrows are longer", fontsize=9, loc="left")
+    ax = axes[2]
+    raw = pd.read_csv("results/e10_explore/B_tier_test_block_digits_plain.csv")
+    unit = pd.read_csv("results/e10_explore/unit_length/B_tier_test_block_digits_plain.csv")
+    zr = raw[raw.feature == "H0_death_mean"].set_index("layer")["z"].loc[ex.LAYERS].values
+    zu = unit[unit.feature == "H0_death_mean"].set_index("layer")["z"].loc[ex.LAYERS].values
+    x = np.arange(5)
+    ax.bar(x - 0.18, zr, 0.34, color=FREQ, label="raw vectors (length + direction)")
+    ax.bar(x + 0.18, zu, 0.34, color=NULL, label="length set to 1 (direction only)")
+    ax.axhline(2, color=INK2, lw=1, ls="--"); ax.text(4.45, 2.1, "z = 2", fontsize=7.5, ha="right", color=INK2)
+    ax.set_xticks(x, [f"L{L}" for L in ex.LAYERS]); ax.set_ylabel("z (frequent − rare mean gap)")
+    ax.set_title("extra space: raw vs direction only", fontsize=9, loc="left")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper right")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_A7_length_vs_direction.png"), dpi=160); plt.close(fig)
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vectors", required=True)
@@ -254,6 +297,7 @@ def main():
     _style(plt)
     cnt = ex.load_counts()
     only = a.only.split(",")
+    if "length" in only: print("length % frequent vs rare:", fig_length(a.vectors, a.out, cnt), flush=True)
     if "barcodes" in only: fig_barcodes(a.vectors, a.out, cnt)
     if "densities" in only: fig_densities(a.out)
     if "profiles" in only: fig_profiles(a.out)
