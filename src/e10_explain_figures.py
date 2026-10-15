@@ -287,6 +287,44 @@ def fig_length(vec, outdir, cnt):
     return rows
 
 
+def fig_three_models(outdir):
+    """For a talk: the law-of-cosines picture, and raw vs direction-only spacing z in the three models (E10 A + B)."""
+    import json
+    raw = pd.read_csv("results/e10_explore/B_tier_test_block_digits_plain.csv")
+    unit = pd.read_csv("results/e10_explore/unit_length/B_tier_test_block_digits_plain.csv")
+    pick = lambda d: d[d.feature == "H0_death_mean"].set_index("layer")["z"].loc[ex.LAYERS].values
+    models = {"Crystal (discovery)": (pick(raw), pick(unit))}
+    for m, name in (("openllama-3b", "OpenLLaMA-3B (main replication)"), ("starcoderbase-3b", "StarCoderBase-3B (proxy counts)")):
+        r = json.load(open(f"results/e10_confirm/{m}/summary.json"))["results"]
+        models[name] = (np.array(list(r["P1_raw"]["z"].values())), np.array(list(r["P2_direction_only"]["z"].values())))
+    order = ["StarCoderBase-3B (proxy counts)", "Crystal (discovery)", "OpenLLaMA-3B (main replication)"]
+    fig, axes = plt.subplots(1, 4, figsize=(15, 3.8), gridspec_kw=dict(width_ratios=[1.05, 1, 1, 1]))
+    ax = axes[0]
+    a, b = np.array([1.0, 0.25]), np.array([0.55, 0.95])
+    for v, lab in ((a, "a"), (b, "b")):
+        ax.annotate("", xy=v, xytext=(0, 0), arrowprops=dict(arrowstyle="-|>", color=FREQ, lw=2))
+        ax.text(*(v * 1.06), f"{lab}", fontsize=11, color=INK)
+    ax.plot(*zip(a, b), color=RARE, lw=2.5); ax.text(*((a + b) / 2 + [0.04, 0.03]), "gap |a − b|", fontsize=9, color=INK)
+    th = np.linspace(np.arctan2(a[1], a[0]), np.arctan2(b[1], b[0]), 30)
+    ax.plot(0.28 * np.cos(th), 0.28 * np.sin(th), color=INK2, lw=1); ax.text(0.3, 0.22, "θ", fontsize=11)
+    ax.plot(0, 0, "o", color=INK, ms=4); ax.text(-0.02, -0.12, "centre", fontsize=8)
+    ax.text(-0.05, 1.28, "|a − b|² = |a|² + |b|² − 2·|a|·|b|·cos θ", fontsize=9.5, color=INK)
+    ax.text(-0.05, 1.15, "lengths |a|, |b|   +   angle θ (direction)", fontsize=8.5, color=INK2)
+    ax.set_xlim(-0.15, 1.35); ax.set_ylim(-0.2, 1.4); ax.set_aspect("equal"); ax.set_xticks([]); ax.set_yticks([]); ax.grid(False)
+    ax.spines["left"].set_visible(False); ax.spines["bottom"].set_visible(False)
+    ax.set_title("Euclidean gap mixes length and angle", fontsize=9, loc="left")
+    x = np.arange(5)
+    for ax, name in zip(axes[1:], order):
+        zr, zu = models[name]
+        ax.bar(x - 0.18, zr, 0.34, color=FREQ, label="raw (length + direction)")
+        ax.bar(x + 0.18, zu, 0.34, color=NULL, label="length set to 1 (direction only)")
+        ax.axhline(2, color=INK2, lw=1, ls="--")
+        ax.set_xticks(x, ["25%", "50%", "75%", "84%", "last"]); ax.set_ylim(-0.5, 6.8)
+        ax.set_title(name, fontsize=9, loc="left"); ax.set_xlabel("relative depth")
+    axes[1].set_ylabel("z: frequent − rare mean gap"); axes[1].legend(frameon=False, fontsize=7.5, loc="upper right")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_B1_three_models_length_vs_direction.png"), dpi=160); plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vectors", required=True)
@@ -297,6 +335,7 @@ def main():
     _style(plt)
     cnt = ex.load_counts()
     only = a.only.split(",")
+    if "three" in only: fig_three_models(a.out)
     if "length" in only: print("length % frequent vs rare:", fig_length(a.vectors, a.out, cnt), flush=True)
     if "barcodes" in only: fig_barcodes(a.vectors, a.out, cnt)
     if "densities" in only: fig_densities(a.out)
