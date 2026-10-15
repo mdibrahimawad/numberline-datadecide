@@ -383,3 +383,33 @@ confirmed and H1 count is not.
 | 6 | Years: "fewer, larger features" (decade clusters on a line) in web-text models | B-A pre-registered |
 | 7 | Special numbers are isolated points (H0); which ones depends on the model | B-A pre-registered |
 | 8 | No last-digit circle and no year loop for digit-by-digit numbers | C, exploratory |
+
+## Stage F: is the extra space only vector length? Four more models (pre-registered 2026-10-15)
+**Written before the length-1 (direction-only) test was run on these models.** Question: in Crystal and
+StarCoder about half of the frequent-number spacing survives setting every vector to length 1 (angle only,
+"B"); in OpenLLaMA none does ("A", length only). Does B replicate?
+
+**Models and layers (vectors already in `topology_number_line/data/`, same prompts and relative depths):**
+| Model | Tokenizer | Layers | Role |
+|---|---|---|---|
+| Qwen2.5-1.5B | single digits | 7, 14, 21, 24, 28 | **decides** |
+| SmolLM2-1.7B | single digits | 6, 12, 18, 20, 24 | **decides** |
+| Pythia-1.4B | chunks (some 4-digit numbers are one token: 1987 and 9999 are, 5371 is not) | 6, 12, 18, 20, 24 | reported only |
+| OLMo-2-1B | chunks | 4, 8, 12, 14, 16 | reported only |
+
+Pythia and OLMo-2 do not decide: frequent numbers are more often a single token there, and the
+tokenizers are not available in this container to control for it.
+
+**Disclosure of what was already seen on these models:** raw crowding of the rarest vs most frequent
+tenth (E10 E, E11 H1) and a *scale-free* variant (E11 H2: each set divided by its own median distance;
+crowding survived at the ~75 %, ~84 % and last depths of Qwen2.5 and SmolLM2, not earlier). The scale-free
+variant rescales whole sets, not single vectors; the length-1 test below was never run on these models.
+
+**Tests** (code `src/e10_confirm.py`, unchanged; control `block_digits_plain`; 120-number sets, 2 per block
+per third, K = 20; null = 200 within-block shuffles of the third labels):
+- **F1** (= P1) H0 mean death, frequent − rare third, raw vectors: z ≥ 2 at ≥ 3 of 5 depths.
+- **F2** (= P2) the same with every vector set to length 1: z ≥ 2 at ≥ 3 of 5 depths.
+- Reported, not decisive: P3–P5 as in stage B-A, and the mean gap before / after in % (`src/e10_explain_figures.py`).
+
+**Decision rule.** B replicates if F2 passes in **both** Qwen2.5 and SmolLM2; "mixed" if in one; "not
+replicated" if in neither. If F1 fails in a model, F2 there is reported but cannot support B.
