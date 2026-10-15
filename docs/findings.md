@@ -81,7 +81,12 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    decade clusters ("fewer, larger features") in the web-text models (Crystal, OpenLLaMA), not in
    the code model. Loops (H1) carry no frequency signal. Stage C (exploratory): number topology simplifies with
    depth in all three models; the three models' topology of the same numbers converges in late
-   layers (RTD); no last-digit circle and no year loop. Details and the list of PH observations:
+   layers (RTD); no last-digit circle and no year loop. Stage D (pre-registered, 4 new models): the
+   late-layer convergence replicates (15 of 18 new pairs, p = 0.004), strongest among digit-splitting
+   tokenizers, absent for OLMo-2. Stage E (7 models, 10 frequency levels, exploratory): the spacing
+   effect is graded and clear (z > 3 in 33 of 35 model × depth cells), carried by H0 deaths and H1
+   birth/death scale, not loop counts; topology predicts a set's frequency level on held-out numbers.
+   Details and the list of PH observations:
    `experiments/E10_frequency_topology/README.md`.
 
 ## What holds up (with evidence)

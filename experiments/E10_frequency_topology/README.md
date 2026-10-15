@@ -3,7 +3,8 @@
 **Question:** do numbers that appear more often in the training data get a different shape
 (topology / local geometry) inside the model than equally large numbers that appear rarely?
 **Status:** stage A (exploration, Crystal), stage B-A (pre-registered replication on OpenLLaMA-3B
-and StarCoderBase-3B) and stage C (topology-only questions, exploratory) done, 2026-10-15. Stage A results are exploratory; only the stage B-A section
+and StarCoderBase-3B) and stage C (topology-only questions, exploratory), stage D (pre-registered convergence test on 4 new
+models: pass) and stage E (3/5/10 frequency levels, 7 models, exploratory) done, 2026-10-15. Stage A results are exploratory; only the stage B-A section
 reports pre-registered tests.
 
 ## Why
@@ -294,3 +295,91 @@ Per pair: early = mean ratio at ~25 % and ~50 %; late = mean ratio at ~84 % and 
 Pairs share models, so they are not independent; the result is reported per pair as well.
 Reference (stage C models, already seen, not part of the test): late 0.28–0.35 vs early 0.67–0.75 in
 all 3 pairs.
+
+## Stage D: results (run 2026-10-15, exactly as pre-registered in commit `9b30137`)
+`python -m src.e10_convergence --data <…>/data --models crystal,openllama-3b,starcoderbase-3b,qwen2.5-1.5b,smollm2-1.7b,pythia-1.4b,olmo2-1b`
+→ `results/e10_convergence/`. Deviations: none. All four new models extracted (laptop, Apple MPS,
+float32; batched vs one-by-one max relative difference ≤ 2.5e-5; last token `=` in 100 % of prompts).
+Tokenization of 1987: Qwen2.5 / SmolLM2 4 single digits, Pythia 1 token, OLMo-2 2 chunks.
+
+**Primary test: late < early in 15 of 18 new pairs, sign test p = 0.0038 → PASS.** The three exceptions
+are all pairs with OLMo-2 (Crystal, Qwen2.5, StarCoder). Late-layer ratio (RTD / shuffled RTD, mean of
+~84 % and last; lower = more similar):
+
+| | digit-splitting models among themselves (Crystal, OpenLLaMA, StarCoder, Qwen2.5, SmolLM2; 10 pairs) | with Pythia-1.4B (multi-digit BPE) | with OLMo-2-1B (≤ 3-digit chunks) |
+|---|---|---|---|
+| late ratio | 0.22–0.39 | 0.59–0.70 | 0.70–0.83 |
+| early ratio | 0.66–0.83 | 0.80–0.92 | 0.71–0.92 |
+
+**Reading:** convergence is strongest among models that read numbers digit by digit (whatever their
+training data: web text, code, Qwen's and SmolLM2's mixtures), partial for Pythia and nearly absent for
+OLMo-2. Figure: `results/e10_graded/figures/fig_rtd_heatmap.png`.
+
+## Stage E: frequency in 3, 5 and 10 levels, all 41 features, 7 models (exploratory, 2026-10-15)
+`python -m src.e10_graded --data <…>/data` then `python -m src.e10_graded_analysis` and
+`python -m src.e10_figures --data <…>/data` → `results/e10_graded/` (tables + `figures/`).
+Levels: ordinary 4-digit numbers (no 1500–2099, no multiples of 10, no special-pattern numbers)
+ranked inside each block of 100 by the count left after block + tens digit + last digit, cut into Q
+equal levels per block; sets of 120 (2 per block, the same 60 blocks for every level of a set), K = 30
+sets, and the same with levels shuffled inside blocks (null). Median SlimPajama count, rarest →
+most frequent level: Q = 3: 13.3k / 15.1k / 19.7k; Q = 10: 12.7k … 26.8k (2.1×).
+
+**E1. More levels show the effect more clearly.** z of the trend of H0 mean death over the levels
+(real vs shuffled), 7 models × 5 depths:
+
+| | cells with z > 3 (of 35) | range |
+|---|---|---|
+| 3 levels | 24 | −2.0 … +6.3 |
+| 5 levels | 26 | −2.5 … +8.1 |
+| 10 levels | **33** | −1.7 … **+11.9** |
+
+The only negative cell is OLMo-2's last layer (also Pythia's last layer is weak). Over all 41 features
+(Q = 10), |z| > 3 in 71 % of H0-spacing cells and 48 % of H1 birth/death-scale cells, but only 9 % of H1
+loop-count cells and 13 % of H1-lifetime and H1-ratio cells (`fig_heatmap_Q10.png`).
+
+**E2. Shape of the response** (`fig_dose_response_H0.png`, `shape_H0_death_mean.csv`): rising with
+level in 34 of 35 cells (Spearman over the 10 levels 0.35–0.99), roughly linear in the middle, with the
+**extremes standing out**: the rarest tenth is much more crowded than the rest at the earliest depth
+(Crystal −10.8, StarCoder −12.6, Pythia −9.4 null sd at level 1 vs −0.6 … −2.6 at level 5), and the most
+frequent tenth is the most spread (+2 … +6). A one-step fit places the step right after level 1 or
+right before level 10 in 14 of 35 cells: the contrast is carried mostly by the two ends.
+
+**E3. Fay-style classifiers on held-out blocks** (`classifiers.csv`; null = labels permuted in
+training, 95th percentile):
+- predicting the level (1–10) with ridge on the 41 features: held-out Spearman above the null 95 %
+  in 30 of 35 cells (Crystal 0.44–0.74 vs null ≤ 0.38; OpenLLaMA 0.34–0.55; Qwen up to 0.72);
+- rarest vs most frequent third: held-out AUC 0.59–0.97, above the null 95 % in 26 of 35 cells
+  (the permutation null is wide, 0.65–0.90, because the sets within one split share blocks);
+- 3-way (low / mid / high): above chance (0.33) in all 35 cells but above the null 95 % in 16;
+  the middle third is hard to tell from its neighbours.
+
+**E4. Which features (linear SHAP, rarest vs most frequent third)** (`shap.csv`, `fig_shap_families.png`):
+the top single features in every model are H0 mean death, H0 total, H0 death q3 and median (spacing),
+then H1 death/birth quartiles (the scale at which loops appear). H1 loop count contributes 1–4 %.
+Fay et al. report H0 mean death and H1 count as their two key features; here H0 mean death is
+confirmed and H1 count is not.
+
+**E5. Figures that describe the topology:**
+- *Betti curves* (`fig_betti_curves.png`, ~25 % depth): the frequent tenth's Betti-0 curve is shifted
+  to larger radii (points join later); its Betti-1 peak is lower, later and broader, while the rarest
+  tenth has a tall, narrow burst of short loops at a smaller radius (Crystal, OpenLLaMA, Qwen2.5,
+  SmolLM2; not Pythia, little in StarCoder and OLMo-2).
+- *Persistence diagrams* (`fig_diagrams.png`, Crystal): the frequent tenth's H0 deaths are shifted right
+  and its H1 points slide up along the diagonal (born and dying later, similar lifetimes).
+- *Topology fingerprints* (`fig_feature_map.png`): in the 2-D PCA of the 41 features, sets of rare numbers
+  sit on one side and frequent ones on the other in Crystal and StarCoder, less clearly elsewhere.
+- *Depth* (`fig_depth_profile.png`): the five digit-splitting models lose loops and gather into tighter
+  clusters with depth; Pythia changes little; **OLMo-2 goes the other way** (H1 loops 200 → 520 at ~84 %,
+  H0 spacing flat).
+
+## Observations through the PH lens (updated)
+| # | Observation | Status |
+|---|---|---|
+| 1 | Frequency shapes H0 spacing: rarer numbers are more crowded, graded over 10 levels, strongest at the extremes; 33/35 model × depth cells, 7 models | B-A pre-registered (2 models) + E (7 models, exploratory) |
+| 2 | Topology alone predicts a set's frequency level on held-out numbers (ordinal Spearman up to 0.74); the deciding features are H0 deaths and H1 birth/death scale, not loop counts | E, exploratory |
+| 3 | Rare numbers produce a sharp burst of short loops at small radius; frequent numbers' loops appear later and spread out (Betti-1 curves) | E, exploratory |
+| 4 | Models converge on the topology of numbers in late layers, strongly for digit-splitting tokenizers, weakly for Pythia, not for OLMo-2 | **D pre-registered: pass**, tokenizer pattern exploratory |
+| 5 | Topology simplifies with depth (fewer loops, tighter clusters) in digit-splitting models; OLMo-2 does the opposite | C + E, exploratory |
+| 6 | Years: "fewer, larger features" (decade clusters on a line) in web-text models | B-A pre-registered |
+| 7 | Special numbers are isolated points (H0); which ones depends on the model | B-A pre-registered |
+| 8 | No last-digit circle and no year loop for digit-by-digit numbers | C, exploratory |

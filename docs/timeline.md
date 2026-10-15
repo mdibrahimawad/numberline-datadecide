@@ -92,6 +92,10 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
 - **E10 stage C** (`src/e10_topology.py`, exploratory): PH across depth, last-digit circle, year
   endings, RTD between models. Topology simplifies with depth; models converge in late layers; no
   digit or year loops; no consistent frequency effect on cross-model agreement.
+- **E10 stage D** pre-registered (`9b30137`) and run: 4 more models extracted on the owner's laptop
+  (`src/extract_number_vectors.py`); late-layer convergence passes (15/18 new pairs, p = 0.004).
+- **E10 stage E** (`src/e10_graded.py`, `src/e10_graded_analysis.py`, `src/e10_figures.py`, exploratory):
+  3/5/10 frequency levels × 41 features × 7 models, classifiers, linear SHAP, 8 figures.
 
 ## Next
 - **E10 next**: checkpoints (does the spacing grow with exposure?) and several prompts per number
