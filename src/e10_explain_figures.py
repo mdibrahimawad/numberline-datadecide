@@ -392,6 +392,52 @@ def fig_single_numbers(vec, outdir, cnt, L=16):
     return rho, np.round(means, 3)
 
 
+def fig_shapes(outdir, data="/home/user/mdibrahimawad/topology_number_line/data/crystal_vectors"):
+    """E11 H29 explained: barcodes (H1 loops, H2 voids) of three reference shapes with 100 points each, and of the
+    100 two-digit endings of Crystal (~84 % depth, layer 27; block means removed, as in src.e11_tier0._grid_cell)."""
+    a = np.linspace(0, 2 * np.pi, 10, endpoint=False)
+    A, B = np.meshgrid(a, a)
+    shapes = {
+        "circle (100 points)": np.c_[np.cos(np.linspace(0, 2 * np.pi, 100, endpoint=False)), np.sin(np.linspace(0, 2 * np.pi, 100, endpoint=False))],
+        "flat square, 10 x 10 points": np.c_[np.repeat(np.arange(10), 10), np.tile(np.arange(10), 10)].astype(float),
+        "torus (donut), 10 x 10 points": np.c_[np.cos(A.ravel()), np.sin(A.ravel()), np.cos(B.ravel()), np.sin(B.ravel())],
+    }
+    X = np.load(os.path.join(data, "layer_27.npz"))["X"].astype(np.float32)
+    nums = ex.FOUR[~ex.year_zone(ex.FOUR)]; V = X[nums - 1].copy()
+    for blk in np.unique(nums // 100):
+        i = nums // 100 == blk; V[i] -= V[i].mean(0)
+    shapes["Crystal: the 100 endings 00-99"] = np.stack([V[nums % 100 == e].mean(0) for e in range(100)]).astype(np.float64)
+    fig, axes = plt.subplots(2, 4, figsize=(14, 5.6), gridspec_kw=dict(height_ratios=[1.2, 1]))
+    for j, (name, P) in enumerate(shapes.items()):
+        D = squareform(pdist(P)); D = D / np.median(D[np.triu_indices(len(P), 1)])
+        dg = ripser(D, distance_matrix=True, maxdim=2)["dgms"]
+        ax = axes[0, j]; k = 0
+        for dim, col in ((1, FREQ), (2, RARE)):
+            bars = dg[dim][np.argsort(dg[dim][:, 0] - dg[dim][:, 1])][:12]          # longest first
+            for b, d_ in bars:
+                ax.hlines(k, b, min(d_, 2.0), color=col, lw=3); k += 1
+            k += 1
+        ax.set_xlim(0, 1.6); ax.set_yticks([]); ax.set_title(name, fontsize=9, loc="left")
+        ax.set_xlabel("radius (÷ typical distance)")
+        n1 = int(np.sum((dg[1][:, 1] - dg[1][:, 0]) > 0.25)); n2 = int(np.sum((dg[2][:, 1] - dg[2][:, 0]) > 0.1)) if len(dg[2]) else 0
+        ax.text(0.98, 0.02, f"long loops: {n1}\nvoids: {n2}", transform=ax.transAxes, ha="right", va="bottom", fontsize=8)
+        ax = axes[1, j]
+        if P.shape[1] == 2:
+            ax.scatter(P[:, 0], P[:, 1], s=10, color=INK2)
+        else:
+            Z = P - P.mean(0); U, S_, Vt = np.linalg.svd(Z, full_matrices=False); Z = Z @ Vt[:2].T
+            ax.scatter(Z[:, 0], Z[:, 1], s=10, color=INK2)
+            if j == 3:
+                for e in (0, 9, 90, 99, 37):
+                    ax.annotate(f"{e:02d}", Z[e], fontsize=7, color=INK)
+        ax.set_xticks([]); ax.set_yticks([]); ax.set_aspect("equal", adjustable="datalim")
+        ax.set_title("the points" + (" (2-D view)" if P.shape[1] > 2 else ""), fontsize=8, loc="left")
+    axes[0, 0].plot([], [], color=FREQ, lw=3, label="H1 bar (loop)"); axes[0, 0].plot([], [], color=RARE, lw=3, label="H2 bar (void)")
+    axes[0, 0].legend(frameon=False, fontsize=7.5, loc="center right")
+    fig.suptitle("Longest 12 bars per dimension. A long bar = a real hole; short bars = noise.", fontsize=9, x=0.01, ha="left")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_E11_shapes_circle_square_torus.png"), dpi=160); plt.close(fig)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vectors", required=True)
@@ -409,6 +455,7 @@ def main():
     if "crystal" in only:
         print(starcoder_gaps(a.out, cnt, data=a.vectors, layers=tuple(ex.LAYERS), show=27, name="LLM360 Crystal", tag="crystal").round(4).to_string(), flush=True)
     if "single" in only: print("single numbers:", fig_single_numbers(a.vectors, a.out, cnt), flush=True)
+    if "shapes" in only: fig_shapes(a.out)
     if "three" in only: fig_three_models(a.out)
     if "length" in only: print("length % frequent vs rare:", fig_length(a.vectors, a.out, cnt), flush=True)
     if "barcodes" in only: fig_barcodes(a.vectors, a.out, cnt)
