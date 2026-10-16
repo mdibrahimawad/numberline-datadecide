@@ -34,8 +34,14 @@ MODELS_RANDINIT = {"qwen2.5-1.5b": "Qwen/Qwen2.5-1.5B", "smollm2-1.7b": "Hugging
                    "pythia-1.4b": "EleutherAI/pythia-1.4b", "olmo2-1b": "allenai/OLMo-2-0425-1B"}
 
 
-def number_subset(seed=26):
-    """1-100 plus 200 ordinary 4-digit numbers from each frequency tenth (E10 stage E levels)."""
+SUBSET_FILE = os.path.join(os.path.dirname(__file__), "..", "experiments", "E11_topology_hypotheses", "number_subset.txt")
+
+
+def number_subset(seed=26, recompute=False):
+    """1-100 plus 200 ordinary 4-digit numbers from each frequency tenth (E10 stage E levels).
+    The seed-26 list is stored in SUBSET_FILE so the laptop scripts need no pandas/scipy."""
+    if seed == 26 and not recompute and os.path.exists(SUBSET_FILE):
+        return np.loadtxt(SUBSET_FILE, dtype=int)
     import src.e10_explore as ex
     from src.e10_graded import levels
     mt = levels(ex.load_counts(), 10)
