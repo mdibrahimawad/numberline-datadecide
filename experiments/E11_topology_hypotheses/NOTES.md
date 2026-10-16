@@ -21,3 +21,16 @@ all 4-digit numbers; 7,027 ordinary numbers; frequency = count left after block 
 both signs (negative in 17, positive in 17, zero in 1); the same after removing vector length. Mean LID rarest vs most
 frequent tenth differs by ≤ 1.8. No link between frequency and local dimension. The set-level TwoNN tendency
 (frequent tenth ~1 dimension lower in 27/35 cells, H4) does not hold per number and is not claimed.
+
+**Rare–rare, rare–frequent, frequent–frequent distances inside blocks of 100** (`scratch/rr_rf_ff.py`,
+`results/e11_tier0/RR_RF_FF_distances.csv`; block + digit matched thirds, no special patterns; 5 models × 5 depths):
+mean pairwise distance RR < RF ≤ FF in almost every cell (e.g. Crystal ~25 %: 0.801 / 0.821 / 0.824). Rare and frequent
+numbers are **interleaved**, not in separate regions: of a rare number's 5 nearest numbers in its block (rare + frequent
+pool), 41–48 % are frequent (50 % = fully mixed); rare vectors are 1–2 % shorter. Picture: one mixed cloud in which rare
+numbers sit slightly closer to the centre. In Pythia and OLMo-2 late layers RF ≥ FF and frequent numbers' neighbours
+are 51–54 % frequent: a slight segregation.
+
+**Feasibility of a same-number, different-data test on DataDecide (E04 counts, 25 recipes, 100B tokens each):** a
+4-digit ordinary number's absolute count varies ≈ 1.5× (SD of log10 0.18) across recipes (median count per recipe 529
+in falcon-and-cc-qc-10p to 2,700 in dolma1_6plus; 5371: 495 to 2,666); its count relative to its own block varies less
+(SD 0.067 in log10, ≈ 17 %; between-number SD 0.146; relative counts correlate 0.74 between recipes).
