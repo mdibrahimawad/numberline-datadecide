@@ -1,0 +1,5 @@
+model,depth,depth_idx,set,kind,score,observed,null_mean,z,p,n_null
+pythia-1.4b,~84%,3,range 1-9,points,S0,1.0308341049722087,1.2072173539919833,-1.5837213107394204,1.0,100
+pythia-1.4b,~84%,3,range 1-9,points,S1,0.0,0.041823686957359316,-0.9331916095793856,1.0,100
+pythia-1.4b,~84%,3,range 1-9,points,S1b,0.0,0.00796768546104431,-0.3550248785732007,1.0,100
+pythia-1.4b,~84%,3,range 1-9,points,S2,0.0,0.0,0.0,1.0,100
