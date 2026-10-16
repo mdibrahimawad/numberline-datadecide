@@ -14,3 +14,10 @@ Gaussian cloud): Crystal L8 — largest H0 merges 1.83 / 1.76 / 1.53 vs noise �
 digits 1–9, 100, 1971, 55, 61); longest loop 0.15 vs noise 0.08 (short; a ring would be ≈ 1.2); 1,826 loops vs
 2,952 for noise; no void. L27: no outliers (largest merge 1.04 vs 0.93), longest loop 0.16, 1,210 loops vs
 2,773, no void. The whole cloud is one connected blob with no persistent holes, more orderly than noise.
+
+**Local intrinsic dimension per number vs frequency** (`scratch/lid.py`, Levina–Bickel MLE with 20 neighbours among
+all 4-digit numbers; 7,027 ordinary numbers; frequency = count left after block + tens + last digit;
+`results/e11_tier0/LID_per_number.csv`): Spearman ρ between −0.048 and +0.059 in the 35 model × depth cells, with
+both signs (negative in 17, positive in 17, zero in 1); the same after removing vector length. Mean LID rarest vs most
+frequent tenth differs by ≤ 1.8. No link between frequency and local dimension. The set-level TwoNN tendency
+(frequent tenth ~1 dimension lower in 27/35 cells, H4) does not hold per number and is not claimed.
