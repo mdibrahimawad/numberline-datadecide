@@ -441,3 +441,11 @@ SmolLM2; special-number isolation (P4) passes in SmolLM2, Pythia, OLMo-2; years 
 
 **Reading.** Frequent numbers get more room in every model tested; that this is more than vector length is
 model- and depth-dependent (clear only in StarCoder and in the deepest layers of Qwen2.5) and is not claimed.
+
+### Note on result 5 (years), exploratory check 2026-10-16
+The decade "breaks" are mostly digit changes, not year-specific: Crystal layer 8, mean one-step distance inside
+a decade 0.71 vs across a decade boundary 0.88 for years, and 0.71 vs 0.85 for ordinary numbers 5900–6025
+across tens boundaries. The 1999 → 2000 jump (1.18) equals every other x999 → x000 jump (1.16–1.31; typical
+one-step 0.70). What remains year-specific: against the 7 ordinary runs that also cross a thousand
+(x900–x025), years are still larger (spread 1.00 vs 0.84–0.88) and clumpier (scale-free H0 total 0.66 vs
+0.72–0.74).
