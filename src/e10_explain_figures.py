@@ -364,6 +364,34 @@ def starcoder_gaps(outdir, cnt, data="/home/user/mdibrahimawad/topology_number_l
     return t
 
 
+def fig_single_numbers(vec, outdir, cnt, L=16):
+    """Finding 4: per number, room (mean distance to its 10 nearest 4-digit numbers) vs frequency left over
+    after block + tens digit + last digit; ordinary numbers without special patterns."""
+    from scipy.stats import spearmanr
+    mt = ex.matched_tiers(cnt, "block_digits_plain")
+    X, s = layer(vec, L)
+    F = X[ex.FOUR - 1]; sq = (F ** 2).sum(1); n = mt["n"].values
+    room = []
+    for i in range(0, len(n), 1000):
+        q = X[n[i:i + 1000] - 1]; d2 = (q ** 2).sum(1)[:, None] + sq[None, :] - 2 * q @ F.T
+        room.append(np.sqrt(np.maximum(np.sort(d2, 1)[:, 1:11], 0)).mean(1) / s)
+    room = np.concatenate(room); key = mt["key"].values
+    rho = spearmanr(key, room)[0]
+    fig, ax = plt.subplots(figsize=(7.5, 4.2))
+    ax.scatter(key, room, s=4, color=NULL, alpha=0.5, lw=0, label=f"{len(n):,} ordinary numbers (one dot each)")
+    edges = np.quantile(key, np.linspace(0, 1, 11)); mids, means, cis = [], [], []
+    for a, b in zip(edges[:-1], edges[1:]):
+        m = (key >= a) & (key <= b); mids.append(np.median(key[m])); means.append(room[m].mean()); cis.append(1.96 * room[m].std() / np.sqrt(m.sum()))
+    ax.errorbar(mids, means, yerr=cis, fmt="o-", color=FREQ, ms=6, lw=2, capsize=3, label="average per tenth of frequency (95% interval)")
+    lo, hi = np.percentile(room, [1, 99]); ax.set_ylim(lo, hi)
+    ax.set_xlabel("how much more often than expected the number appears\n(log10 count left after block + tens digit + last digit)")
+    ax.set_ylabel("room: mean distance to 10 nearest numbers")
+    ax.set_title(f"LLM360 Crystal layer {L}: each number on its own (Spearman ρ = {rho:+.3f})", fontsize=9, loc="left")
+    ax.legend(frameon=False, fontsize=8, loc="upper left")
+    fig.tight_layout(); fig.savefig(os.path.join(outdir, "fig_A8_single_numbers.png"), dpi=160); plt.close(fig)
+    return rho, np.round(means, 3)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--vectors", required=True)
@@ -380,6 +408,7 @@ def main():
                              show=22, name="OpenLLaMA-3B", tag="openllama").round(4).to_string(), flush=True)
     if "crystal" in only:
         print(starcoder_gaps(a.out, cnt, data=a.vectors, layers=tuple(ex.LAYERS), show=27, name="LLM360 Crystal", tag="crystal").round(4).to_string(), flush=True)
+    if "single" in only: print("single numbers:", fig_single_numbers(a.vectors, a.out, cnt), flush=True)
     if "three" in only: fig_three_models(a.out)
     if "length" in only: print("length % frequent vs rare:", fig_length(a.vectors, a.out, cnt), flush=True)
     if "barcodes" in only: fig_barcodes(a.vectors, a.out, cnt)
