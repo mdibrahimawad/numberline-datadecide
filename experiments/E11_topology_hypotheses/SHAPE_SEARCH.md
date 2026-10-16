@@ -55,3 +55,21 @@ Every locked item is reported with its result, passed or not.
 **Implementation note (2026-10-16, before any result was seen):** the first discovery run hit the 2-hour job limit
 before writing anything. The script now saves each (model, depth, set) cell as it finishes and resumes from them,
 and uses one thread per worker. Sets, scores, nulls, seeds and the locking/test rules are unchanged.
+
+## Results (run 2026-10-16, exactly as above; locked list committed in `8156842` before the test)
+**Discovery** (`results/e11_shape_search/discovery.csv`, 48 sets × 6 scores × 5 depths × 2 models): the top 10
+per model are all **S0 clusters among the class centroids of n mod 6, 12, 24 and 60 over 1000–9999** (z 90–224).
+**Test** (`test.csv`, 1,000 nulls): **all 20 locked items significant in every held-out model** (p = 0.001,
+z 14–343): Crystal's 10 in OpenLLaMA, StarCoder, Qwen2.5 and SmolLM2 (4/4); Pythia's 10 in OLMo-2, RedPajama and
+Llama-3.2 (3/3). **All replicate.**
+
+**What the clusters are (check after the test):** the centroids of mod 6 and mod 12 split into exactly the even and
+the odd classes (single-linkage, 2 clusters: ARI with parity 1.00 in Crystal, Qwen2.5, OLMo-2, RedPajama); the 60
+centroids of mod 60 split into 10 clusters by last digit (ARI 0.89–1.00). The replicated shape is the models'
+**last-digit (and hence parity) code** seen through residue classes, not knowledge of mod 6/12/24/60: moduli coprime
+with 10 (7, 9, 11) give no clusters over 1000–9999 (z ≤ 5). Consistent with period-2/5/10 number features (Fu et al.
+2026); not new.
+
+**Leads not locked (exploratory, for a separate pre-registration):** Pythia, numbers 1–999 (single tokens): clusters for
+mod 7, 9, 11 (z 22–41) and an ordered line for mod 11 (z ≈ 12), absent in Crystal; mod-100 endings: short loops and
+ordered lines (z 12–37); clock-like polygons in numeric order: 1 hit in 480 cells.
