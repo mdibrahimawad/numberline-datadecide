@@ -8,6 +8,10 @@ lock the top 10 per model. Test: re-score the locked items in held-out models of
 """
 from __future__ import annotations
 
+import os
+for _v in ("OMP_NUM_THREADS", "OPENBLAS_NUM_THREADS", "MKL_NUM_THREADS"):
+    os.environ.setdefault(_v, "1")                      # one thread per worker process
+
 import argparse
 import json
 import os
@@ -121,9 +125,23 @@ def _cell(args):
     return rows
 
 
-def _init(data):
-    global DATA
-    DATA = data
+def _init(data, cache=None):
+    global DATA, CACHE
+    DATA, CACHE = data, cache
+
+
+CACHE = None
+
+
+def _cell_cached(args):
+    """Run one cell, or read it back if an earlier (interrupted) run already saved it."""
+    m, d, name, spec, n_null, seed = args
+    f = os.path.join(CACHE, f"{m}__{d}__{name.replace(' ', '_').replace('/', '_')}__{n_null}.csv")
+    if os.path.exists(f):
+        return pd.read_csv(f).to_dict("records")
+    rows = _cell(args)
+    pd.DataFrame(rows).to_csv(f + ".tmp", index=False); os.replace(f + ".tmp", f)
+    return rows
 
 
 def lock(disc, k=10):
@@ -143,11 +161,12 @@ def main():
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     C = candidates()
-    with Pool(a.workers, initializer=_init, initargs=(a.data,)) as pool:
+    cache = os.path.join(a.out, "cells"); os.makedirs(cache, exist_ok=True)
+    with Pool(a.workers, initializer=_init, initargs=(a.data, cache)) as pool:
         if a.phase == "discover":
             jobs = [(m, d, name, spec, 100, 1000 * i + d) for i, (name, spec) in enumerate(C.items())
                     for m in DISCOVERY for d in range(5)]
-            disc = pd.DataFrame([r for rows in pool.imap_unordered(_cell, jobs) for r in rows])
+            disc = pd.DataFrame([r for rows in pool.imap_unordered(_cell_cached, jobs) for r in rows])
             disc.to_csv(os.path.join(a.out, "discovery.csv"), index=False)
             locked = lock(disc)
             json.dump(locked, open(os.path.join(a.out, "locked.json"), "w"), indent=2)
@@ -159,7 +178,7 @@ def main():
                 for m in HELD_OUT[DISCOVERY[it["model"]]]:
                     if os.path.isdir(os.path.join(a.data, f"{m}_vectors")):
                         jobs.append((m, it["depth_idx"], it["set"], C[it["set"]], 1000, 7000 + i)); meta.append((i, it["score"]))
-            res = pool.map(_cell, jobs)
+            res = pool.map(_cell_cached, jobs)
             rows = []
             for (i, s), rr in zip(meta, res):
                 r = next(x for x in rr if x["score"] == s)

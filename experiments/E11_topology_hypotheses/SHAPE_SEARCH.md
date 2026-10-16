@@ -50,3 +50,8 @@ as its discovery model. Significance threshold: Bonferroni p < 0.05 / 10 = 0.005
 - Pythia items: replicate if significant in OLMo-2 and in ≥ 1 of RedPajama-3B / Llama-3.2-1B once extracted;
   until then reported as "OLMo-2 only".
 Every locked item is reported with its result, passed or not.
+
+
+**Implementation note (2026-10-16, before any result was seen):** the first discovery run hit the 2-hour job limit
+before writing anything. The script now saves each (model, depth, set) cell as it finishes and resumes from them,
+and uses one thread per worker. Sets, scores, nulls, seeds and the locking/test rules are unchanged.
