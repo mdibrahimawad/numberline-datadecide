@@ -55,3 +55,34 @@ concentration C (first third of log-step range) against a checkpoint-order permu
 C1a passes if both Spearman signs hold in both models. C1b passes if the step fit wins in both models.
 C1c passes if the order holds in both models. C2 outcomes are reported as observed. Checkpoints that fail
 to download are reported, not replaced.
+
+## Results (run 2026-10-16 with `src/e11_ckpt_analysis.py` as committed in `a79a73d`; no deviations)
+All 28 checkpoints extracted (Pythia 16, OLMo-2 12; copy first-token accuracy 0.00 at step 0 → 1.00 / 0.99 final).
+Tables: `results/e11_ckpt/` (`C1_summary.csv`, `C2_summary.csv`, `secondary_summary.csv`, per-checkpoint `*_knn.csv`,
+`*_C2_per_checkpoint.csv`); figure `fig_trajectories.png` (~84 % depth).
+
+**Pre-registered decisions (primary ~84 % layer):**
+| Test | Pythia-1.4B | OLMo-2-1B | Decision |
+|---|---|---|---|
+| C1a value topology up (ρ same leading > 0) **and** digit topology down (ρ same last < 0) | +0.69 / **+0.87** | +0.22 / **+0.62** | **FAIL** (the last-digit share does not fall: at step 0 every share is at chance, so there is no early digit stage to lose; it rises late in training) |
+| C1b step fit beats a line (AIC) | yes, break 2,000–4,000 | yes, break 300–10,000 | **PASS**: the number line appears abruptly |
+| C1c value topology half-way before copy log-prob half-way | 2,307 vs 492 | 1,660 vs 835 | **FAIL**: copy log-probability improves first |
+| C2a crowding at the final checkpoint (p < 0.05) | 0.982, p = 0.26 | 0.985, p = 0.08 | **not at ~84 %**; present at ~25 % and ~50 % in both (0.96–0.97, p ≤ 0.02) and ~75 % in OLMo-2 |
+| C2b trend over late training (≥ 10 % of steps) | ρ +0.89: toward 1 (**catch-up**) | ρ −0.2 (ratios ≈ 0.98–1.00) | Pythia: rare numbers catch up late; OLMo-2: at ~25–75 % ρ −0.5 to −0.8 (crowding grows) |
+| C2c crowding first significant after the C1 half-way step | first at step 256 (before the number line) | first at 10,000 (the first checkpoint with a number line) | Pythia no; OLMo-2 yes (coarse spacing) |
+
+**Secondary:** early concentration of the H1 Wasserstein path is not above the checkpoint-order null in Pythia
+(p 0.29–0.52); in OLMo-2 it is at ~25 % and ~50 % (p ≈ 0.02). The 41-feature probe predicts the training step
+(leave-one-checkpoint-out Spearman 0.88–0.90 at ~75 %–last in Pythia; 0.49–0.78 in OLMo-2 except its last layer).
+
+**Exploratory observations (not tested, from the same tables):**
+1. In Pythia the number line, the leading-digit neighbourhoods and copy accuracy all appear in the same window,
+   steps 2,000 → 4,000 (value share 0.14 → 0.55, same leading digit 0.36 → 0.95, first-token accuracy 0.12 → 0.78);
+   the log-probability (C1c) rises gradually before it.
+2. Leading-digit *clusters* (ARI, 9 groups) form and then dissolve: Pythia ARI 0.65 at step 23,000 → ≈ 0 from
+   33,000 on, while neighbours keep the same leading digit (a clustered line becomes a smooth line); OLMo-2 ARI 0.75 at
+   40,000 → 0.17 at the end.
+3. OLMo-2's number line *weakens* after step 40,000 (value share 0.86 → 0.54, same leading 0.95 → 0.77) while the
+   last-digit share rises from chance to 0.39; copy accuracy stays ≈ 1. Pythia shows a milder late rise of the
+   last-digit share (0.13 → 0.19–0.26).
+4. Pythia's rare-number crowding is largest mid-training (ratio 0.91–0.92 at 13,000–23,000) and gone at the end.
