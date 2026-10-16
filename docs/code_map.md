@@ -95,6 +95,26 @@ every documented `python -m …` / `modal run …` command and every import keep
 | `fetch_results.py` | download pod results from the private HF datasets to `results/` (`--kind paloma` also adds Dolma's 8 parts up) | E04, E06, E09 |
 | `pod.py` | stop / terminate the current pod safely | E04, E06 |
 
+## src/: topology of numbers (E10, E11)
+
+Vectors live in `mdibrahimawad/topology_number_line` (`data/<model>_vectors/`, `data/e11_ckpt/`).
+
+| File | Does |
+|---|---|
+| `topo_features.py` | Vietoris–Rips diagrams (H0/H1, `ripser`) and the 41 barcode features |
+| `extract_number_vectors.py` | laptop extraction of the 10,000 number vectors for any HF model (`--check` = batched vs one-by-one) |
+| `tokenizer_check.py` | do two tokenizers split all 9,000 four-digit numbers identically? |
+| `e10_explore.py` | E10 stage A: matched frequency groups, tier test, classifier, per-number geometry, special numbers |
+| `e10_confirm.py` | E10 B-A / F: the pre-registered tests P1–P5 |
+| `e10_topology.py` | E10 C: depth profile, digit circle, years, RTD (`rtd`) |
+| `e10_convergence.py` | E10 D / D2: RTD / shuffled RTD for every model pair and depth |
+| `e10_graded.py`, `e10_graded_analysis.py`, `e10_figures.py` | E10 E: 3/5/10 frequency levels, dose-response, classifiers, SHAP, figures |
+| `e10_explain_figures.py`, `e10_d2_figure.py` | explanatory figures for E10/E11 (`--only` picks one) and the per-depth RTD matrices |
+| `e11_tier0.py` | E11 tier 0: hypotheses H1–H29 on existing vectors |
+| `e11_tier1_laptop.py` | E11 tier 1 extraction (several prompts, random init, behaviour); `number_subset()` |
+| `e11_checkpoints.py`, `e11_ckpt_analysis.py`, `e11_ckpt_figure.py` | E11 checkpoints: extraction (laptop), pre-registered analysis, figure |
+| `e11_shape_search.py`, `e11_shape_figure.py` | E11 shape search (discover / lock / test, resumable) and its figure |
+
 ## utils/
 
 `prompts.py` (numeral / symbol prompt generators), `text.py` (digit regex), `dataset.py`

@@ -8,7 +8,7 @@ architecture, size, tokenizer and training length, with only the pretraining dat
 differing. For each model we measure β from its hidden states, and we count every
 integer 0–10000 in **exactly the 100B tokens it was trained on**.
 
-## Where things stand (2026-10-10)
+## Where things stand (2026-10-16)
 
 | | |
 |---|---|
@@ -16,6 +16,7 @@ integer 0–10000 in **exactly the 100B tokens it was trained on**.
 | **Within DataDecide** | At one common layer (8), α_OLS correlates with β: r = +0.75, p = 1.8 × 10⁻⁵ (significant at layers 6–11). R and S do about as well (r ≈ 0.6–0.7). α_MLE does not (p = 0.32). Models with the same α can still differ by up to 0.4 in β, mostly when Dolma's math/code is involved. |
 | **Out of sample (E09, pre-registered)** | On the 6 Paloma baselines **no frozen formula transfers**: α is closest (MAE 0.19 vs a 0.15 bar), S overpredicts by ~0.5, **R is falsified** (predicted β ≈ 2–2.6, measured 0.8–1.0). Among the 5 Paloma models, α and β are not related at any clean layer (n = 5). |
 | **Efficient coding** | Infomax (space ∝ count) predicts the average β level (0.64 vs 0.72) but none of the differences; q = ½ ranks models (r = 0.80) at the wrong scale. |
+| **Topology of numbers (E10, E11)** | Frequent numbers sit slightly further apart at fixed size and digits in all 7 models, mainly vector length. Same tokenizer → same late-layer number topology (pre-registered, 9 models). During training the number line appears abruptly together with the copy skill (pre-registered). No holes (circles, tori) anywhere. |
 | **Open** | Is α a cause or a correlate (content confound, e.g. math)? Training-seed noise of β. Checkpoint test (E08, pre-registered). |
 
 Details: [`docs/findings.md`](docs/findings.md).
@@ -49,7 +50,8 @@ Details: [`docs/findings.md`](docs/findings.md).
 | [E07](experiments/E07_count_features_rarely_seen/) | Count features: the rarely-seen count R | done (exploratory) |
 | [E08](experiments/E08_checkpoint_test/) | Checkpoint test: does β follow R during training? | planned, pre-registered |
 | [E09](experiments/E09_paloma_out_of_sample/) | Paloma: do formulas frozen on DataDecide predict 6 new models? | done: no formula transfers; R falsified |
-| [E10](experiments/E10_frequency_topology/) | Frequency and topology of single numbers (Crystal) | exploration + pre-registered replication done: small spacing effect replicates |
+| [E10](experiments/E10_frequency_topology/) | Frequency and topology of single numbers (9 models) | done (A–F, D2): small spacing effect, mainly vector length; same tokenizer → same number topology |
+| [E11](experiments/E11_topology_hypotheses/) | Topology hypotheses, training checkpoints, shape search | done: no holes; number line appears abruptly with the copy skill; shape search finds the last-digit code |
 
 ## Repository layout
 

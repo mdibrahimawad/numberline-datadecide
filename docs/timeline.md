@@ -97,7 +97,28 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
 - **E10 stage E** (`src/e10_graded.py`, `src/e10_graded_analysis.py`, `src/e10_figures.py`, exploratory):
   3/5/10 frequency levels × 41 features × 7 models, classifiers, linear SHAP, 8 figures.
 
+- **E11 tier 0** (`src/e11_tier0.py`, exploratory): 29 hypotheses (`experiments/E11_topology_hypotheses/PLAN.md`) on the 7
+  models; cell-level crowding test 31/35; digit → value neighbourhoods with depth; 9 leading-digit clusters in digit
+  models; no circles or torus.
+- **E11 checkpoints pre-registered** (`d061126`, analysis script `a79a73d` written before the data).
+
+## 2026-10-16
+- **E11 checkpoints run**: 28 checkpoints extracted on the owner's laptop (`src/e11_checkpoints.py`); C1b pass, C1a/C1c
+  fail; rare crowding peaks mid-training; clusters form and melt (`CHECKPOINTS.md`).
+- **E10 stage F** pre-registered (`6d7d195`) and run on Qwen2.5, SmolLM2, Pythia, OLMo-2: angle-only part not replicated.
+- **E10 stage D2** pre-registered (`f654661`); RedPajama-3B and Llama-3.2-1B extracted on the laptop; tokenizers identical
+  to their partners (9,000/9,000); both same-tokenizer pairs converge: pass.
+- **E11 shape search** pre-registered (`e1b816d`), discovery, lock (`8156842`) and test: all 20 locked shapes replicate;
+  they are the last-digit / parity code.
+- Explanatory figures for E10/E11 (`src/e10_explain_figures.py`, `src/e10_d2_figure.py`, `src/e11_ckpt_figure.py`,
+  `src/e11_shape_figure.py`) and LaTeX tables (`results/e11_ckpt/*.tex`); E11 README written.
+
 ## Next
+- **Tokenizer → topology**: one rule (neighbours share their first token?) and a causal test (feed chunk-tokenizer
+  models digit-by-digit numbers at inference); novelty checked 2026-10-16 (partly known: Convergent Evolution,
+  arXiv 2604.20817; the inference-time re-tokenization test found no precedent). Not yet pre-registered.
+- **E11 tier 1** (several prompts per number, random-init models): script ready (`src/e11_tier1_laptop.py`).
+- Bigger frequency contrast: 5-digit numbers.
 - **E10 next**: checkpoints (does the spacing grow with exposure?) and several prompts per number
   (noise floor); both need GPU extraction and their own pre-registration.
 - **E08**: the checkpoint test (R changes during training while α stays fixed);

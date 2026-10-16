@@ -21,6 +21,14 @@ access. Raw training data and model weights are **not** stored here.
 | `beta_fine/fixed_layer_beta.csv`, `beta_fine/frozen_lines.json` | E06, E09 | β at every fixed layer with α, S, R; the frozen DataDecide calibration lines (layer 8) used by E09 | `python -m src.fixed_layer_beta` |
 | `paloma_counts/<corpus>/counts.csv`, `summary.json` | E09 | c(n) for the 6 Paloma training corpora at the training budget (146.8B tokens), with α, S and R (K = 4000); 5 random samples + Dolma's exact stream | `runpod_jobs/paloma_counts.sh`, then `runpod_jobs.fetch_results --kind paloma` |
 | `e10_explore/` | E10 | stage A exploration on Crystal vectors: `A_profiles.csv` (41 barcode features per group × layer × subsample), `B_tier_test_*.csv`, `C_classifier_*.csv`, `D_per_number.csv`, `E_layer_change.csv`, `F_special.csv`, `matched_tiers.csv` | `python -m src.e10_explore --vectors <dir>` |
+| `e10_explore/figures/` | E10, E11 | explanatory figures (gaps, where z comes from, special numbers, years, length vs direction, per-model mean gap raw vs length 1, reference shapes) | `python -m src.e10_explain_figures --vectors <dir> --only …` |
+| `e10_confirm/<model>/` | E10 B-A, F | pre-registered P1–P5 per model (`summary.json` + tables) | `python -m src.e10_confirm` |
+| `e10_topology/` | E10 C | depth profile, digit circle, years, RTD | `python -m src.e10_topology` |
+| `e10_convergence/`, `e10_convergence_d2/` | E10 D, D2 | RTD / shuffled RTD per model pair and depth; D2 adds RedPajama-3B and Llama-3.2-1B, with per-depth matrices (`fig_rtd_depth*.png`) | `python -m src.e10_convergence`, `python -m src.e10_d2_figure` |
+| `e10_graded/` | E10 E | 3/5/10-level features, dose-response, classifiers, SHAP, figures | `python -m src.e10_graded`, `src.e10_graded_analysis`, `src.e10_figures` |
+| `e11_tier0/` | E11 | one CSV per hypothesis (H1–H29), `LID_per_number.csv` | `python -m src.e11_tier0`, `experiments/E11_topology_hypotheses/scratch/lid.py` |
+| `e11_ckpt/` | E11 checkpoints | C1/C2/secondary summaries, per-checkpoint neighbourhoods and crowding, features, Wasserstein matrices, `fig_trajectories.png`, LaTeX tables | `python -m src.e11_ckpt_analysis`, `src.e11_ckpt_figure` |
+| `e11_shape_search/` | E11 shape search | `discovery.csv`, `locked.json`, `test.csv`, per-cell cache, `fig_mod_clusters.png` | `python -m src.e11_shape_search --phase discover/test` |
 | `beta_fine/fine_vs_data.csv` | E06 | fine β joined with exact α, numbers seen, E01 β, family | `python -m src.beta_fine_analysis` |
 
 ## Conventions

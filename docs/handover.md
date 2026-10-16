@@ -46,7 +46,15 @@ earlier conversations. Everything needed to continue is in this repository.
   what the output should look like), because cloud tooling is new to them.
 - Costs stated up front, with a worst case.
 
-## Where to pick up (as of 2026-10-14)
+## Where to pick up (as of 2026-10-16)
+E10 and E11 are written up: `experiments/E10_frequency_topology/README.md` (stages A–F, D2) and
+`experiments/E11_topology_hypotheses/README.md` (tier 0, checkpoints, shape search). The two strongest results are
+pre-registered: same tokenizer → same late-layer number topology (E10 D, D2) and the abrupt appearance of the number line
+together with the copy skill during training (E11 C1b). The frequency effect is real but small and mainly vector length.
+Vectors (9 models + 28 checkpoints) are in `mdibrahimawad/topology_number_line`, `data/`. Proposed next step (not
+pre-registered): tokenizer → topology (first-token rule; inference-time re-tokenization), see `docs/timeline.md` → Next.
+
+### Earlier (2026-10-14)
 Done on 2026-10-14: **E10 stage A** (exploratory topology of single numbers vs frequency, Crystal
 vectors from `mdibrahimawad/topology_number_line`, `data/crystal_vectors/`); results and the list of
 candidates to lock are in `experiments/E10_frequency_topology/README.md`. **E10 stage B-A** (pre-registered

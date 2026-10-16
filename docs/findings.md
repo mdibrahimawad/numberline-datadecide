@@ -88,6 +88,26 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    birth/death scale, not loop counts; topology predicts a set's frequency level on held-out numbers.
    Details and the list of PH observations:
    `experiments/E10_frequency_topology/README.md`.
+   **Stage F (pre-registered, 4 more models, 2026-10-16):** the raw spacing effect replicates in all 4 (7 of 7 models
+   overall), but the part that survives setting every vector to length 1 (angle only) does not (fails in Qwen2.5 and
+   SmolLM2, the deciding models; present only in StarCoder and in Qwen2.5's two deepest layers): the extra room of
+   frequent numbers is mainly vector length. **Stage D2 (pre-registered, 2026-10-16):** with RedPajama-3B (tokenizes
+   numbers exactly like Pythia) and Llama-3.2-1B (exactly like OLMo-2), both same-tokenizer chunk pairs converge in late
+   layers more than any cross-tokenizer pair (late RTD ratio 0.43 and 0.63 vs ≥ 0.59 / ≥ 0.68): **models that tokenize
+   numbers the same way converge on the same number topology, whatever their training data**; strongest for digit
+   splitting (0.16–0.46).
+
+11. **E11: topology of numbers, training checkpoints and a shape search (2026-10-15/16).** Number topology has no
+   holes (no circle, torus or void, at any depth, model or training stage); its structure is grouping and ordering:
+   neighbours share the last digit in early layers and are value-close with the same leading digit in late layers
+   (all 7 models); digit-splitting models form 9 leading-digit regions late, chunk tokenizers a smooth or very fine
+   line (OLMo-2: neighbours ≈ 4 apart, ≈ 4 dimensions). **Checkpoints (pre-registered, Pythia-1.4B and OLMo-2-1B):**
+   the number line appears abruptly (Pythia steps 2,000 → 4,000, together with copy accuracy 12 % → 78 %; C1b pass),
+   not after an early digit stage (C1a fail) and not before the skill (C1c fail); rare-number crowding is largest in
+   mid-training and partly relaxes by the end; after forming, leading-digit clusters melt and OLMo-2's line weakens
+   toward last-digit neighbourhoods (exploratory). **Shape search (pre-registered discover → lock → test):** all 20
+   locked shapes replicate in every held-out model, but they are the known last-digit / parity code (n mod 6/12/60
+   classes cluster by parity and last digit). Details: `experiments/E11_topology_hypotheses/README.md`.
 
 ## What holds up (with evidence)
 
@@ -132,10 +152,12 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    0.20–0.37. R was checked on the old-layer β; a fixed-layer analysis from the saved
    per-prompt PCA scores is free to run.
 
-6. **(E10) Does exposure give a number more room?** A small "more frequent → further apart"
-   effect at fixed magnitude and digit form replicates across three models (pre-registered for
-   two), but its form (direction vs length) is model-dependent. Open: does it grow with exposure
-   during training (checkpoints)? How large is the prompt noise per number?
+6. **(E10/E11) Does exposure give a number more room?** A small "more frequent → further apart" effect at fixed
+   magnitude and digit form holds in all 7 models, mostly vector length (stage F). During training it appears early,
+   peaks mid-training and partly relaxes (E11 checkpoints). Open: prompt noise per number (tier 1); a larger frequency
+   contrast (5-digit numbers); whether the tokenizer, not the architecture, drives convergence for chunk tokenizers
+   (D2 pairs share architectures); why the number line keeps reorganising after it forms (OLMo-2); mod 7/9/11
+   structure in Pythia's single-token numbers.
 
 ## How the picture evolved
 
@@ -155,3 +177,6 @@ notes can be understood in context:
 | E09 (2026-10-10) | 6 new | no formula transfers; R falsified | out-of-sample test |
 | E10 stage A (2026-10-14) | 1 model, 10,000 numbers | per-number view: frequent numbers slightly further apart at fixed magnitude and digit form, mostly vector length; special numbers isolated | move from one β per model to one point per number |
 | E10 stage B-A (2026-10-14) | +2 models, pre-registered | spacing effect replicates (small); direction-vs-length and which special numbers stand out are model-dependent; year clusters only in web-text models | replication on OpenLLaMA-3B and StarCoderBase-3B |
+| E10 C–E (2026-10-15) | 7 models | topology simplifies with depth; models converge late (pre-registered, D); spacing effect graded over 10 frequency levels | topology-only questions and more models |
+| E10 F, D2 (2026-10-16) | 9 models, pre-registered | extra room of frequent numbers is mainly vector length; same tokenizer → same late-layer number topology | length-removed test; 2 same-tokenizer partner models |
+| E11 (2026-10-15/16) | 9 models + 28 checkpoints | no holes; digit → value organisation with depth; number line appears abruptly with the copy skill and keeps reorganising; shape search finds only the last-digit code | hypotheses from recent papers; checkpoints |

@@ -2,10 +2,11 @@
 
 **Question:** do numbers that appear more often in the training data get a different shape
 (topology / local geometry) inside the model than equally large numbers that appear rarely?
-**Status:** stage A (exploration, Crystal), stage B-A (pre-registered replication on OpenLLaMA-3B
-and StarCoderBase-3B) and stage C (topology-only questions, exploratory), stage D (pre-registered convergence test on 4 new
-models: pass) and stage E (3/5/10 frequency levels, 7 models, exploratory) done, 2026-10-15. Stage A results are exploratory; only the stage B-A section
-reports pre-registered tests.
+**Status:** stages A (exploration, Crystal), B-A (pre-registered replication), C (topology-only questions), D
+(pre-registered convergence, pass), E (3/5/10 frequency levels, 7 models), F (pre-registered length-vs-angle test on 4
+more models: angle part not replicated) and D2 (pre-registered same-tokenizer convergence with 2 more models: pass) done,
+2026-10-16. Stage A, C and E results are exploratory; B-A, D, D2 and F report pre-registered tests. Explanatory figures:
+`results/e10_explore/figures/`.
 
 ## Why
 E09 showed that recipe-level summaries of the counts (α, S, R) do not predict β out of
