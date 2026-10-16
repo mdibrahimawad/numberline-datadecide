@@ -449,3 +449,29 @@ across tens boundaries. The 1999 → 2000 jump (1.18) equals every other x999 �
 one-step 0.70). What remains year-specific: against the 7 ordinary runs that also cross a thousand
 (x900–x025), years are still larger (spread 1.00 vs 0.84–0.88) and clumpier (scale-free H0 total 0.66 vs
 0.72–0.74).
+
+## Stage D2: do models that read numbers the same way converge, also with chunk tokenizers? (pre-registered 2026-10-16)
+**Written before the two new models were extracted or their tokenizers checked.** Stage D showed strong late-layer
+convergence among the five digit-splitting models, but had one model per chunk tokenizer, so it cannot tell
+"same tokenization converges" from "digit splitting converges".
+
+**New models** (extracted on the owner's laptop with `src/extract_number_vectors.py`, same prompts and depths):
+| New model | Partner (same tokenizer type) | Training data of the pair |
+|---|---|---|
+| `togethercomputer/RedPajama-INCITE-Base-3B-v1` (2.8B, GPT-NeoX tokenizer) | Pythia-1.4B | RedPajama v1 vs the Pile |
+| `unsloth/Llama-3.2-1B` (ungated copy of Meta Llama-3.2-1B; numbers in chunks of up to 3 digits) | OLMo-2-1B | Meta's corpus vs OLMo mix |
+dtype float32 (float16 for RedPajama only if float32 does not fit in memory; reported).
+
+**Pre-condition (`src/tokenizer_check.py`):** within each pair, the share of the 9,000 four-digit numbers
+split into identical tokens is reported. A pair counts as "same tokenization" only if ≥ 95 % agree; otherwise it
+is reported and left out of the decision.
+
+**Measure:** exactly stage D (`src/e10_convergence.py`, unchanged): RTD / shuffled RTD on the same 120 ordinary
+numbers, K = 10, seed 7; early = mean of ~25 % and ~50 %, late = mean of ~84 % and last; run on all 9 models.
+
+**Decision, for each same-tokenization chunk pair (Pythia–RedPajama, OLMo-2–Llama-3.2):**
+(a) late < early, and (b) its late ratio is lower than the late ratio of every pair that joins either of its
+two models with a model of a different tokenizer type (the five digit models and the other chunk pair).
+- Both pairs pass (a) and (b) → **"same tokenization converges"** (tokenizer type, not digit splitting, drives convergence).
+- Neither passes (b) → **"digit splitting specifically"**.
+- One passes → "mixed", reported per pair.
