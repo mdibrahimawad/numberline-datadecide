@@ -1,0 +1,7 @@
+model,depth,depth_idx,set,kind,score,observed,null_mean,z,p,n_null
+pythia-1.4b,last,4,mod 4 (1000-9999),centroids,S0,0.91391192722127,1.000014313240892,-4.686776359611747,1.0,100
+pythia-1.4b,last,4,mod 4 (1000-9999),centroids,S1,0.0,0.0009869074821472169,-0.1836311968320577,1.0,100
+pythia-1.4b,last,4,mod 4 (1000-9999),centroids,S1b,0.0,0.0,0.0,1.0,100
+pythia-1.4b,last,4,mod 4 (1000-9999),centroids,S2,0.0,0.0,0.0,1.0,100
+pythia-1.4b,last,4,mod 4 (1000-9999),centroids,Spoly,0.0,0.1925,-0.7037615083462974,1.0,100
+pythia-1.4b,last,4,mod 4 (1000-9999),centroids,Sline,0.4839256525273213,0.22381281090307723,2.101841547055461,0.0297029702970297,100

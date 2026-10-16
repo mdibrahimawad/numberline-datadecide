@@ -1,0 +1,7 @@
+model,depth,depth_idx,set,kind,score,observed,null_mean,z,p,n_null
+crystal,last,4,mod 4 (1000-9999),centroids,S0,0.9071750871799151,1.0158930387729803,-2.266219635565582,1.0,100
+crystal,last,4,mod 4 (1000-9999),centroids,S1,0.0,0.001050746440887451,-0.16155990388743954,1.0,100
+crystal,last,4,mod 4 (1000-9999),centroids,S1b,0.0,0.0,0.0,1.0,100
+crystal,last,4,mod 4 (1000-9999),centroids,S2,0.0,0.0,0.0,1.0,100
+crystal,last,4,mod 4 (1000-9999),centroids,Spoly,0.0,0.1625,-0.7955870797707358,1.0,100
+crystal,last,4,mod 4 (1000-9999),centroids,Sline,0.5876170055097945,0.2569479343790262,2.0015120931550516,0.039603960396039604,100
