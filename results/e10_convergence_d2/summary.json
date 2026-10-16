@@ -1,0 +1,17 @@
+{
+  "models": [
+    "crystal",
+    "openllama-3b",
+    "starcoderbase-3b",
+    "qwen2.5-1.5b",
+    "smollm2-1.7b",
+    "pythia-1.4b",
+    "olmo2-1b",
+    "redpajama-3b",
+    "llama3.2-1b"
+  ],
+  "new_pairs": 33,
+  "late_lower": 25,
+  "sign_test_p": 0.002275692066177726,
+  "passed": true
+}

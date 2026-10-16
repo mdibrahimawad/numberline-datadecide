@@ -475,3 +475,22 @@ two models with a model of a different tokenizer type (the five digit models and
 - Both pairs pass (a) and (b) → **"same tokenization converges"** (tokenizer type, not digit splitting, drives convergence).
 - Neither passes (b) → **"digit splitting specifically"**.
 - One passes → "mixed", reported per pair.
+
+## Stage D2: results (run 2026-10-16, exactly as pre-registered in commit `f654661`)
+`python -m src.e10_convergence --data <…>/data --models crystal,openllama-3b,starcoderbase-3b,qwen2.5-1.5b,smollm2-1.7b,pythia-1.4b,olmo2-1b,redpajama-3b,llama3.2-1b --out results/e10_convergence_d2`.
+Deviations: none. Both new models extracted in float32 (no fallback), batched vs single max relative difference
+≤ 5.1e-6, last token `=` in 100 %. **Pre-condition:** RedPajama splits all 9,000 four-digit numbers exactly like
+Pythia (1987, 5|371, 20|48) and Llama-3.2 exactly like OLMo-2 (198|7, 537|1): 9,000 / 9,000 in both pairs
+(`data/tokcheck_*.json`).
+
+| Same-tokenizer chunk pair | early | late | (a) late < early | lowest late ratio of any cross-tokenizer pair with either model | (b) | Result |
+|---|---|---|---|---|---|---|
+| Pythia – RedPajama (GPT-NeoX) | 0.785 | **0.426** | yes | 0.587 (Pythia – OpenLLaMA) | yes | **pass** |
+| OLMo-2 – Llama-3.2 (≤ 3-digit chunks) | 0.733 | **0.630** | yes | 0.683 (OLMo-2 – RedPajama) | yes | **pass** |
+
+**Decision (pre-registered rule): both pairs pass → "same tokenization converges".** Models that split numbers the
+same way end up with more similar number topology in late layers than with any model that splits differently, for
+chunk tokenizers as well as for digit splitting. The strength differs by tokenizer: late ratio 0.16–0.46 among the
+five digit-splitting models, 0.43 for the GPT-NeoX pair, 0.63 for the ≤ 3-digit pair (only 0.05 below its nearest
+cross pair). Pythia – OLMo-2 (both chunk, but split differently) stays at 0.70. Over all 33 pairs with a new model,
+late < early in 25 (sign test p = 0.002).
