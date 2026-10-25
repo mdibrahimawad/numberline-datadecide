@@ -47,3 +47,11 @@ The variant using the 4 group medians gives the same picture (r = 0.82, ρ = 0.7
 correlate weakly, and 6 slope variants were inspected. The pooled and group-median variants agree, while single-segment
 slopes do not (g1→g2 r = 0.23, g2→g3 r = 0.05, g3→g4 r = 0.66). It needs confirmation on new data (E09 Paloma, E08
 checkpoints). Counts stop at 10000, so 10001–10019 of the top group are uncounted.
+
+**Dependence check** (auditors 09 and 19 estimate about 8–11 effective independent units):
+- **Family-cluster bootstrap** of r for α_tested: 95% CI [0.54, 0.92].
+- **Within-family permutation test** (β shuffled only inside families, 20,000 times): p < 0.0001.
+- **Family means** (6 points): r = 0.83, p = 0.04.
+
+Auditor 19 (variance structure) adds no exclusions. It confirms dolma1_7-no-reddit as the only cross-protocol outlier
+and falcon-and-cc-qc-tulu-10p as a genuine within-family outlier (a data property).
