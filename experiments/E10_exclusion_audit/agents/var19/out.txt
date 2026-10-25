@@ -1,0 +1,163 @@
+# per-metric variance decomposition
+
+## E01 beta_direct
+sf: 0.0115
+sm: 0.0235
+se: 0.0044
+sf_ci: (np.float64(0.0), np.float64(0.03464))
+sm_ci: (np.float64(0.01054), np.float64(0.0412))
+se_ci: (np.float64(0.00306), np.float64(0.00617))
+share_f: 0.3159
+share_m: 0.6438
+share_e: 0.0403
+pooled_seed_sd: 0.0664
+se_mean: 0.0383
+sd_means: 0.1865
+eta2_between: 0.4326
+within_ss_share: 0.5674
+noise_ss_share: 0.0422
+noise_share_of_within: 0.0589
+icc_true: 0.3292
+icc_obs: 0.3159
+neff_true: 11.2019
+neff_obs: 11.428
+reliability: 0.9578
+G: 4.7628
+strata: 6.6837
+family means/sd/n: {'dolma': (np.float64(1.014), np.float64(0.261), 6), 'c4': (np.float64(0.62), None, 1), 'fineweb': (np.float64(0.778), np.float64(0.165), 2), 'falcon': (np.float64(0.769), np.float64(0.101), 6), 'dclm': (np.float64(0.761), np.float64(0.058), 7), 'mix': (np.float64(0.967), np.float64(0.134), 3)}
+
+## E06 beta_coarse@E01 layer
+sf: 0.0083
+sm: 0.0151
+se: 0.0004
+sf_ci: (np.float64(0.0), np.float64(0.02433))
+sm_ci: (np.float64(0.00594), np.float64(0.02388))
+se_ci: (np.float64(0.00029), np.float64(0.00063))
+share_f: 0.3528
+share_m: 0.6409
+share_e: 0.0063
+pooled_seed_sd: 0.0211
+se_mean: 0.0122
+sd_means: 0.1523
+eta2_between: 0.4675
+within_ss_share: 0.5325
+noise_ss_share: 0.0064
+noise_share_of_within: 0.0095
+icc_true: 0.355
+icc_obs: 0.3528
+neff_true: 10.7911
+neff_obs: 10.8253
+reliability: 0.9936
+G: 12.4559
+strata: 16.9411
+family means/sd/n: {'dolma': (np.float64(0.942), np.float64(0.19), 6), 'c4': (np.float64(0.668), None, 1), 'fineweb': (np.float64(0.765), np.float64(0.186), 2), 'falcon': (np.float64(0.737), np.float64(0.069), 6), 'dclm': (np.float64(0.693), np.float64(0.062), 7), 'mix': (np.float64(0.878), np.float64(0.13), 3)}
+
+## E06 beta_cont@E01 layer
+sf: 0.0135
+sm: 0.0241
+se: 0.0003
+sf_ci: (np.float64(0.0), np.float64(0.06306))
+sm_ci: (np.float64(0.01077), np.float64(0.04473))
+se_ci: (np.float64(0.00021), np.float64(0.00042))
+share_f: 0.3587
+share_m: 0.6387
+share_e: 0.0026
+pooled_seed_sd: 0.0173
+se_mean: 0.01
+sd_means: 0.1908
+eta2_between: 0.4678
+within_ss_share: 0.5322
+noise_ss_share: 0.0027
+noise_share_of_within: 0.0041
+icc_true: 0.3596
+icc_obs: 0.3587
+neff_true: 10.7216
+neff_obs: 10.7358
+reliability: 0.9973
+G: 19.0697
+strata: 25.7596
+family means/sd/n: {'dolma': (np.float64(0.936), np.float64(0.246), 6), 'c4': (np.float64(0.566), None, 1), 'fineweb': (np.float64(0.724), np.float64(0.208), 2), 'falcon': (np.float64(0.676), np.float64(0.073), 6), 'dclm': (np.float64(0.651), np.float64(0.07), 7), 'mix': (np.float64(0.898), np.float64(0.179), 3)}
+
+## E06 beta_coarse@sel layer
+sf: 0.0026
+sm: 0.0203
+se: 0.0005
+sf_ci: (np.float64(0.0), np.float64(0.01586))
+sm_ci: (np.float64(0.00987), np.float64(0.03313))
+se_ci: (np.float64(0.00029), np.float64(0.00066))
+share_f: 0.1119
+share_m: 0.8814
+share_e: 0.0067
+pooled_seed_sd: 0.0215
+se_mean: 0.0124
+sd_means: 0.1504
+eta2_between: 0.2728
+within_ss_share: 0.7272
+noise_ss_share: 0.0068
+noise_share_of_within: 0.0074
+icc_true: 0.1126
+icc_obs: 0.1119
+neff_true: 17.0995
+neff_obs: 17.1335
+reliability: 0.9932
+G: 12.0991
+strata: 16.4654
+family means/sd/n: {'dolma': (np.float64(0.927), np.float64(0.194), 6), 'c4': (np.float64(0.65), None, 1), 'fineweb': (np.float64(0.765), np.float64(0.186), 2), 'falcon': (np.float64(0.8), np.float64(0.123), 6), 'dclm': (np.float64(0.752), np.float64(0.102), 7), 'mix': (np.float64(0.878), np.float64(0.13), 3)}
+
+## E06 beta_cont@sel layer
+sf: 0.0
+sm: 0.0481
+se: 0.0004
+sf_ci: (np.float64(0.0), np.float64(0.02056))
+sm_ci: (np.float64(0.02329), np.float64(0.07981))
+se_ci: (np.float64(0.00025), np.float64(0.00054))
+share_f: 0.0
+share_m: 0.9975
+share_e: 0.0025
+pooled_seed_sd: 0.0192
+se_mean: 0.0111
+sd_means: 0.2196
+eta2_between: 0.1579
+within_ss_share: 0.8421
+noise_ss_share: 0.0025
+noise_share_of_within: 0.0024
+icc_true: 0.0
+icc_obs: 0.0
+neff_true: 25.0
+neff_obs: 25.0
+reliability: 0.9975
+G: 19.8022
+strata: 26.7363
+family means/sd/n: {'dolma': (np.float64(0.922), np.float64(0.25), 6), 'c4': (np.float64(0.596), None, 1), 'fineweb': (np.float64(0.724), np.float64(0.208), 2), 'falcon': (np.float64(0.822), np.float64(0.286), 6), 'dclm': (np.float64(0.751), np.float64(0.156), 7), 'mix': (np.float64(0.898), np.float64(0.179), 3)}
+
+# seed variance heterogeneity
+E01 beta_direct Bartlett 17.0 p 0.85 flags(p<0.002): [] min p  0.0028
+E06 beta_coarse@E01 layer Bartlett 26.51 p 0.33 flags(p<0.002): [] min p  0.0216
+E06 beta_cont@E01 layer Bartlett 13.4 p 0.96 flags(p<0.002): [] min p  0.0756
+E06 beta_coarse@sel layer Bartlett 23.78 p 0.47 flags(p<0.002): [] min p  0.029
+E06 beta_cont@sel layer Bartlett 25.0 p 0.41 flags(p<0.002): ['dclm-baseline-qc-fw-3p'] min p  0.001
+
+# cross-protocol E01 direct - E06 coarse@E01layer
+mean diff 0.0535 sd diff 0.0578 expected sd from seeds 0.0402 excess (model x protocol) var 0.00172 excess sd 0.0415
+pearson r 0.962 spearman 0.929
+flags |modz|>3.5: ['dolma1_7-no-reddit']
+flags |z_noise|>3.09: ['dolma1_7-no-reddit']
+
+# layer choice (E06 beta_cont sel - old)  n switched 8 var of diff over all 25 0.02509 sd 0.1584 mean sq diff/2 (per-measurement layer noise var) 0.0139
+E01 near-tie (<5%) models: ['dolma1_7', 'dolma1_7-no-code', 'dolma1_7-no-math-code', 'dolma1_7-no-reddit', 'dolma1_7-no-flan', 'c4', 'fineweb-edu', 'falcon', 'falcon-and-cc', 'falcon-and-cc-qc-10p', 'falcon-and-cc-qc-20p', 'falcon-and-cc-qc-orig-10p', 'falcon-and-cc-qc-tulu-10p', 'dclm-baseline-qc-7p-fw2', 'dclm-baseline-qc-fw-10p', 'dclm-baseline-25p-dolma1.7-75p', 'dclm-baseline-50p-dolma1.7-50p', 'dclm-baseline-75p-dolma1.7-25p']
+E01 layer-unstable (near tie & |dbeta|>3.09*sqrt2*SE): []
+
+# within-family outliers
+E01 beta_direct modz>3.5: [] | znoise>3.09: ['dolma1_7-no-code', 'dolma1_7-no-math-code', 'dolma1_7-no-reddit', 'dolma1_7-no-flan', 'fineweb-pro', 'fineweb-edu', 'falcon-and-cc-qc-tulu-10p', 'dclm-baseline-25p-dolma1.7-75p', 'dclm-baseline-75p-dolma1.7-25p'] | zpred>3.09: []
+E06 beta_coarse@E01 layer modz>3.5: ['falcon-and-cc-qc-tulu-10p'] | znoise>3.09: ['dolma1_7', 'dolma1_7-no-code', 'dolma1_7-no-math-code', 'dolma1_7-no-reddit', 'dolma1_7-no-flan', 'dolma1_6plus', 'fineweb-pro', 'fineweb-edu', 'falcon-and-cc-qc-10p', 'falcon-and-cc-qc-tulu-10p', 'dclm-baseline', 'dclm-baseline-qc-7p-fw2', 'dclm-baseline-qc-7p-fw3', 'dclm-baseline-qc-fw-3p', 'dclm-baseline-qc-fw-10p', 'dclm-baseline-qc-20p', 'dclm-baseline-25p-dolma1.7-75p', 'dclm-baseline-50p-dolma1.7-50p', 'dclm-baseline-75p-dolma1.7-25p'] | zpred>3.09: []
+E06 beta_cont@E01 layer modz>3.5: ['falcon-and-cc-qc-tulu-10p'] | znoise>3.09: ['dolma1_7', 'dolma1_7-no-code', 'dolma1_7-no-math-code', 'dolma1_7-no-reddit', 'dolma1_7-no-flan', 'dolma1_6plus', 'fineweb-pro', 'fineweb-edu', 'falcon-and-cc', 'falcon-and-cc-qc-10p', 'falcon-and-cc-qc-tulu-10p', 'dclm-baseline', 'dclm-baseline-qc-7p-fw2', 'dclm-baseline-qc-7p-fw3', 'dclm-baseline-qc-fw-3p', 'dclm-baseline-qc-fw-10p', 'dclm-baseline-qc-20p', 'dclm-baseline-25p-dolma1.7-75p', 'dclm-baseline-50p-dolma1.7-50p', 'dclm-baseline-75p-dolma1.7-25p'] | zpred>3.09: []
+E06 beta_coarse@sel layer modz>3.5: [] | znoise>3.09: ['dolma1_7', 'dolma1_7-no-code', 'dolma1_7-no-math-code', 'dolma1_7-no-reddit', 'dolma1_7-no-flan', 'dolma1_6plus', 'fineweb-pro', 'fineweb-edu', 'falcon-and-cc', 'falcon-and-cc-qc-10p', 'falcon-and-cc-qc-20p', 'falcon-and-cc-qc-tulu-10p', 'dclm-baseline', 'dclm-baseline-qc-fw-3p', 'dclm-baseline-qc-10p', 'dclm-baseline-25p-dolma1.7-75p', 'dclm-baseline-50p-dolma1.7-50p', 'dclm-baseline-75p-dolma1.7-25p'] | zpred>3.09: []
+E06 beta_cont@sel layer modz>3.5: ['falcon-and-cc-qc-tulu-10p', 'dclm-baseline-qc-fw-3p'] | znoise>3.09: ['dolma1_7', 'dolma1_7-no-code', 'dolma1_7-no-math-code', 'dolma1_7-no-reddit', 'dolma1_7-no-flan', 'dolma1_6plus', 'fineweb-pro', 'fineweb-edu', 'falcon-and-cc', 'falcon-and-cc-qc-10p', 'falcon-and-cc-qc-tulu-10p', 'dclm-baseline', 'dclm-baseline-qc-7p-fw2', 'dclm-baseline-qc-7p-fw3', 'dclm-baseline-qc-fw-3p', 'dclm-baseline-qc-fw-10p', 'dclm-baseline-qc-10p', 'dclm-baseline-25p-dolma1.7-75p', 'dclm-baseline-50p-dolma1.7-50p', 'dclm-baseline-75p-dolma1.7-25p'] | zpred>3.09: []
+
+# mix dose-response (dolma share): endpoints dclm-baseline, dolma1_7
+E01 beta_direct 25%: obs 0.841 pred 0.744 z +1.99; 50%: obs 0.952 pred 0.822 z +2.78; 75%: obs 1.108 pred 0.900 z +4.26 | monotone: False
+E06 beta_coarse@E01 layer 25%: obs 0.785 pred 0.689 z +6.18; 50%: obs 0.823 pred 0.772 z +3.38; 75%: obs 1.027 pred 0.855 z +11.09 | monotone: False
+E06 beta_cont@E01 layer 25%: obs 0.762 pred 0.667 z +7.48; 50%: obs 0.831 pred 0.750 z +6.64; 75%: obs 1.101 pred 0.833 z +21.01 | monotone: False
+E06 beta_coarse@sel layer 25%: obs 0.785 pred 0.666 z +7.52; 50%: obs 0.823 pred 0.727 z +6.33; 75%: obs 1.027 pred 0.787 z +15.24 | monotone: False
+E06 beta_cont@sel layer 25%: obs 0.762 pred 0.646 z +8.25; 50%: obs 0.831 pred 0.708 z +9.11; 75%: obs 1.101 pred 0.769 z +23.44 | monotone: False
+

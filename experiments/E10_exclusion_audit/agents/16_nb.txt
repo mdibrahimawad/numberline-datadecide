@@ -1,0 +1,982 @@
+===== release_loss_curves.ipynb
+--- SRC: import pandas as pd
+
+df = pd.read_csv('/Users/ianm/projects/DataDecide/perplexity_metrics_by_group.csv')
+df
+OUT:                                         group    step  \
+0      falcon_and_cc_tulu_qc_top10-60M-5xC-14  1250.0   
+1      falcon_and_cc_tulu_qc_top10-60M-5xC-14  2500.0   
+2      falcon_and_cc_tulu_qc_top10-60M-5xC-14  3750.0   
+3      falcon_and_cc_tulu_qc_top10-60M-5xC-14  5000.0   
+4      falcon_and_cc_tulu_qc_top10-60M-5xC-14  6250.0   
+...                                       ...     ...   
+29660              prox_fineweb_pro-6M-5xC-14  5000.0   
+29661              prox_fineweb_pro-6M-5xC-14  6250.0   
+29662              prox_fineweb_pro-6M-5xC-14  7500.0   
+29663              prox_fineweb_pro-6M-5xC-14  8750.0   
+29664              prox_fineweb_pro-6M-5xC-14  9182.0   
+
+       eval/wikitext_103-validation/Perplexity  \
+0                                   110.307236   
+1                                    79.039894   
+2                                    70.374489   
+3                                    65.965210   
+4                                    62.407955   
+...                                        ...   
+29660                               350.126160   
+29661                               289.412170   
+29662                               266.775543   
+29663                               243.901566   
+29664                               238.655334   
+
+       eval/pile-validation/Perplexity  eval/m2d2_s2orc-validation/Perplexity  \
+0                            76.022217                              90.306252   
+1                            51.474575                              72.755165   
+2                            47.164387                              67.567924   
+3                            43.245243                              62.851284   
+4                            41.563450                              61.127785   
+...                                ...                                    ...   
+29660                       324.952484                             233.504822   
+29661                       280.010254                             216.208176   
+29662                       258.756927                             202.576218   
+29663                       235.361465                             192.399597   
+29664                       235.342072                             192.552322   
+
+       eval/ice-validation/Perplexity  eval/dolma_wiki-validation/Perplexity  \
+0                          135.325104                              67.009056   
+1                           89.600624                              50.194679   
+2
+--- SRC: df['group'] = df['group'].apply(lambda x: x[:-4] + '-5xC-2' if x.endswith('-5xC') else x)
+--- SRC: [g for g in df.group.unique() if g.startswith('dolma17-25p-DCLM-baseline')]
+OUT: ['dolma17-25p-DCLM-baseline-75p-60M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-90M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-90M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-4M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-60M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-20M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-20M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-60M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-90M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-4M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-4M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-20M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-300M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-150M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-1B-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-1B-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-530M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-750M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-1B-5xC-4',
+ 'dolma17-25p-DCLM-baseline-75p-530M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-1B-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-300M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-1B-5xC-5',
+ 'dolma17-25p-DCLM-baseline-75p-530M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-300M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-750M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-150M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-750M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-150M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-10M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-10M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-10M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-8M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-8M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-8M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-14M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-14M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-14M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-16M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-16M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-16M-5xC-14',
+ 'dolma17-25p-DCLM-baseline-75p-6M-5xC-2',
+ 'dolma17-25p-DCLM-baseline-75p-6M-5xC-15',
+ 'dolma17-25p-DCLM-baseline-75p-6M-5xC-14']
+--- SRC: # Split the 'group' column into 'group_name', 'size', and 'seed' using rsplit and apply
+df[['data', 'size', 'dummy', 'seed']] = df['group'].apply(lambda x: pd.Series(x.rsplit('-', 3)))
+df = df.drop(columns=['dummy', 'group'])  # drop the dummy column and original group column
+df
+OUT:          step  eval/wikitext_103-validation/Perplexity  \
+0      1250.0                               110.307236   
+1      2500.0                                79.039894   
+2      3750.0                                70.374489   
+3      5000.0                                65.965210   
+4      6250.0                                62.407955   
+...       ...                                      ...   
+29660  5000.0                               350.126160   
+29661  6250.0                               289.412170   
+29662  7500.0                               266.775543   
+29663  8750.0                               243.901566   
+29664  9182.0                               238.655334   
+
+       eval/pile-validation/Perplexity  eval/m2d2_s2orc-validation/Perplexity  \
+0                            76.022217                              90.306252   
+1                            51.474575                              72.755165   
+2                            47.164387                              67.567924   
+3                            43.245243                              62.851284   
+4                            41.563450                              61.127785   
+...                                ...                                    ...   
+29660                       324.952484                             233.504822   
+29661                       280.010254                             216.208176   
+29662                       258.756927                             202.576218   
+29663                       235.361465                             192.399597   
+29664                       235.342072                             192.552322   
+
+       eval/ice-validation/Perplexity  eval/dolma_wiki-validation/Perplexity  \
+0                          135.325104                              67.009056   
+1                           89.600624                              50.194679   
+2                           82.962082                              45.528931   
+3                           73.175034                              42.494923   
+4                           72.882835                              40.898277   
+...                               ...                                    ...   
+29660                      321.487244                             140.162552   
+29661                      286.928101                             125.980095   
+29662                      271.508392                             116.728310   
+29663                      246
+--- SRC: df['data'] = df['data'].replace('baseline', 'dolma17')
+--- SRC: df = df[~df['data'].isin(['DCLM-baseline-25p', 'DCLM-baseline-75p', 'DCLM-baseline-50p'])]
+--- SRC: 
+--- SRC: df.data.unique()
+OUT: array(['falcon_and_cc_tulu_qc_top10', 'dclm_fw_top3', 'falcon',
+       'dolma17-25p-DCLM-baseline-75p', 'dolma17-50p-DCLM-baseline-50p',
+       'dolma17', 'dolma17-75p-DCLM-baseline-25p',
+       'pos_eli5_oh_neg_dclm_refinedweb_steps_2000_lr3e4_top20p',
+       'falcon_and_cc_eli5_oh_top10p', 'dclm_ft7percentile_fw3',
+       'no_math_no_code', 'no_flan', 'falcon_and_cc',
+       'falcon_and_cc_eli5_oh_top20p',
+       'pos_eli5_oh_neg_dclm_refinedweb_steps_2000_lr3e4_top10p',
+       'no_reddit', 'dclm_fw_top10', 'DCLM-baseline',
+       'dolma-v1-6-and-sources-baseline', 'fineweb_edu_dedup',
+       'falcon_and_cc_og_eli5_oh_top10p', 'no_code', 'c4',
+       'dclm_ft7percentile_fw2', 'prox_fineweb_pro'], dtype=object)
+--- SRC: df['size'].unique()  # Check unique sizes
+OUT: array(['60M', '90M', '20M', '4M', '1B', '300M', '150M', '530M', '750M',
+       '10M', '8M', '14M', '16M', '6M'], dtype=object)
+--- SRC: DATA_NAME_CLEAN = {
+    "dolma17": "Dolma1.7",
+    "no_code": "Dolma1.7 (no code)", 
+    "no_math_no_code": "Dolma1.7 (no math, code)",
+    "no_reddit": "Dolma1.7 (no Reddit)",
+    "no_flan": "Dolma1.7 (no Flan)",
+    "dolma-v1-6-and-sources-baseline": "Dolma1.6++",
+    "c4": "C4",
+    "prox_fineweb_pro": "FineWeb-Pro",
+    "fineweb_edu_dedup": "FineWeb-Edu", 
+    "falcon": "Falcon",
+    "falcon_and_cc": "Falcon+CC",
+    "falcon_and_cc_eli5_oh_top10p": "Falcon+CC (QC 10%)",
+    "falcon_and_cc_eli5_oh_top20p": "Falcon+CC (QC 20%)",
+    "falcon_and_cc_og_eli5_oh_top10p": "Falcon+CC (QC Orig 10%)",
+    "falcon_and_cc_tulu_qc_top10": "Falcon+CC (QC Tulu 10%)",
+    "DCLM-baseline": "DCLM-Baseline",
+    "dolma17-75p-DCLM-baseline-25p": "DCLM-Baseline 25% / Dolma 75%",
+    "dolma17-50p-DCLM-baseline-50p": "DCLM-Baseline 50% / Dolma 50%", 
+    "dolma17-25p-DCLM-baseline-75p": "DCLM-Baseline 75% / Dolma 25%",
+    "dclm_ft7percentile_fw2": "DCLM-Baseline (QC 7%, FW2)",
+    "dclm_ft7percentile_fw3": "DCLM-Baseline (QC 7%, FW3)",
+    "dclm_fw_top10": "DCLM-Baseline (QC FW 10%)",
+    "dclm_fw_top3": "DCLM-Baseline (QC FW 3%)",
+    "pos_eli5_oh_neg_dclm_refinedweb_steps_2000_lr3e4_top10p": "DCLM
+OUT: /var/folders/hw/szbyq1nn6db3hrczjwwc8ydm0000gp/T/ipykernel_56940/1092088507.py:28: SettingWithCopyWarning: 
+A value is trying to be set on a copy of a slice from a DataFrame.
+Try using .loc[row_indexer,col_indexer] = value instead
+
+See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy
+  df['data'] = df['data'].map(DATA_NAME_CLEAN)
+
+--- SRC: df.data.unique()
+OUT: array(['Falcon+CC (QC Tulu 10%)', 'DCLM-Baseline (QC FW 3%)', 'Falcon',
+       'DCLM-Baseline 75% / Dolma 25%', 'DCLM-Baseline 50% / Dolma 50%',
+       'Dolma1.7', 'DCLM-Baseline 25% / Dolma 75%',
+       'DCLM-Baseline (QC 20%)', 'Falcon+CC (QC 10%)',
+       'DCLM-Baseline (QC 7%, FW3)', 'Dolma1.7 (no math, code)',
+       'Dolma1.7 (no Flan)', 'Falcon+CC', 'Falcon+CC (QC 20%)',
+       'DCLM-Baseline (QC 10%)', 'Dolma1.7 (no Reddit)',
+       'DCLM-Baseline (QC FW 10%)', 'DCLM-Baseline', 'Dolma1.6++',
+       'FineWeb-Edu', 'Falcon+CC (QC Orig 10%)', 'Dolma1.7 (no code)',
+       'C4', 'DCLM-Baseline (QC 7%, FW2)', 'FineWeb-Pro'], dtype=object)
+--- SRC: full_schedule_last_step_per_model = {
+    '4M': 5725,  # min step value from {5745, 5725, 5735}
+    '6M': 9182,
+    '8M': 13039,
+    '10M': 15117,
+    '14M': 21953,
+    '16M': 24432,
+    '20M': 14584,  # min step value from {14584, 14594}
+    '60M': 29042,  # min step value from {29042, 29052, 29062}
+    '90M': 29901,
+    '150M': 38157,
+    '300M': 45787,
+    '530M': 57786,
+    '750M': 63589,
+    '1B': 69369,
+}
+
+# have to round up for the models that ran to long to make sure we get a checkpoint after the LR fully decays
+def round_up(value, increment):
+    return (value + increment - 1) // increment * increment
+for model, step in full_schedule_last_step_per_model.items():
+    if model == '1B':
+        full_schedule_last_step_per_model[model] = round_up(step, 2500)
+    else:
+        full_schedule_last_step_per_model[model] = round_up(step, 1250)
+
+df = df[df.apply(lambda row: row['step'] <= full_schedule_last_step_per_model[row['size']], axis=1)]
+--- SRC: # Map seed values (cast to int first) # Map seed values
+SEED_MAPPING = {
+    6198: "default",
+    14: "small aux 2",
+    15: "small aux 3",
+    4: "large aux 2",
+    5: "large aux 3"
+}
+df['seed'] = df['seed'].astype(float).astype('Int64').map(SEED_MAPPING)
+
+--- SRC: df = df.rename(columns={'size': 'params'})
+df
+OUT:          step  eval/wikitext_103-validation/Perplexity  \
+0      1250.0                               110.307236   
+1      2500.0                                79.039894   
+2      3750.0                                70.374489   
+3      5000.0                                65.965210   
+4      6250.0                                62.407955   
+...       ...                                      ...   
+29660  5000.0                               350.126160   
+29661  6250.0                               289.412170   
+29662  7500.0                               266.775543   
+29663  8750.0                               243.901566   
+29664  9182.0                               238.655334   
+
+       eval/pile-validation/Perplexity  eval/m2d2_s2orc-validation/Perplexity  \
+0                            76.022217                              90.306252   
+1                            51.474575                              72.755165   
+2                            47.164387                              67.567924   
+3                            43.245243                              62.851284   
+4                            41.563450                              61.127785   
+...                                ...                                    ...   
+29660                       324.952484                             233.504822   
+29661                       280.010254                             216.208176   
+29662                       258.756927                             202.576218   
+29663                       235.361465                             192.399597   
+29664                       235.342072                             192.552322   
+
+       eval/ice-validation/Perplexity  eval/dolma_wiki-validation/Perplexity  \
+0                          135.325104                              67.009056   
+1                           89.600624                              50.194679   
+2                           82.962082                              45.528931   
+3                           73.175034                              42.494923   
+4                           72.882835                              40.898277   
+...                               ...                                    ...   
+29660                      321.487244                             140.162552   
+29661                      286.928101                             125.980095   
+29662                      271.508392                             116.728310   
+29663                      246
+--- SRC: 
+from datasets import Dataset
+from huggingface_hub import HfApi
+# Convert the dataframe to a Hugging Face dataset
+hf_dataset = Dataset.from_pandas(df)
+
+# Push the dataset to the Hugging Face Hub
+token = os.environ.get('HF_TOKEN', 'your_hf_token_here')  # Replace with your Hugging Face token
+hf_dataset.push_to_hub('allenai/DataDecide-ppl-results', token=token)
+OUT: /opt/miniconda3/envs/DataDecide-viz/lib/python3.10/site-packages/tqdm/auto.py:21: TqdmWarning: IProgress not found. Please update jupyter and ipywidgets. See https://ipywidgets.readthedocs.io/en/stable/user_install.html
+  from .autonotebook import tqdm as notebook_tqdm
+Creating parquet from Arrow format: 100%|██████████| 23/23 [00:00<00:00, 979.57ba/s]
+Uploading the dataset shards: 100%|██████████| 1/1 [00:01<00:00,  1.22s/it]
+
+OUT: CommitInfo(commit_url='https://huggingface.co/datasets/allenai/DataDecide-ppl-results/commit/9bbc6c5a92c48cb56cfd77721590bfcfa59a4f5f', commit_message='Upload dataset', commit_description='', oid='9bbc6c5a92c48cb56cfd77721590bfcfa59a4f5f', pr_url=None, repo_url=RepoUrl('https://huggingface.co/datasets/allenai/DataDecide-ppl-results', endpoint='https://huggingface.co', repo_type='dataset', repo_id='allenai/DataDecide-ppl-results'), pr_revision=None, pr_num=None)
+--- SRC: import matplotlib.pyplot as plt
+
+# Get unique seeds and sizes
+seeds = df['seed'].dropna().unique()
+sizes = df['size'].unique()
+
+fig, axes = plt.subplots(len(seeds), len(sizes), figsize=(5 * len(sizes), 4 * len(seeds)))
+
+if len(seeds) == 1 and len(sizes) == 1:
+    axes = [[axes]]
+elif len(seeds) == 1:
+    axes = [axes]
+elif len(sizes) == 1:
+    axes = [[ax] for ax in axes]
+
+for i, seed in enumerate(seeds):
+    for j, size in enumerate(sizes):
+        ax = axes[i][j]
+        sub_df = df[(df['seed'] == seed) & (df['size'] == size)]
+        for group_name, group_df in sub_df.groupby('data'):
+            ax.plot(group_df['step'], group_df['eval/wikitext_103-validation/Perplexity'], label=group_name)
+        ax.set_title(f"Seed: {seed}, Size: {size}")
+        ax.set_xlabel('Step')
+        ax.set_ylabel('Perplexity')
+        # ax.legend(fontsize='small')
+
+plt.tight_layout()
+plt.show()
+OUT: <Figure size 7000x2000 with 70 Axes>
+[IMG]
+--- SRC: 
+===== viz_math_and_code.ipynb
+--- SRC: import os
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.getcwd(), '../utils')))
+from constants import BENCHMARK_DISPLAY_NAMES
+--- SRC: import pandas as pd
+df = pd.read_csv('../results/new_eval_intermediates/davidh_new_evals_decision_accuracy.csv')
+
+--- SRC: df
+OUT:     size             task        target_ranking  logits_per_byte_corr  \
+0     4M    arc_challenge         primary_score              0.733333   
+1     4M        hellaswag         primary_score              0.813333   
+2     4M      olmes_core9         primary_score              0.573333   
+3     4M             mmlu         primary_score              0.766667   
+4     4M            gsm8k         primary_score              0.543333   
+5     4M          minerva         primary_score              0.526667   
+6     4M             mbpp         primary_score              0.840000   
+7     4M  codex_humaneval         primary_score              0.813333   
+8     4M    arc_challenge  logits_per_byte_corr              0.703333   
+9     4M        hellaswag  logits_per_byte_corr              0.800000   
+10    4M      olmes_core9  logits_per_byte_corr              0.546667   
+11    4M             mmlu  logits_per_byte_corr              0.766667   
+12    4M            gsm8k  logits_per_byte_corr              0.683333   
+13    4M          minerva  logits_per_byte_corr              0.810000   
+14    4M             mbpp  logits_per_byte_corr              0.950000   
+15    4M  codex_humaneval  logits_per_byte_corr              0.910000   
+16   60M    arc_challenge         primary_score              0.830000   
+17   60M        hellaswag         primary_score              0.776667   
+18   60M      olmes_core9         primary_score              0.610000   
+19   60M             mmlu         primary_score              0.830000   
+20   60M            gsm8k         primary_score              0.553333   
+21   60M          minerva         primary_score              0.533333   
+22   60M             mbpp         primary_score              0.856667   
+23   60M  codex_humaneval         primary_score              0.750000   
+24   60M    arc_challenge  logits_per_byte_corr              0.866667   
+25   60M        hellaswag  logits_per_byte_corr              0.816667   
+26   60M      olmes_core9  logits_per_byte_corr              0.656667   
+27   60M             mmlu  logits_per_byte_corr              0.816667   
+28   60M            gsm8k  logits_per_byte_corr              0.773333   
+29   60M          minerva  logits_per_byte_corr              0.876667   
+30   60M             mbpp  logits_per_byte_corr              0.960000   
+31   60M  codex_humaneval  logits_per_byte_corr              0.880000   
+32  150M    arc_challenge         primary_score              0.906667   
+33  150M        he
+--- SRC: filtered_df = df[df['task'].isin(['minerva', 'mbpp', 'gsm8k', 'codex_humaneval'])]
+filtered_df
+OUT:     size             task        target_ranking  logits_per_byte_corr  \
+4     4M            gsm8k         primary_score              0.543333   
+5     4M          minerva         primary_score              0.526667   
+6     4M             mbpp         primary_score              0.840000   
+7     4M  codex_humaneval         primary_score              0.813333   
+12    4M            gsm8k  logits_per_byte_corr              0.683333   
+13    4M          minerva  logits_per_byte_corr              0.810000   
+14    4M             mbpp  logits_per_byte_corr              0.950000   
+15    4M  codex_humaneval  logits_per_byte_corr              0.910000   
+20   60M            gsm8k         primary_score              0.553333   
+21   60M          minerva         primary_score              0.533333   
+22   60M             mbpp         primary_score              0.856667   
+23   60M  codex_humaneval         primary_score              0.750000   
+28   60M            gsm8k  logits_per_byte_corr              0.773333   
+29   60M          minerva  logits_per_byte_corr              0.876667   
+30   60M             mbpp  logits_per_byte_corr              0.960000   
+31   60M  codex_humaneval  logits_per_byte_corr              0.880000   
+36  150M            gsm8k         primary_score              0.533333   
+37  150M          minerva         primary_score              0.536667   
+38  150M             mbpp         primary_score              0.843333   
+39  150M  codex_humaneval         primary_score              0.840000   
+44  150M            gsm8k  logits_per_byte_corr              0.766667   
+45  150M          minerva  logits_per_byte_corr              0.900000   
+46  150M             mbpp  logits_per_byte_corr              0.953333   
+47  150M  codex_humaneval  logits_per_byte_corr              0.956667   
+
+    logits_per_char_corr  primary_score  
+4               0.543333       0.456667  
+5               0.526667       0.356667  
+6               0.840000       0.406667  
+7               0.813333       0.383333  
+12              0.316667       0.410000  
+13              0.190000       0.486667  
+14              0.050000       0.550000  
+15              0.090000       0.546667  
+20              0.553333       0.630000  
+21              0.533333       0.563333  
+22              0.856667       0.556667  
+23              0.750000       0.516667  
+28              0.226667       0.523333  
+29              0.123333       0.326667  
+30              0.040000       0.460000  
+31
+--- SRC: filtered_df = filtered_df[filtered_df['target_ranking'] == 'primary_score']
+filtered_df = filtered_df[filtered_df['size'].isin(['4M', '60M'])]
+
+--- SRC: filtered_df
+OUT:    size             task target_ranking  logits_per_byte_corr  \
+4    4M            gsm8k  primary_score              0.543333   
+5    4M          minerva  primary_score              0.526667   
+6    4M             mbpp  primary_score              0.840000   
+7    4M  codex_humaneval  primary_score              0.813333   
+20  60M            gsm8k  primary_score              0.553333   
+21  60M          minerva  primary_score              0.533333   
+22  60M             mbpp  primary_score              0.856667   
+23  60M  codex_humaneval  primary_score              0.750000   
+
+    logits_per_char_corr  primary_score  
+4               0.543333       0.456667  
+5               0.526667       0.356667  
+6               0.840000       0.406667  
+7               0.813333       0.383333  
+20              0.553333       0.630000  
+21              0.533333       0.563333  
+22              0.856667       0.556667  
+23              0.750000       0.516667  
+--- SRC: 
+filtered_df
+OUT:    size             task target_ranking  logits_per_byte_corr  \
+4    4M            gsm8k  primary_score              0.543333   
+5    4M          minerva  primary_score              0.526667   
+6    4M             mbpp  primary_score              0.840000   
+7    4M  codex_humaneval  primary_score              0.813333   
+20  60M            gsm8k  primary_score              0.553333   
+21  60M          minerva  primary_score              0.533333   
+22  60M             mbpp  primary_score              0.856667   
+23  60M  codex_humaneval  primary_score              0.750000   
+
+    logits_per_char_corr  primary_score  
+4               0.543333       0.456667  
+5               0.526667       0.356667  
+6               0.840000       0.406667  
+7               0.813333       0.383333  
+20              0.553333       0.630000  
+21              0.533333       0.563333  
+22              0.856667       0.556667  
+23              0.750000       0.516667  
+--- SRC: filtered_df = filtered_df.drop(columns=["target_ranking", "logits_per_byte_corr"])
+filtered_df
+OUT:    size             task  logits_per_char_corr  primary_score
+4    4M            gsm8k              0.543333       0.456667
+5    4M          minerva              0.526667       0.356667
+6    4M             mbpp              0.840000       0.406667
+7    4M  codex_humaneval              0.813333       0.383333
+20  60M            gsm8k              0.553333       0.630000
+21  60M          minerva              0.533333       0.563333
+22  60M             mbpp              0.856667       0.556667
+23  60M  codex_humaneval              0.750000       0.516667
+--- SRC: filtered_df = filtered_df.rename(columns={'logits_per_char_corr': 'correct_prob_per_char'})
+filtered_df
+OUT:    size             task  correct_prob_per_char  primary_score
+4    4M            gsm8k               0.543333       0.456667
+5    4M          minerva               0.526667       0.356667
+6    4M             mbpp               0.840000       0.406667
+7    4M  codex_humaneval               0.813333       0.383333
+20  60M            gsm8k               0.553333       0.630000
+21  60M          minerva               0.533333       0.563333
+22  60M             mbpp               0.856667       0.556667
+23  60M  codex_humaneval               0.750000       0.516667
+--- SRC: # Define the custom order for the 'size' column
+size_order = pd.CategoricalDtype(categories=['4M', '60M'], ordered=True)
+filtered_df['size'] = filtered_df['size'].astype(size_order)
+
+# Sort the DataFrame by the 'size' column
+filtered_df = filtered_df.sort_values(by='size')
+
+# Pivot the DataFrame again to reflect the sorted order
+pivoted_df = filtered_df.pivot(index='task', columns='size', values=['correct_prob_per_char', 'primary_score'])
+
+# Display the updated pivoted DataFrame
+pivoted_df
+
+pivoted_df = pivoted_df[['primary_score', 'correct_prob_per_char']]
+
+--- SRC: means_df = pd.read_csv('../results/new_eval_intermediates/davidh_new_evals_means_df.csv')
+# Filter the means_df DataFrame
+filtered_means_df = means_df[means_df['task'].isin(['minerva', 'mbpp', 'gsm8k', 'codex_humaneval'])]
+filtered_means_df = filtered_means_df[filtered_means_df['size'].isin(['4M', '60M','1B'])]
+
+# Define the custom order for the 'size' column
+filtered_means_df['size'] = filtered_means_df['size'].astype(pd.CategoricalDtype(categories=['4M', '60M', '1B'], ordered=True))
+
+# Sort the DataFrame by the 'size' column
+filtered_means_df = filtered_means_df.sort_values(by='size')
+filtered_means_df = filtered_means_df.rename(columns={'logits_per_char_corr': 'correct_prob_per_char'})
+
+filtered_means_df
+OUT:    size             task  primary_score  logits_per_byte_corr  \
+4    4M            gsm8k       0.001425              1.959255   
+5    4M          minerva       0.000000              2.641050   
+6    4M             mbpp       0.000000              3.569033   
+7    4M  codex_humaneval       0.000000              2.754345   
+12  60M            gsm8k       0.018378              1.030042   
+13  60M          minerva       0.000450              1.368290   
+14  60M             mbpp       0.000000              2.066723   
+15  60M  codex_humaneval       0.000366              1.730747   
+28   1B            gsm8k       0.025201              0.591799   
+29   1B          minerva       0.013922              0.831571   
+30   1B             mbpp       0.016800              1.271093   
+31   1B  codex_humaneval       0.024835              0.966997   
+
+    correct_prob_per_char  
+4                1.359274  
+5                1.830637  
+6                2.473865  
+7                1.909166  
+12               0.714614  
+13               0.948426  
+14               1.432543  
+15               1.199662  
+28               0.410572  
+29               0.576401  
+30               0.881055  
+31               0.670271  
+--- SRC: pivoted_means_df = filtered_means_df.pivot(index='task', columns='size', values=['correct_prob_per_char', 'primary_score'])
+pivoted_means_df = pivoted_means_df[['primary_score', 'correct_prob_per_char']]
+# Display the updated pivoted DataFrame
+pivoted_means_df
+OUT:                 primary_score                     correct_prob_per_char  \
+size                       4M       60M        1B                    4M   
+task                                                                      
+codex_humaneval      0.000000  0.000366  0.024835              1.909166   
+gsm8k                0.001425  0.018378  0.025201              1.359274   
+mbpp                 0.000000  0.000000  0.016800              2.473865   
+minerva              0.000000  0.000450  0.013922              1.830637   
+
+                                     
+size                  60M        1B  
+task                                 
+codex_humaneval  1.199662  0.670271  
+gsm8k            0.714614  0.410572  
+mbpp             1.432543  0.881055  
+minerva          0.948426  0.576401  
+--- SRC: pivoted_df
+OUT:                 primary_score           correct_prob_per_char          
+size                       4M       60M                    4M       60M
+task                                                                   
+codex_humaneval      0.383333  0.516667              0.813333  0.750000
+gsm8k                0.456667  0.630000              0.543333  0.553333
+mbpp                 0.406667  0.556667              0.840000  0.856667
+minerva              0.356667  0.563333              0.526667  0.533333
+--- SRC: # Define the mapping of task names
+task_name_mapping = {
+    'minerva': 'minerva',
+    'gsm8k': 'gsm8k',
+    'mbpp': 'mbpp',
+    'codex_humaneval': 'humaneval'
+}
+
+--- SRC: # Reindex pivoted_df based on the order of keys in task_name_mapping
+pivoted_df = pivoted_df.reindex(task_name_mapping.keys())
+
+# Map the index using task_name_mapping
+pivoted_df.index = pivoted_df.index.map(task_name_mapping)
+
+pivoted_df
+OUT:           primary_score           correct_prob_per_char          
+size                 4M       60M                    4M       60M
+task                                                             
+minerva        0.356667  0.563333              0.526667  0.533333
+gsm8k          0.456667  0.630000              0.543333  0.553333
+mbpp           0.406667  0.556667              0.840000  0.856667
+humaneval      0.383333  0.516667              0.813333  0.750000
+--- SRC: sizes = ['4M', '60M']
+metrics = ['primary_score', 'correct_prob_per_char']
+--- SRC: x = pivoted_df.index
+offset = range(len(x))
+width = 0.35
+--- SRC: 
+# Set font sizes for the plot
+plt.rcParams.update({
+    'font.size': 14,  # General font size
+    'axes.titlesize': 20,  # Title font size
+    'axes.labelsize': 14,  # Axis label font size
+    'xtick.labelsize': 12,  # X-axis tick label font size
+    'ytick.labelsize': 14,  # Y-axis tick label font size
+    'legend.fontsize': 14,  # Legend font size
+})
+
+# Update base colors for the new labels
+base_colors = {
+    'correct_prob_per_char': '#F0529C',
+    'Accuracy': '#0A3235'
+}
+
+# Create the plot
+fig, ax = plt.subplots(figsize=(10, 3.25))
+
+# Plot each bar, grouping by metric first
+for j, metric in enumerate(metrics):  # Iterate over metrics first
+    for i, size in enumerate(sizes):  # Then iterate over sizes
+        values = pivoted_df[(metric, size)].astype(float)
+        base_color = base_colors['Accuracy' if metric == 'primary_score' else 'correct_prob_per_char']
+        brightness = brightness_factors[size]
+        adjusted_color = mcolors.to_rgba(base_color, alpha=brightness)
+        offset_index = j * len(sizes) + i  # Adjust offset index to match new loop order
+        ax.bar([pos + offsets[offset_index] for pos in x], values, bar_width, color=adjusted_color, label=f"{size} -
+OUT: <Figure size 1000x325 with 1 Axes>
+[IMG]
+--- SRC: # Update base colors for the new labels
+base_colors = {
+    'correct_prob_per_char': '#F0529C',
+    'Accuracy': '#0A3235'
+}
+
+# Create the plot
+fig, ax = plt.subplots(figsize=(10, 3.25))
+
+# Set background and plot fill color
+fig.patch.set_facecolor('#FAF2E9')  # Background color for the figure
+ax.set_facecolor('#FAF2E9')        # Background color for the plot area
+
+# Plot each bar, grouping by metric first
+for j, metric in enumerate(metrics):  # Iterate over metrics first
+    for i, size in enumerate(sizes):  # Then iterate over sizes
+        values = pivoted_df[(metric, size)].astype(float)
+        base_color = base_colors['Accuracy' if metric == 'primary_score' else 'correct_prob_per_char']
+        brightness = brightness_factors[size]
+        adjusted_color = mcolors.to_rgba(base_color, alpha=brightness)
+        offset_index = j * len(sizes) + i  # Adjust offset index to match new loop order
+        ax.bar([pos + offsets[offset_index] for pos in x], values, bar_width, color=adjusted_color, label=f"{size} - {'Accuracy' if metric == 'primary_score' else 'Correct Prob'}")
+
+# Add a horizontal line at 50% (random baseline)
+ax.axhline(y=0.5, color='grey', linestyle='--', label='random'
+OUT: <Figure size 1000x325 with 1 Axes>
+[IMG]
+--- SRC: 
+--- SRC: # Format all values in pivoted_df to 2 decimal places
+pivoted_df = pivoted_df.applymap(lambda x: f"{float(x):.2f}")
+
+# Convert the pivoted DataFrame to LaTeX
+pivoted_latex_output = pivoted_df.to_latex(
+    multirow=True,
+    multicolumn=True,
+    escape=True
+)
+
+print(pivoted_latex_output)
+OUT: \begin{tabular}{lllll}
+\toprule
+ & \multicolumn{2}{r}{primary\_score} & \multicolumn{2}{r}{correct\_prob\_per\_char} \\
+size & 4M & 60M & 4M & 60M \\
+task &  &  &  &  \\
+\midrule
+minerva & 0.36 & 0.56 & 0.53 & 0.53 \\
+gsm8k & 0.46 & 0.63 & 0.54 & 0.55 \\
+mbpp & 0.41 & 0.56 & 0.84 & 0.86 \\
+humaneval & 0.38 & 0.52 & 0.81 & 0.75 \\
+\bottomrule
+\end{tabular}
+
+
+OUT: /var/folders/hw/szbyq1nn6db3hrczjwwc8ydm0000gp/T/ipykernel_42767/3236157606.py:2: FutureWarning: DataFrame.applymap has been deprecated. Use DataFrame.map instead.
+  pivoted_df = pivoted_df.applymap(lambda x: f"{float(x):.2f}")
+
+--- SRC: # Convert the DataFrame to LaTeX with formatting
+latex_table = filtered_df.copy()
+latex_table['correct_prob_per_char'] = latex_table['correct_prob_per_char'].astype(float).map('{:.2f}'.format)
+latex_table['primary_score'] = latex_table['primary_score'].astype(float).map('{:.2f}'.format)
+
+# Generate LaTeX table with escaped underscores
+latex_output = latex_table.to_latex(
+    index=False,
+    escape=True
+)
+
+print(latex_output)
+OUT: \begin{tabular}{llll}
+\toprule
+size & task & correct\_prob\_per\_char & primary\_score \\
+\midrule
+4M & gsm8k & 0.54 & 0.46 \\
+4M & minerva & 0.53 & 0.36 \\
+4M & mbpp & 0.84 & 0.41 \\
+4M & codex\_humaneval & 0.81 & 0.38 \\
+60M & gsm8k & 0.55 & 0.63 \\
+60M & minerva & 0.53 & 0.56 \\
+60M & mbpp & 0.86 & 0.56 \\
+60M & codex\_humaneval & 0.75 & 0.52 \\
+\bottomrule
+\end{tabular}
+
+
+--- SRC: df
+OUT:     size             task        target_ranking  logits_per_byte_corr  \
+0     4M    arc_challenge         primary_score              0.733333   
+1     4M        hellaswag         primary_score              0.813333   
+2     4M      olmes_core9         primary_score              0.573333   
+3     4M             mmlu         primary_score              0.766667   
+4     4M            gsm8k         primary_score              0.543333   
+5     4M          minerva         primary_score              0.526667   
+6     4M             mbpp         primary_score              0.840000   
+7     4M  codex_humaneval         primary_score              0.813333   
+8     4M    arc_challenge  logits_per_byte_corr              0.703333   
+9     4M        hellaswag  logits_per_byte_corr              0.800000   
+10    4M      olmes_core9  logits_per_byte_corr              0.546667   
+11    4M             mmlu  logits_per_byte_corr              0.766667   
+12    4M            gsm8k  logits_per_byte_corr              0.683333   
+13    4M          minerva  logits_per_byte_corr              0.810000   
+14    4M             mbpp  logits_per_byte_corr              0.950000   
+15    4M  codex_humaneval  logits_per_byte_corr              0.910000   
+16   60M    arc_challenge         primary_score              0.830000   
+17   60M        hellaswag         primary_score              0.776667   
+18   60M      olmes_core9         primary_score              0.610000   
+19   60M             mmlu         primary_score              0.830000   
+20   60M            gsm8k         primary_score              0.553333   
+21   60M          minerva         primary_score              0.533333   
+22   60M             mbpp         primary_score              0.856667   
+23   60M  codex_humaneval         primary_score              0.750000   
+24   60M    arc_challenge  logits_per_byte_corr              0.866667   
+25   60M        hellaswag  logits_per_byte_corr              0.816667   
+26   60M      olmes_core9  logits_per_byte_corr              0.656667   
+27   60M             mmlu  logits_per_byte_corr              0.816667   
+28   60M            gsm8k  logits_per_byte_corr              0.773333   
+29   60M          minerva  logits_per_byte_corr              0.876667   
+30   60M             mbpp  logits_per_byte_corr              0.960000   
+31   60M  codex_humaneval  logits_per_byte_corr              0.880000   
+32  150M    arc_challenge         primary_score              0.906667   
+33  150M        he
+--- SRC: pd.set_option('display.max_columns', None)  # Show all columns
+pd.set_option('display.max_rows', None)     # Show all rows
+df.T
+OUT:                                  0              1              2   \
+size                             4M             4M             4M   
+task                  arc_challenge      hellaswag    olmes_core9   
+target_ranking        primary_score  primary_score  primary_score   
+logits_per_byte_corr       0.733333       0.813333       0.573333   
+logits_per_char_corr       0.733333       0.813333       0.573333   
+primary_score                  0.62           0.31           0.41   
+
+                                 3              4              5   \
+size                             4M             4M             4M   
+task                           mmlu          gsm8k        minerva   
+target_ranking        primary_score  primary_score  primary_score   
+logits_per_byte_corr       0.766667       0.543333       0.526667   
+logits_per_char_corr       0.766667       0.543333       0.526667   
+primary_score              0.473333       0.456667       0.356667   
+
+                                 6                7                     8   \
+size                             4M               4M                    4M   
+task                           mbpp  codex_humaneval         arc_challenge   
+target_ranking        primary_score    primary_score  logits_per_byte_corr   
+logits_per_byte_corr           0.84         0.813333              0.703333   
+logits_per_char_corr           0.84         0.813333              0.296667   
+primary_score              0.406667         0.383333              0.396667   
+
+                                        9                     10  \
+size                                    4M                    4M   
+task                             hellaswag           olmes_core9   
+target_ranking        logits_per_byte_corr  logits_per_byte_corr   
+logits_per_byte_corr                   0.8              0.546667   
+logits_per_char_corr                   0.2              0.453333   
+primary_score                         0.67              0.616667   
+
+                                        11                    12  \
+size                                    4M                    4M   
+task                                  mmlu                 gsm8k   
+target_ranking        logits_per_byte_corr  logits_per_byte_corr   
+logits_per_byte_corr              0.766667              0.683333   
+logits_per_char_corr              0.233333              0.316667   
+primary_score                     0.553333                  0.41   
+
+                               
+--- SRC: 
+===== scaling_laws_notebooks_math_and_code.ipynb
+--- SRC: %load_ext autoreload
+%autoreload 2
+--- SRC: ### Setup
+--- SRC: import os, sys
+sys.path.append(os.path.dirname(os.getcwd()))
+from utils.constants import DATA_DIR, ROOT_DIR, PLOT_DIR
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+from tqdm import tqdm
+
+from utils.dataloader import get_nd_array, get_slice
+from remote.hf import pull_predictions_from_hf
+--- SRC: ### Load Data
+--- SRC: local_path = pull_predictions_from_hf("allenai/ladder-evals", "benchmarks")
+
+df = pd.read_parquet(local_path)
+print(f'Loaded {len(df):,} model evaluations')
+df.loc[df['mix'] == 'baseline', 'mix'] = 'dolma17' # fix for the names of one of Ian's data mixes
+
+MODELS = list(df['model'].unique())
+MIXES = list(df['mix'].unique())
+STEPS = list(df['step'].unique())
+SIZES = list(df['size'].unique())
+TASKS = sorted(list(df['task'].unique()))
+
+SIZES = [size for size in SIZES if size is not None]
+OUT: Downloading data/benchmarks-00000-of-00001.parquet -> /Users/dhei/ai2/DataDecide/analysis/data
+Loaded 296,473 model evaluations
+
+--- SRC: ### Compute Decision Accuracy
+--- SRC: from utils.constants.constants_models import DATA_DECIDE_MODEL_NAMES
+from utils.constants import get_title_from_task
+from utils.stats import construct_2class_table
+from utils.plot import plot_task_accuracy
+plt.close()
+
+minerva   = [t for t in TASKS if 'minerva' in t and ':' not in t]
+mmlu      = [t for t in TASKS if 'mmlu' in t and ':' not in t and '_pro_' not in t]
+olmes     = ['arc_challenge', 'arc_easy', 'boolq', 'csqa', 'hellaswag', 'openbookqa', 'piqa', 'socialiqa', 'winogrande']
+
+selected_tasks = ['arc_challenge', 'hellaswag', olmes, mmlu, 'gsm8k', minerva, 'mbpp', 'codex_humaneval']
+
+task_names = [get_title_from_task(task) for task in selected_tasks]
+--- SRC: # ALL_METRICS = ['primary_score', 'logits_per_byte_corr','acc_raw', 'acc_per_token', 'acc_per_char', 'logits_per_char_corr', 'acc_uncond', 'exact_match', 'pass_at_10', 'pass_at_1']
+ALL_METRICS = ['primary_score', 'logits_per_byte_corr', 'logits_per_char_corr']
+
+two_class, acc_pivot, metric_pivot = construct_2class_table(
+    df, selected_tasks, 
+    small_metric='logits_per_byte_corr', target_metric='primary_score'
+)
+OUT: Computing two class accuracy: 100%|██████████| 72/72 [00:02<00:00, 25.87it/s]
+
+--- SRC: import ast
+
+def process_metric(df, pred_metric, target_metric, selected_tasks, task_names, sizes=['60M', '150M']):
+    two_class, acc_pivot, metric_pivot = construct_2class_table(
+        df, selected_tasks, 
+        small_metric=pred_metric, target_metric=target_metric
+    )
+
+    acc_pivot.index = acc_pivot.index.map(lambda x: get_title_from_task(ast.literal_eval(x) if '[' in x else x))
+    acc_pivot = acc_pivot.T
+    acc_pivot = acc_pivot.loc[sizes]
+    acc_pivot.index = acc_pivot.index.get_level_values('size')
+    acc_pivot = acc_pivot[task_names]
+
+    acc_flat = acc_pivot.stack().to_frame().T
+    acc_flat.columns = pd.MultiIndex.from_tuples(
+        [(size, task, target_metric) for size, task in acc_flat.columns], names=["size", "task", "target_ranking"]
+    )
+    acc_flat.rename(index={0: pred_metric}, inplace=True)
+    acc_flat.index.name = 'predicted_ranking'
+    
+    return acc_flat
+
+all_acc_dfs = []
+
+for pred_metric in ALL_METRICS:
+    for target_metric in ['primary_score', 'logits_per_byte_corr']: # pred_metric, primary_score, logits_per_byte_corr
+        acc_flat = process_metric(df, pred_metric, target_metric, selected_tasks, task_names, sizes=["4M", "20M", "60M", "90M"
+OUT: Computing two class accuracy: 100%|██████████| 72/72 [00:02<00:00, 25.95it/s]
+Computing two class accuracy: 100%|██████████| 72/72 [00:02<00:00, 30.50it/s]
+Computing two class accuracy: 100%|██████████| 72/72 [00:03<00:00, 23.41it/s]
+Computing two class accuracy: 100%|██████████| 72/72 [00:02<00:00, 29.76it/s]
+Computing two class accuracy: 100%|██████████| 72/72 [00:02<00:00, 29.75it/s]
+Computing two class accuracy: 100%|██████████| 72/72 [00:02<00:00, 25.78it/s]
+
+--- SRC: print('Decision accuracy using different target metrics:')
+result_df.T.loc[pd.IndexSlice[['60M', '150M'], :, :], :]
+OUT: Decision accuracy using different target metrics:
+
+OUT: predicted_ranking                          logits_per_byte_corr  \
+size task            target_ranking                               
+60M  arc_challenge   primary_score                     0.830000   
+     hellaswag       primary_score                     0.776667   
+     olmes_core9     primary_score                     0.610000   
+     mmlu            primary_score                     0.830000   
+     gsm8k           primary_score                     0.553333   
+     minerva         primary_score                     0.533333   
+     mbpp            primary_score                     0.856667   
+     codex_humaneval primary_score                     0.750000   
+     arc_challenge   logits_per_byte_corr              0.866667   
+     hellaswag       logits_per_byte_corr              0.816667   
+     olmes_core9     logits_per_byte_corr              0.656667   
+     mmlu            logits_per_byte_corr              0.816667   
+     gsm8k           logits_per_byte_corr              0.773333   
+     minerva         logits_per_byte_corr              0.876667   
+     mbpp            logits_per_byte_corr              0.960000   
+     codex_humaneval logits_per_byte_corr              0.880000   
+150M arc_challenge   primary_score                     0.906667   
+     hellaswag       primary_score                     0.853333   
+     olmes_core9     primary_score                     0.786667   
+     mmlu            primary_score                     0.933333   
+     gsm8k           primary_score                     0.533333   
+     minerva         primary_score                     0.536667   
+     mbpp            primary_score                     0.843333   
+     codex_humaneval primary_score                     0.840000   
+     arc_challenge   logits_per_byte_corr              0.950000   
+     hellaswag       logits_per_byte_corr              0.953333   
+     olmes_core9     logits_per_byte_corr              0.793333   
+     mmlu            logits_per_byte_corr              0.920000   
+     gsm8k           logits_per_byte_corr              0.766667   
+     minerva         logits_per_byte_corr              0.900000   
+     mbpp            logits_per_byte_corr              0.953333   
+     codex_humaneval logits_per_byte_corr              0.956667   
+
+predicted_ranking                          logits_per_char_corr  primary_score  
+size task            target_ranking                                             
+60M  arc_challenge   primary_score                     0.83
+--- SRC: from utils.stats import get_perf_size
+
+size = '60M'
+metric = target_metric
+
+means_data = []
+for size in ['60M', '150M', '1B']:
+    for task in selected_tasks:
+        task_name = get_title_from_task(task)
+        row_data = {'size': size, 'task': task_name}
+        for metric in ALL_METRICS:
+            _slice = get_slice(df, task=task)
+            _slice = _slice[((_slice['size'] == size)) & (_slice['model'].isin(DATA_DECIDE_MODEL_NAMES))]
+            steps = [sorted(_slice['step'].unique())[-1]]
+            small_scale = get_perf_size(df, size, task, metric)[metric]
+            row_data[metric] = -small_scale.mean() if metric == 'logits_per_char_corr' else small_scale.mean()
+        means_data.append(row_data)
+means_df = pd.DataFrame(means_data).set_index(['size', 'task'])
+
+print('Average scores across all models at the 1B scale:')
+means_df
+OUT: Average scores across all models at the 1B scale:
+
+OUT:                       primary_score  logits_per_byte_corr  \
+size task                                                   
+60M  arc_challenge         0.252526              1.375599   
+     hellaswag             0.289297              1.179639   
+     olmes_core9           0.409584              1.356341   
+     mmlu                  0.261364              1.700955   
+     gsm8k                 0.018378              1.030042   
+     minerva               0.000450              1.368290   
+     mbpp                  0.000000              2.066723   
+     codex_humaneval       0.000366              1.730747   
+150M arc_challenge         0.298396              1.115866   
+     hellaswag             0.358530              0.908356   
+     olmes_core9           0.450803              1.125633   
+     mmlu                  0.279458              1.324909   
+     gsm8k                 0.020258              0.853200   
+     minerva               0.005141              1.142213   
+     mbpp                  0.000720              1.720915   
+     codex_humaneval       0.001646              1.356293   
+1B   arc_challenge         0.417167              0.865066   
+     hellaswag             0.606736              0.761794   
+     olmes_core9           0.588752              0.963753   
+     mmlu                  0.350606              1.020171   
+     gsm8k                 0.025201              0.591799   
+     minerva               0.013922              0.831571   
+     mbpp                  0.016800              1.271093   
+     codex_humaneval       0.024835              0.966997   
+
+                      logits_per_char_corr  
+size task                                   
+60M  arc_challenge                0.954710  
+     hellaswag                    0.817713  
+     olmes_core9                  0.940376  
+     mmlu                         1.188785  
+     gsm8k                        0.714614  
+     minerva                      0.948426  
+     mbpp                         1.432543  
+     codex_humaneval              1.199662  
+150M arc_challenge                0.774408  
+     hellaswag                    0.629662  
+     olmes_core9                  0.780405  
+     mmlu                         0.925781  
+     gsm8k                        0.591925  
+     minerva                      0.791722  
+     mbpp                         1.192848  
+     codex_humaneval              0.940111  
+1B   arc_challenge                0.600449  
+     hellaswag                    0.528066  
+     olmes_co
