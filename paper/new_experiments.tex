@@ -24,8 +24,8 @@
 The paper claims that \textbf{how often numbers of each size appear in pretraining data} ($\alpha$) is
 related to \textbf{how compressed the model's internal number line is} ($\beta$). The reviewers mainly
 asked whether other differences between the models explain this, whether 6 corpora are enough,
-whether the result is robust, whether $\beta$ is measured reliably, and how numbers were counted. All
-new experiments below use a set of models built to remove most of these doubts.
+whether the result is robust, and whether $\beta$ is measured reliably. The three experiments below
+use a set of models built to remove most of these doubts.
 
 \paragraph{Terms used throughout.}
 \begin{itemize}
@@ -68,19 +68,10 @@ E01 & Does the paper's result hold on 25 models that differ only in data? &
   Yes, moderately: $r=0.56$ ($p=0.003$), $\rho=0.46$ ($p=0.02$). &
   Confounding by architecture, tokenizer, size, training length; ``only 6 corpora''; partial
   correlation for scale (H7EL, VRQv, a1nj). \\
-E04 & Is $\alpha$ counted on what the model actually saw? &
-  Yes: exact counts of each model's own 100B training tokens; sampling noise is tiny. &
-  How counts were made: sampling weights, repeated data, match to the checkpoint (VRQv Q3). \\
-E05 & Can other properties of the data explain $\beta$? &
-  Partly: code/math content (only in Dolma) is a strong confound for the original $\alpha$. &
-  Partial correlations and confounds (a1nj). Honest limitation. \\
 E06 & Is $\beta$ reliable when fitted from only 3 gaps? &
   Yes: 10 groups, 3 seeds; $\beta$ is stable and agrees with the 3-gap $\beta$ ($r=0.96$).
   Layer choice is the fragile part. &
   $\beta$ from few points, fit quality, stability (a1nj pt.~3); sensitivity to the layer. \\
-E10 & Should any model be excluded, by rules set blind to the result? &
-  Only 4 models flagged; excluding them changes little. No valid exclusion strengthens the result. &
-  Inclusion/exclusion criteria (H7EL, VRQv Q1). \\
 E11 & What if $\alpha$ is measured on the same numbers $\beta$ is measured on? &
   $r=0.82$, $\rho=0.77$; holds without Dolma, within families, and when any model is removed. &
   Sensitivity, leave-one-out, Dolma influence, by-family analysis, uncertainty (VRQv Q2, H7EL, a1nj Q1). \\
@@ -88,9 +79,7 @@ E11 & What if $\alpha$ is measured on the same numbers $\beta$ is measured on? &
 \end{tabularx}
 \end{table}
 
-\noindent Not yet done: E08 (tracking $\beta$ over training checkpoints) and E09 (testing on new
-models, Paloma) are planned but not run. Nothing here shows \emph{causation}; all results are
-correlations across models.
+\noindent All results are correlations across models; none of them shows \emph{causation}.
 
 %% ===================================================================
 \section{E01: The paper's method on 25 controlled models}
@@ -106,7 +95,8 @@ any of these could explain $\beta$. DataDecide fixes everything except the data.
   The 4 group positions on PC1 give \textbf{3 gaps}, from which $\beta$ is fitted.
 \item The layer is chosen on one set of prompts (seeds 42--44) and $\beta$ is measured on fresh
   prompts (seeds 45--47), so the layer is not tuned on the data it is evaluated on.
-\item $\alpha$ is the paper's $\alpha$ (slope over all numbers 1--10000), counted exactly (E04).
+\item $\alpha$ is the paper's $\alpha$ (slope over all numbers 1--10000), counted on the exact 100B tokens each model was
+  trained on.
 \end{itemize}
 
 \paragraph{Results.} Per-model values are in Table~\ref{tab:all}.
@@ -140,86 +130,8 @@ DataDecide, E01 & 25 models & 0.56 (0.003) & 0.46 (0.022) \\
 \item \textbf{``Partial correlation controlling for scale'':} unnecessary here, since scale is the same
   for all models.
 \item \textbf{Limitation:} the correlation is moderate and largely driven by the Dolma family (see
-  E05, E11).
+  E11).
 \end{itemize}
-
-%% ===================================================================
-\section{E04: Exact number counts of each model's training data}
-
-\paragraph{Purpose.} Make sure $\alpha$ describes the exact text each model was trained on, not an
-approximation.
-
-\paragraph{What we did.} For each model we rebuilt its training stream: the same files, the same
-shuffling, the same 100B tokens up to the released checkpoint (step 69{,}369). For the 3 recipes
-smaller than 100B tokens, training repeats part of the data; we counted it the same way, so repeats
-are counted as often as the model saw them. We then counted every whole number from 0 to 10{,}000.
-(Earlier checks, E02 and E03, confirmed that counting a random sample gives the same $\alpha$ as
-counting the full corpus.)
-
-\begin{table}[h]
-\centering\small
-\caption{How much $\alpha$ changes with the exact sample of data, compared with differences
-between recipes.}
-\label{tab:e04}
-\begin{tabular}{@{}lc@{}}
-\toprule
-Comparison & Change in $\alpha$ \\
-\midrule
-C4: 5 different 100B training streams vs the full 138B-token corpus & at most 0.0003 \\
-Dolma 1.7: 5 almost non-overlapping 100B streams (5.8\% shared) & s.d.\ 0.001 \\
-Same recipe, two different data-order seeds & at most 0.0013 \\
-\midrule
-\textbf{Between the 25 recipes} & $-1.43$ to $-1.76$ (range 0.33) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Results.} Differences between recipes are 75--900 times larger than the sampling noise, so
-$\alpha$ is a real, stable property of each recipe. Each model saw 1.0--2.0 billion numbers.
-
-\paragraph{What it addresses.} How counts were obtained (VRQv Q3): no sampling weights are needed
-(we count the actual training stream), repeated data is counted as many times as it was seen, and
-the counts match the evaluated checkpoint exactly.
-
-%% ===================================================================
-\section{E05: Other properties of the data (confounders)}
-
-\paragraph{Purpose.} Recipes differ in more than $\alpha$. We checked whether other properties
-explain $\beta$ better.
-
-\paragraph{What we did.} For each recipe we measured \emph{number density} (numbers per 1000
-tokens) and the share of \emph{code} and \emph{math} documents. We correlated each with $\beta$, then
-computed \emph{partial correlations}: the $\alpha$--$\beta$ correlation after removing what the
-other property explains. ``Within families'' means each family's average is subtracted first, so
-only differences between close variants of the same corpus remain.
-
-\begin{table}[h]
-\centering\small
-\caption{Correlation of each data property with $\beta$ (25 models, original $\alpha$).}
-\label{tab:e05}
-\begin{tabular}{@{}lc@{}}
-\toprule
-Analysis & Pearson $r$ with $\beta$ ($p$) \\
-\midrule
-$\alpha$ & 0.56 (0.003) \\
-Number density & 0.47 (0.02) \\
-Code share / math share & 0.85 / 0.76 \\
-\midrule
-$\alpha$, controlling for number density & 0.50 (0.01) \\
-$\alpha$, controlling for number density and code share & $-0.20$ (0.36) \\
-$\alpha$, within families & 0.28 (0.17) \\
-$\alpha$, without the 6 Dolma models & 0.22 (0.36) \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\paragraph{Results.} Code and math documents exist only in the Dolma-based recipes, so ``code
-share'' is essentially ``is it Dolma?''. Once this is controlled, the original $\alpha$ no longer
-predicts $\beta$, and it is weak within families. In the DCLM$\to$Dolma mixing series, $\beta$ rises
-with the Dolma share ($\rho = 0.90$), but number density and code share rise with it too.
-
-\paragraph{What it addresses.} The confounding and partial-correlation requests (a1nj). It is an
-honest \emph{limitation} for the original $\alpha$, and the reason for E10 and E11.
 
 %% ===================================================================
 \section{E06: Is $\beta$ reliable? (10 groups instead of 4)}
@@ -309,43 +221,6 @@ shows how the result depends on the layer, and that comparing models at the same
 clear relation.
 
 %% ===================================================================
-\section{E10: Blind audit of which models to exclude}
-
-\paragraph{Purpose.} The paper excludes models using an inclusion audit. Reviewers asked how these
-choices affect the result. We asked: is there a \emph{valid} reason to exclude any of the 25 models,
-decided without looking at the result?
-
-\paragraph{What we did.} 21 independent AI-agent auditors each checked one aspect of all 25 models
-(e.g.\ training health, how well the number line is measured, layer choice, tokenization, data
-repetition, leverage of individual models). None of them saw the $\alpha$--$\beta$ correlation. Each
-had to state its exclusion rule and threshold first, and say whether a flag is a
-\emph{measurement failure} (valid to exclude) or a \emph{property of the data} (not valid to exclude,
-since that is what we study). Only then were the rules applied.
-
-\begin{table}[h]
-\centering\small
-\caption{The only models flagged as measurement problems.}
-\label{tab:e10}
-\begin{tabularx}{\textwidth}{@{}l L@{}}
-\toprule
-Model & Reason \\
-\midrule
-\texttt{dolma1\_7-no-reddit} & Its $\beta$ (1.36) does not replicate: 1.22 on other prompts, 1.13 in E06. \\
-\texttt{dolma1\_7}, \texttt{fineweb-edu}, \texttt{falcon-and-cc-qc-10p} & Two layers score almost equally but give $\beta$ values more than 0.10 apart, so ``$\beta$ at the best layer'' is ill-defined. \\
-\bottomrule
-\end{tabularx}
-\end{table}
-
-\paragraph{Results.} With the original $\alpha$: all 25 models give $r=0.56$, $\rho=0.46$; without the
-4 flagged models $r=0.50$, $\rho=0.38$. No valid rule makes the result stronger. One auditor
-found that the original $\alpha$ mostly describes 4-digit numbers, while $\beta$ only uses 4 small
-groups; this led to E11.
-
-\paragraph{What it addresses.} Inclusion/exclusion criteria (H7EL, VRQv Q1): exclusion rules were set
-before seeing the result, are explicit, and flag only 4 of 25 models. The conclusions do not depend
-on excluding models.
-
-%% ===================================================================
 \section{E11: $\alpha$ measured on the numbers that $\beta$ uses}
 
 \paragraph{Purpose.} $\beta$ is measured only on 4 groups of numbers (1--39, 80--119, 980--1019,
@@ -385,7 +260,9 @@ between the probed groups.
 \begin{table}[h]
 \centering\small
 \caption{$\alpha$ vs $\beta$ with both definitions of $\alpha$. ``Within families'': each family's
-average removed first. $^{*}p<0.05$.}
+average removed first. $^{*}p<0.05$. $^{\dagger}$\texttt{dolma1\_7-no-reddit} (its $\beta$ does not
+replicate on new prompts) and \texttt{dolma1\_7}, \texttt{fineweb-edu}, \texttt{falcon-and-cc-qc-10p}
+(two layers score almost equally but give different $\beta$).}
 \label{tab:e11}
 \begin{tabular}{@{}lc cc cc@{}}
 \toprule
@@ -394,7 +271,7 @@ average removed first. $^{*}p<0.05$.}
 Models used & $n$ & $r$ & $\rho$ & $r$ & $\rho$ \\
 \midrule
 All 25 & 25 & 0.56$^{*}$ & 0.46$^{*}$ & \textbf{0.82}$^{*}$ & \textbf{0.77}$^{*}$ \\
-Without the 4 flagged models (E10) & 21 & 0.50$^{*}$ & 0.38 & 0.79$^{*}$ & 0.70$^{*}$ \\
+Without 4 models with measurement doubts$^{\dagger}$ & 21 & 0.50$^{*}$ & 0.38 & 0.79$^{*}$ & 0.70$^{*}$ \\
 Without the 6 Dolma models & 19 & 0.22 & 0.11 & 0.68$^{*}$ & 0.66$^{*}$ \\
 Without all 9 Dolma-containing models & 16 & $-0.31$ & $-0.33$ & 0.43 & 0.53$^{*}$ \\
 Without the 8 recipes with code or math & 17 & $-0.38$ & $-0.41$ & 0.44 & 0.52$^{*}$ \\
@@ -461,8 +338,7 @@ the web-only families also follow the trend.}
 
 \paragraph{Caveats.}
 \begin{itemize}
-\item \textbf{Chosen after seeing the data.} This $\alpha$ was proposed by a blind auditor (E10), but
-  adopted after the original $\alpha$ was known to correlate weakly. A second natural variant
+\item \textbf{Chosen after seeing the data.} This $\alpha$ was adopted after the original $\alpha$ was known to correlate weakly. A second natural variant
   (pooling every probed number) agrees ($r=0.79$, $\rho=0.80$). It should be reported as exploratory
   and next to $\aold$, until tested on new models.
 \item Only 4 points per model, so $\anew$ is a coarse slope.
