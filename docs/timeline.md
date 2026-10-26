@@ -77,3 +77,10 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
   definitions and predictions are pre-registered in `experiments/E08_checkpoint_test/README.md`.
 - Training-seed noise of β (seeds `-4`, `-5`).
 - Fixed-layer β for all models from the saved per-prompt scores (free).
+
+## 2026-10-25 / 26
+- **E10, blind exclusion audit:** 21 auditors covered every aspect of the 25 models, without seeing the α–β
+  correlation. Result: 4 measurement flags (dolma1_7-no-reddit's E01 β does not replicate; falcon-and-cc-qc-10p,
+  dolma1_7 and fineweb-edu have layer near-ties with different β). No valid exclusion raises the α–β correlation.
+- **E11, α on the probed numbers:** the paper-protocol β (3 gaps, joint-score layer) against α fitted only on the
+  probed groups gives r = +0.82, ρ = +0.77 (n = 25), versus 0.56 / 0.46. Exploratory; to be confirmed out of sample.

@@ -16,6 +16,8 @@ number, problems met). Code lives in the shared packages (`src/`, `modal_app/`,
 | [E06](E06_fine_beta/) | Fine β (10 groups) | A more precise, reproducible β | done | seed noise ±0.015; same-layer α link r = 0.63; layer choice fragile |
 | [E07](E07_count_features_rarely_seen/) | Count features and R | What in the counts explains β beyond α? | done (exploratory) | R = #numbers seen < 4000 times: ρ = −0.73, absorbs α (paper-protocol β only; at a fixed layer α ≈ R; **R falsified out of sample in E09**) |
 | [E08](E08_checkpoint_test/) | Checkpoint test | Does β follow R during training, with α fixed? | **planned; predictions pre-registered** | — |
+| [E10](E10_exclusion_audit/) | Blind exclusion audit | Is there a scientifically valid reason to drop any of the 25 models? | done | 21 blind auditors: 4 measurement flags (no-reddit β does not replicate; 3 layer near-ties); no valid drop strengthens α–β |
+| [E11](E11_alpha_probed_numbers/) | α on the probed numbers | Does α measured on the same numbers as β (1–39, 80–119, 980–1019, 9980–10000) predict β better? | done (exploratory) | paper β at the joint-score layer: r = +0.82, ρ = +0.77 (vs 0.56 / 0.46), n = 25; within families r = 0.75; needs out-of-sample check |
 | [E09](E09_paloma_out_of_sample/) | Paloma out-of-sample test | Do formulas frozen on DataDecide predict β of 6 new models? | **done** | no formula transfers; α closest (MAE 0.19), S overpredicts, R falsified; only 3 models valid at layer 8 |
 
 ## Dependencies between experiments

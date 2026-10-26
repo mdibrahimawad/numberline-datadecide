@@ -8,13 +8,14 @@ architecture, size, tokenizer and training length, with only the pretraining dat
 differing. For each model we measure β from its hidden states, and we count every
 integer 0–10000 in **exactly the 100B tokens it was trained on**.
 
-## Where things stand (2026-10-10)
+## Where things stand (2026-10-26)
 
 | | |
 |---|---|
 | **Established** | β is real and reproducible (±0.015) and varies 0.52–1.18 across the 25 models (10-group β_cont at fixed layer 8; 0.55–1.38 with the paper-protocol β at each model's own layer). The exact training-stream counts are reproducible. |
 | **Within DataDecide** | At one common layer (8), α_OLS correlates with β: r = +0.75, p = 1.8 × 10⁻⁵ (significant at layers 6–11). R and S do about as well (r ≈ 0.6–0.7). α_MLE does not (p = 0.32). Models with the same α can still differ by up to 0.4 in β, mostly when Dolma's math/code is involved. |
 | **Out of sample (E09, pre-registered)** | On the 6 Paloma baselines **no frozen formula transfers**: α is closest (MAE 0.19 vs a 0.15 bar), S overpredicts by ~0.5, **R is falsified** (predicted β ≈ 2–2.6, measured 0.8–1.0). Among the 5 Paloma models, α and β are not related at any clean layer (n = 5). |
+| **α on the probed numbers (E11, exploratory)** | With α measured only on the numbers β is measured on (1–39, 80–119, 980–1019, 9980–10000), the paper-protocol β (3 gaps, joint-score layer) gives **r = +0.82, ρ = +0.77** (n = 25, nothing dropped), versus r = +0.56, ρ = +0.46 with α over 1–10000. Holds within families (r = 0.75). Chosen after seeing the data; needs out-of-sample confirmation. A blind audit of all 25 models (E10) found no valid reason to drop models beyond 4 measurement flags. |
 | **Efficient coding** | Infomax (space ∝ count) predicts the average β level (0.64 vs 0.72) but none of the differences; q = ½ ranks models (r = 0.80) at the wrong scale. |
 | **Open** | Is α a cause or a correlate (content confound, e.g. math)? Training-seed noise of β. Checkpoint test (E08, pre-registered). |
 
@@ -49,6 +50,8 @@ Details: [`docs/findings.md`](docs/findings.md).
 | [E07](experiments/E07_count_features_rarely_seen/) | Count features: the rarely-seen count R | done (exploratory) |
 | [E08](experiments/E08_checkpoint_test/) | Checkpoint test: does β follow R during training? | planned, pre-registered |
 | [E09](experiments/E09_paloma_out_of_sample/) | Paloma: do formulas frozen on DataDecide predict 6 new models? | done: no formula transfers; R falsified |
+| [E10](experiments/E10_exclusion_audit/) | Blind audit: is there a valid reason to exclude any model? | done: only 4 measurement flags; no valid drop raises the α–β link |
+| [E11](experiments/E11_alpha_probed_numbers/) | α measured on the probed numbers (3 gaps, joint-score layer) | done (exploratory): r = +0.82, ρ = +0.77, n = 25 |
 
 ## Repository layout
 
