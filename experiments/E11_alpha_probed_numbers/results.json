@@ -1,0 +1,63 @@
+{
+ "old alpha (1-10000), all 25": {
+  "n": 25,
+  "pearson_r": 0.564,
+  "pearson_p": 0.0033,
+  "spearman_rho": 0.456,
+  "spearman_p": 0.022
+ },
+ "new alpha (probed numbers), all 25": {
+  "n": 25,
+  "pearson_r": 0.816,
+  "pearson_p": 6.7e-07,
+  "spearman_rho": 0.769,
+  "spearman_p": 7e-06
+ },
+ "new alpha, without the 4 E10 measurement flags": {
+  "n": 21,
+  "pearson_r": 0.79,
+  "pearson_p": 2.1e-05,
+  "spearman_rho": 0.704,
+  "spearman_p": 0.00037
+ },
+ "new alpha, only recipes without code/math": {
+  "n": 17,
+  "pearson_r": 0.438,
+  "pearson_p": 0.079,
+  "spearman_rho": 0.525,
+  "spearman_p": 0.031
+ },
+ "old alpha, only recipes without code/math": {
+  "n": 17,
+  "pearson_r": -0.379,
+  "pearson_p": 0.13,
+  "spearman_rho": -0.412,
+  "spearman_p": 0.1
+ },
+ "new alpha, within families (family means removed)": {
+  "n": 25,
+  "pearson_r": 0.751,
+  "pearson_p": 1.5e-05,
+  "spearman_rho": 0.751,
+  "spearman_p": 1.5e-05
+ },
+ "old alpha, within families (family means removed)": {
+  "n": 25,
+  "pearson_r": 0.284,
+  "pearson_p": 0.17,
+  "spearman_rho": 0.238,
+  "spearman_p": 0.25
+ },
+ "new alpha, family means (6 points)": {
+  "n": 6,
+  "pearson_r": 0.844,
+  "pearson_p": 0.035,
+  "spearman_rho": 0.543,
+  "spearman_p": 0.27
+ },
+ "new alpha, family-cluster bootstrap 95% CI of r": [
+  0.39,
+  0.9
+ ],
+ "corr(old alpha, new alpha) spearman": 0.467
+}
