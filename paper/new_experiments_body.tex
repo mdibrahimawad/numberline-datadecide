@@ -1,0 +1,178 @@
+%% Body only (paste between \begin{document} and \end{document}). Needs booktabs and amsmath.
+
+\section{Experiment 1: The paper's method on 25 controlled models}
+
+\textbf{Why.} In the paper, the models differ in architecture, tokenizer, size \emph{and} training
+data at the same time, so any of these could explain the shape of the number line. Here only the
+data differs.
+
+\textbf{What we did.}
+\begin{itemize}
+\item \textbf{Models (DataDecide).} 25 models released by Ai2, all 1B parameters, with the same
+  architecture, tokenizer and training length (100B tokens). Only the pretraining corpus (the
+  ``recipe'') differs. Recipes form 6 families (Dolma, DCLM, Falcon, FineWeb, C4, DCLM+Dolma mixes);
+  members of a family are filtered or modified versions of one corpus.
+\item \textbf{$\beta$, exactly as in the paper.} Copy prompts \texttt{a=a,b=b,c=c,n=} with $n$ from four
+  groups (1--39, 80--119, 980--1019, 9980--10019); only correctly answered prompts are kept. The
+  last-token hidden state is projected on its first principal component (PC1), along which the
+  numbers line up by size. $\beta$ is fitted from the 3 gaps between the four group positions:
+  $\beta = 1$ is a logarithmic line, and a lower $\beta$ means large numbers are squeezed more. The
+  layer is chosen by the paper's rule (the layer whose PC1 explains most variance and orders the
+  numbers best) on one set of prompts, and $\beta$ is measured on fresh prompts.
+\item \textbf{$\alpha$, as in the paper:} slope of $\log(\text{count of } n)$ against $\log n$ over
+  $n = 1$--$10000$, counted on the exact 100B tokens each model was trained on. A less negative
+  $\alpha$ means large numbers are relatively more common, so the paper predicts a positive
+  $\alpha$--$\beta$ correlation.
+\end{itemize}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Data & $n$ & Pearson $r$ ($p$) & Spearman $\rho$ ($p$) \\
+\midrule
+Paper (corpus level) & 6 & 0.81 (0.061) & 0.60 (0.24) \\
+DataDecide, all models & 25 & 0.56 (0.003) & 0.46 (0.022) \\
+DataDecide, without Dolma & 19 & 0.22 (0.36) & 0.11 (0.65) \\
+\bottomrule
+\end{tabular}
+\caption{$\alpha$ vs $\beta$ in the paper and on DataDecide. All 25 models have a clear number line
+(order of numbers along PC1: Spearman 0.90--0.96); $\beta$ ranges from 0.62 to 1.36.}
+\label{tab:exp1}
+\end{table}
+
+\textbf{Result.} With architecture, tokenizer, size and training length held fixed, the predicted
+positive relation appears and is statistically significant over 25 models. It is moderate, and most
+of it comes from the Dolma family versus the rest (Experiment~3 addresses this).
+
+\textbf{What it addresses.}
+\begin{itemize}
+\item \textbf{Confounding by model design} (H7EL, VRQv, a1nj): architecture, tokenizer, size and
+  training length are identical across the 25 models.
+\item \textbf{Too few corpora / weak statistics:} 25 models instead of 6 corpora; the correlation is
+  significant.
+\item \textbf{Partial correlation controlling for scale} (a1nj): not needed, since scale is constant.
+\end{itemize}
+
+\clearpage
+\section{Experiment 2: Is $\beta$ reliable? (10 groups instead of 4)}
+
+\textbf{Why.} The paper fits $\beta$ from only 3 gaps between 4 groups of numbers. Reviewers asked
+whether this is stable and how good the fit is.
+
+\textbf{What we did.} Same 25 models and prompt format as Experiment~1, but:
+\begin{itemize}
+\item 10 magnitude groups instead of 4, evenly spaced on a log scale (centres 10, 22, 46, 100,
+  \dots, 10000, each $\pm10\%$), i.e.\ 9 gaps;
+\item 100 correctly answered prompts per group, repeated with 3 random seeds (3000 per model);
+\item $\beta$ fitted by one curve through all prompts, $\text{PC1} = a + s\,\beta^{\log_{10} n}$;
+\item $\alpha$ vs $\beta$ also computed with every model read at the \emph{same} layer, to see how
+  much the layer choice matters.
+\end{itemize}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lc@{}}
+\toprule
+Check & Result \\
+\midrule
+Change in $\beta$ across prompt seeds (median s.d.) & 0.015 \\
+Spread of $\beta$ between models & 0.55--1.38 \\
+Fit quality, $R^2$ (median, range) & 0.89 (0.81--0.97) \\
+Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\
+\bottomrule
+\end{tabular}
+\caption{Reliability of $\beta$ (25 models).}
+\label{tab:exp2a}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}rcc@{\hspace{2.2em}}rcc@{}}
+\toprule
+Layer & $r$ & $\rho$ & Layer & $r$ & $\rho$ \\
+\midrule
+2 & $-.05$ & $-.03$ & 8  & $\mathbf{.75}$ & $\mathbf{.71}$ \\
+3 & $-.35$ & $-.37$ & 9  & $\mathbf{.64}$ & $.54$ \\
+4 & $.00$  & $-.09$ & 10 & $\mathbf{.61}$ & $.45$ \\
+5 & $.51$  & $.30$  & 11 & $\mathbf{.66}$ & $\mathbf{.59}$ \\
+6 & $\mathbf{.68}$ & $.56$ & 12 & $.48$ & $.49$ \\
+7 & $\mathbf{.67}$ & $.53$ & & & \\
+\bottomrule
+\end{tabular}
+\caption{$\alpha$ vs $\beta$ with all 25 models read at the same layer. \textbf{Bold}: significant
+after correcting for testing 16 layers ($p < 0.003$). Layers 1 and 13--16 have no clear number line.}
+\label{tab:exp2b}
+\end{table}
+
+\textbf{Result.} $\beta$ barely changes with new prompts, the fit is good, and the paper's 3-gap
+$\beta$ gives almost the same values. At every middle layer (6--11), where most models' chosen layers
+lie, $\alpha$ and $\beta$ are clearly related ($r = 0.61$--$0.75$). The sensitive step is the layer
+choice: for 8 models two layers score within 8\% of each other but give different $\beta$.
+
+\textbf{What it addresses.}
+\begin{itemize}
+\item \textbf{$\beta$ from few points; stability and fit quality} (a1nj, point 3): stable across seeds,
+  good fit, and consistent with the 3-gap $\beta$.
+\item \textbf{Sensitivity to the layer:} the relation holds at every middle layer when all models are
+  compared at the same depth.
+\end{itemize}
+
+\clearpage
+\section{Experiment 3: $\alpha$ measured on the numbers $\beta$ uses}
+
+\textbf{Why.} $\beta$ is measured only on four groups of numbers (1--39, 80--119, 980--1019,
+9980--10019). The paper's $\alpha$ is a slope over \emph{all} numbers 1--10000, so 90\% of its points
+are 4-digit numbers that $\beta$ never sees. The two measures therefore describe different numbers.
+
+\textbf{What we did.} Same 25 models, same $\beta$ and layers as Experiment~1; no model dropped.
+\begin{itemize}
+\item $\alpha_{\mathrm{old}}$: the paper's slope over all numbers 1--10000.
+\item $\alpha_{\mathrm{new}}$: for each of the 4 probed groups, take the median count of its numbers;
+  $\alpha_{\mathrm{new}}$ is the slope of log(median count) against log(group centre), one point per
+  group. (The median stops one very common number, such as 10000, from dominating a group.)
+\end{itemize}
+Example: $\alpha_{\mathrm{old}}$ says \texttt{fineweb-edu}'s numbers become rare faster than
+\texttt{c4}'s ($-1.70$ vs $-1.56$), so it should be more compressed, yet its $\beta$ is higher (0.89
+vs 0.62). On the probed numbers its counts actually fall more slowly, and $\alpha_{\mathrm{new}}$
+orders the two correctly.
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & & $\alpha_{\mathrm{old}}$ & $\alpha_{\mathrm{new}}$ \\
+Models used & $n$ & $r$ / $\rho$ & $r$ / $\rho$ \\
+\midrule
+All 25 & 25 & .56$^{*}$ / .46$^{*}$ & \textbf{.82}$^{*}$ / \textbf{.77}$^{*}$ \\
+No Dolma models & 19 & .22 / .11 & .68$^{*}$ / .66$^{*}$ \\
+No code/math recipes & 17 & $-$.38 / $-$.41 & .44 / .52$^{*}$ \\
+Only base corpora & 8 & .55 / .50 & .92$^{*}$ / .90$^{*}$ \\
+Within families & 25 & .28 / .24 & .75$^{*}$ / .75$^{*}$ \\
+Drop any one model ($r$) & 24 & .50--.61 & .79--.84 \\
+\bottomrule
+\end{tabular}
+\caption{$\alpha$ vs $\beta$ with both definitions of $\alpha$. $^{*}p<0.05$. ``Within families'':
+each family's average removed first. ``Base corpora'': one recipe per original corpus, no
+filtered variants. Dropping any one model: range of $r$ ($\rho$: .39--.52 old, .75--.80 new).}
+\label{tab:exp3}
+\end{table}
+
+\textbf{Result.} Measured on the same numbers as $\beta$, $\alpha$ predicts $\beta$ much better
+($r = 0.82$, $p < 10^{-6}$). Unlike $\alpha_{\mathrm{old}}$, it holds without Dolma, within families, and
+on the independent base corpora, and no single model drives it. Because recipes in a family are
+related, we also resampled whole families (bootstrap): the 95\% interval for $r$ is $[0.39, 0.90]$.
+
+\textbf{Caveats.} This $\alpha$ was chosen after seeing that $\alpha_{\mathrm{old}}$ correlates weakly,
+so it is exploratory and should be reported next to $\alpha_{\mathrm{old}}$ until tested on new
+models. Without code/math recipes the relation is weaker ($r = 0.44$, $p = 0.08$), so data content
+explains part of it.
+
+\textbf{What it addresses.}
+\begin{itemize}
+\item \textbf{Sensitivity to individual corpora / leave-one-out} (VRQv Q2, H7EL): every leave-one-out
+  $r$ is 0.79--0.84.
+\item \textbf{Influence of Dolma:} $r = 0.68$ without the Dolma models.
+\item \textbf{Analysis by family} (a1nj Q1): $r = 0.75$ within families.
+\item \textbf{Uncertainty:} family-level bootstrap interval $[0.39, 0.90]$, excluding zero.
+\end{itemize}
