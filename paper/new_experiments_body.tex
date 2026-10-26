@@ -60,32 +60,14 @@ of it comes from the Dolma family versus the rest (Experiment~3 addresses this).
 \textbf{Why.} The paper fits $\beta$ from only 3 gaps between 4 groups of numbers. Reviewers asked
 whether this is stable and how good the fit is.
 
-\textbf{What we did.} Same 25 models and prompt format as Experiment~1, but:
-\begin{itemize}
-\item 10 magnitude groups instead of 4, evenly spaced on a log scale (centres 10, 22, 46, 100,
-  \dots, 10000, each $\pm10\%$), i.e.\ 9 gaps;
-\item 100 correctly answered prompts per group, repeated with 3 random seeds (3000 per model);
-\item $\beta$ fitted by one curve through all prompts, $\text{PC1} = a + s\,\beta^{\log_{10} n}$;
-\item $\alpha$ (the paper's $\alpha$) vs the new $\beta$ computed three ways: at the layers chosen in
-  Experiment~1, at layers re-chosen by the same rule on the new prompts, and with every model read
-  at the \emph{same} layer.
-\end{itemize}
+\textbf{What we did.} Same 25 models and prompts as Experiment~1, but 10 magnitude groups instead of
+4 (evenly spaced on a log scale from 10 to 10000, i.e.\ 9 gaps), 100 correctly answered prompts per
+group, and 3 random seeds. $\beta$ is fitted by one curve through all 3000 prompts,
+$\text{PC1} = a + s\,\beta^{\log_{10} n}$. We then recompute $\alpha$ vs $\beta$ with this new $\beta$.
 
-\begin{table}[h]
-\centering\small
-\begin{tabular}{lc}
-\hline
-Check & Result \\
-\hline
-$\beta$ change across seeds (median s.d.) & 0.015 \\
-Spread of $\beta$ between models & 0.55--1.38 \\
-Fit quality, $R^2$ (median, range) & 0.89 (0.81--0.97) \\
-Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\
-\hline
-\end{tabular}
-\caption{Reliability of $\beta$ (25 models).}
-\label{tab:exp2a}
-\end{table}
+\textbf{Reliability.} Across seeds $\beta$ changes by only 0.015 (median s.d.), against a spread of
+0.55--1.38 between models. The curve fits well (median $R^2 = 0.89$, range 0.81--0.97), and at the
+same layer the new $\beta$ agrees with the paper's 3-gap $\beta$ at $r = 0.96$.
 
 \begin{table}[h]
 \centering\small
@@ -97,38 +79,21 @@ Old $\beta$ (3 gaps, Exp.~1) & 0.56 (0.003) & 0.46 (0.022) \\
 New $\beta$, Exp.~1 layers & 0.63 (0.001) & 0.52 (0.008) \\
 New $\beta$, layers re-chosen & 0.20 (0.33) & 0.19 (0.37) \\
 New $\beta$, all at layer 8 & 0.75 ($<$0.001) & 0.71 ($<$0.001) \\
+New $\beta$, all at one layer, 6--11 & 0.61--0.75 & 0.45--0.71 \\
+New $\beta$, all at one layer, 2--4 & $-0.35$ to 0.00 & $-0.37$ to $-0.03$ \\
 \hline
 \end{tabular}
-\caption{$\alpha$ vs $\beta$ before and after changing how $\beta$ is measured (25 models).}
-\label{tab:exp2c}
+\caption{$\alpha$ vs $\beta$ before and after changing how $\beta$ is measured (25 models;
+$r$: Pearson, $\rho$: Spearman). At every layer from 6 to 11, $r$ is significant after correcting
+for testing 16 layers.}
+\label{tab:exp2}
 \end{table}
 
-\begin{table}[h]
-\centering\small
-\begin{tabular}{ccc@{\hspace{1.5em}}ccc}
-\hline
-Layer & $r$ & $\rho$ & Layer & $r$ & $\rho$ \\
-\hline
-2 & $-.05$ & $-.03$ & 8  & $\mathbf{.75}$ & $\mathbf{.71}$ \\
-3 & $-.35$ & $-.37$ & 9  & $\mathbf{.64}$ & $.54$ \\
-4 & $.00$  & $-.09$ & 10 & $\mathbf{.61}$ & $.45$ \\
-5 & $.51$  & $.30$  & 11 & $\mathbf{.66}$ & $\mathbf{.59}$ \\
-6 & $\mathbf{.68}$ & $.56$ & 12 & $.48$ & $.49$ \\
-7 & $\mathbf{.67}$ & $.53$ & & & \\
-\hline
-\end{tabular}
-\caption{$\alpha$ vs $\beta$ with all 25 models read at the same layer. \textbf{Bold}: significant
-after correcting for testing 16 layers ($p < 0.003$). Layers 1 and 13--16 have no clear number line.}
-\label{tab:exp2b}
-\end{table}
-
-\textbf{Result.} $\beta$ barely changes with new prompts, the fit is good, and the paper's 3-gap
-$\beta$ gives almost the same values. \emph{Effect on $\alpha$--$\beta$:} at the same layers, the
-better-measured $\beta$ gives a slightly stronger relation (0.63 vs 0.56). When the layers are re-chosen
-it drops to 0.20, because for 8 models two layers score within 8\% of each other and the rule jumps
-to an early layer (2--4) with a very different $\beta$. When all models are compared at the same
-middle layer (6--11), the relation is clear at every layer ($r = 0.61$--$0.75$). So the measurement of
-$\beta$ is reliable; the sensitive step is the layer choice.
+\textbf{Result.} The better-measured $\beta$ gives a slightly stronger relation at the same layers
+(0.63 vs 0.56). When the layers are re-chosen it drops to 0.20: for 8 models two layers score within
+8\% of each other, and the rule jumps to an early layer (2--4) with a very different $\beta$. When all
+models are compared at the same middle layer, the relation is clear at every layer from 6 to 11. So
+$\beta$ itself is measured reliably; the sensitive step is the choice of layer.
 
 \textbf{What it addresses.}
 \begin{itemize}
