@@ -1,4 +1,4 @@
-%% Body only (paste between \begin{document} and \end{document}). Needs booktabs and amsmath.
+%% Body only (paste between \begin{document} and \end{document}). Needs amsmath.
 
 \section{Experiment 1: The paper's method on 25 controlled models}
 
@@ -27,16 +27,14 @@ data differs.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Data & $n$ & Pearson $r$ ($p$) & Spearman $\rho$ ($p$) \\
-\midrule
-Paper (corpus level) & 6 & 0.81 (0.061) & 0.60 (0.24) \\
-DataDecide, all models & 25 & 0.56 (0.003) & 0.46 (0.022) \\
-DataDecide, without Dolma & 19 & 0.22 (0.36) & 0.11 (0.65) \\
-\bottomrule
+\begin{tabular}{|l|c|c|c|}
+\hline
+Data & $n$ & $r$ ($p$) & $\rho$ ($p$) \\ \hline
+Paper (corpus level) & 6 & 0.81 (0.061) & 0.60 (0.24) \\ \hline
+DataDecide, all models & 25 & 0.56 (0.003) & 0.46 (0.022) \\ \hline
+DataDecide, no Dolma & 19 & 0.22 (0.36) & 0.11 (0.65) \\ \hline
 \end{tabular}
-\caption{$\alpha$ vs $\beta$ in the paper and on DataDecide. All 25 models have a clear number line
+\caption{$\alpha$ vs $\beta$ in the paper and on DataDecide ($r$: Pearson, $\rho$: Spearman). All 25 models have a clear number line
 (order of numbers along PC1: Spearman 0.90--0.96); $\beta$ ranges from 0.62 to 1.36.}
 \label{tab:exp1}
 \end{table}
@@ -72,15 +70,13 @@ whether this is stable and how good the fit is.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{@{}lc@{}}
-\toprule
-Check & Result \\
-\midrule
-Change in $\beta$ across prompt seeds (median s.d.) & 0.015 \\
-Spread of $\beta$ between models & 0.55--1.38 \\
-Fit quality, $R^2$ (median, range) & 0.89 (0.81--0.97) \\
-Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\
-\bottomrule
+\begin{tabular}{|l|c|}
+\hline
+Check & Result \\ \hline
+$\beta$ change across seeds (median s.d.) & 0.015 \\ \hline
+Spread of $\beta$ between models & 0.55--1.38 \\ \hline
+Fit quality, $R^2$ (median, range) & 0.89 (0.81--0.97) \\ \hline
+Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\ \hline
 \end{tabular}
 \caption{Reliability of $\beta$ (25 models).}
 \label{tab:exp2a}
@@ -88,17 +84,15 @@ Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{@{}rcc@{\hspace{2.2em}}rcc@{}}
-\toprule
-Layer & $r$ & $\rho$ & Layer & $r$ & $\rho$ \\
-\midrule
-2 & $-.05$ & $-.03$ & 8  & $\mathbf{.75}$ & $\mathbf{.71}$ \\
-3 & $-.35$ & $-.37$ & 9  & $\mathbf{.64}$ & $.54$ \\
-4 & $.00$  & $-.09$ & 10 & $\mathbf{.61}$ & $.45$ \\
-5 & $.51$  & $.30$  & 11 & $\mathbf{.66}$ & $\mathbf{.59}$ \\
-6 & $\mathbf{.68}$ & $.56$ & 12 & $.48$ & $.49$ \\
-7 & $\mathbf{.67}$ & $.53$ & & & \\
-\bottomrule
+\begin{tabular}{|c|c|c||c|c|c|}
+\hline
+Layer & $r$ & $\rho$ & Layer & $r$ & $\rho$ \\ \hline
+2 & $-.05$ & $-.03$ & 8  & $\mathbf{.75}$ & $\mathbf{.71}$ \\ \hline
+3 & $-.35$ & $-.37$ & 9  & $\mathbf{.64}$ & $.54$ \\ \hline
+4 & $.00$  & $-.09$ & 10 & $\mathbf{.61}$ & $.45$ \\ \hline
+5 & $.51$  & $.30$  & 11 & $\mathbf{.66}$ & $\mathbf{.59}$ \\ \hline
+6 & $\mathbf{.68}$ & $.56$ & 12 & $.48$ & $.49$ \\ \hline
+7 & $\mathbf{.67}$ & $.53$ & & & \\ \hline
 \end{tabular}
 \caption{$\alpha$ vs $\beta$ with all 25 models read at the same layer. \textbf{Bold}: significant
 after correcting for testing 16 layers ($p < 0.003$). Layers 1 and 13--16 have no clear number line.}
@@ -139,18 +133,16 @@ orders the two correctly.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{@{}lccc@{}}
-\toprule
+\begin{tabular}{|l|c|c|c|}
+\hline
  & & $\alpha_{\mathrm{old}}$ & $\alpha_{\mathrm{new}}$ \\
-Models used & $n$ & $r$ / $\rho$ & $r$ / $\rho$ \\
-\midrule
-All 25 & 25 & .56$^{*}$ / .46$^{*}$ & \textbf{.82}$^{*}$ / \textbf{.77}$^{*}$ \\
-No Dolma models & 19 & .22 / .11 & .68$^{*}$ / .66$^{*}$ \\
-No code/math recipes & 17 & $-$.38 / $-$.41 & .44 / .52$^{*}$ \\
-Only base corpora & 8 & .55 / .50 & .92$^{*}$ / .90$^{*}$ \\
-Within families & 25 & .28 / .24 & .75$^{*}$ / .75$^{*}$ \\
-Drop any one model ($r$) & 24 & .50--.61 & .79--.84 \\
-\bottomrule
+Models used & $n$ & $r$ / $\rho$ & $r$ / $\rho$ \\ \hline
+All 25 & 25 & .56$^{*}$ / .46$^{*}$ & \textbf{.82}$^{*}$ / \textbf{.77}$^{*}$ \\ \hline
+No Dolma models & 19 & .22 / .11 & .68$^{*}$ / .66$^{*}$ \\ \hline
+No code/math recipes & 17 & $-$.38 / $-$.41 & .44 / .52$^{*}$ \\ \hline
+Only base corpora & 8 & .55 / .50 & .92$^{*}$ / .90$^{*}$ \\ \hline
+Within families & 25 & .28 / .24 & .75$^{*}$ / .75$^{*}$ \\ \hline
+Drop any one model ($r$) & 24 & .50--.61 & .79--.84 \\ \hline
 \end{tabular}
 \caption{$\alpha$ vs $\beta$ with both definitions of $\alpha$. $^{*}p<0.05$. ``Within families'':
 each family's average removed first. ``Base corpora'': one recipe per original corpus, no
