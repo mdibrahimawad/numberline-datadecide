@@ -1,4 +1,4 @@
-%% Body only (paste between \begin{document} and \end{document}). Needs amsmath.
+%% Body only (paste between \begin{document} and \end{document}). Needs amsmath only.
 
 \section{Experiment 1: The paper's method on 25 controlled models}
 
@@ -27,12 +27,14 @@ data differs.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{|l|c|c|c|}
+\begin{tabular}{lccc}
 \hline
-Data & $n$ & $r$ ($p$) & $\rho$ ($p$) \\ \hline
-Paper (corpus level) & 6 & 0.81 (0.061) & 0.60 (0.24) \\ \hline
-DataDecide, all models & 25 & 0.56 (0.003) & 0.46 (0.022) \\ \hline
-DataDecide, no Dolma & 19 & 0.22 (0.36) & 0.11 (0.65) \\ \hline
+Data & $n$ & $r$ ($p$) & $\rho$ ($p$) \\
+\hline
+Paper (corpus level) & 6 & 0.81 (0.061) & 0.60 (0.24) \\
+DataDecide, all models & 25 & 0.56 (0.003) & 0.46 (0.022) \\
+DataDecide, no Dolma & 19 & 0.22 (0.36) & 0.11 (0.65) \\
+\hline
 \end{tabular}
 \caption{$\alpha$ vs $\beta$ in the paper and on DataDecide ($r$: Pearson, $\rho$: Spearman). All 25 models have a clear number line
 (order of numbers along PC1: Spearman 0.90--0.96); $\beta$ ranges from 0.62 to 1.36.}
@@ -64,19 +66,22 @@ whether this is stable and how good the fit is.
   \dots, 10000, each $\pm10\%$), i.e.\ 9 gaps;
 \item 100 correctly answered prompts per group, repeated with 3 random seeds (3000 per model);
 \item $\beta$ fitted by one curve through all prompts, $\text{PC1} = a + s\,\beta^{\log_{10} n}$;
-\item $\alpha$ vs $\beta$ also computed with every model read at the \emph{same} layer, to see how
-  much the layer choice matters.
+\item $\alpha$ (the paper's $\alpha$) vs the new $\beta$ computed three ways: at the layers chosen in
+  Experiment~1, at layers re-chosen by the same rule on the new prompts, and with every model read
+  at the \emph{same} layer.
 \end{itemize}
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{|l|c|}
+\begin{tabular}{lc}
 \hline
-Check & Result \\ \hline
-$\beta$ change across seeds (median s.d.) & 0.015 \\ \hline
-Spread of $\beta$ between models & 0.55--1.38 \\ \hline
-Fit quality, $R^2$ (median, range) & 0.89 (0.81--0.97) \\ \hline
-Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\ \hline
+Check & Result \\
+\hline
+$\beta$ change across seeds (median s.d.) & 0.015 \\
+Spread of $\beta$ between models & 0.55--1.38 \\
+Fit quality, $R^2$ (median, range) & 0.89 (0.81--0.97) \\
+Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\
+\hline
 \end{tabular}
 \caption{Reliability of $\beta$ (25 models).}
 \label{tab:exp2a}
@@ -84,15 +89,33 @@ Agreement with the 3-gap $\beta$ (same layer), $r$ & 0.96 \\ \hline
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{|c|c|c||c|c|c|}
+\begin{tabular}{lcc}
 \hline
-Layer & $r$ & $\rho$ & Layer & $r$ & $\rho$ \\ \hline
-2 & $-.05$ & $-.03$ & 8  & $\mathbf{.75}$ & $\mathbf{.71}$ \\ \hline
-3 & $-.35$ & $-.37$ & 9  & $\mathbf{.64}$ & $.54$ \\ \hline
-4 & $.00$  & $-.09$ & 10 & $\mathbf{.61}$ & $.45$ \\ \hline
-5 & $.51$  & $.30$  & 11 & $\mathbf{.66}$ & $\mathbf{.59}$ \\ \hline
-6 & $\mathbf{.68}$ & $.56$ & 12 & $.48$ & $.49$ \\ \hline
-7 & $\mathbf{.67}$ & $.53$ & & & \\ \hline
+$\beta$ used & $r$ ($p$) & $\rho$ ($p$) \\
+\hline
+Old $\beta$ (3 gaps, Exp.~1) & 0.56 (0.003) & 0.46 (0.022) \\
+New $\beta$, Exp.~1 layers & 0.63 (0.001) & 0.52 (0.008) \\
+New $\beta$, layers re-chosen & 0.20 (0.33) & 0.19 (0.37) \\
+New $\beta$, all at layer 8 & 0.75 ($<$0.001) & 0.71 ($<$0.001) \\
+\hline
+\end{tabular}
+\caption{$\alpha$ vs $\beta$ before and after changing how $\beta$ is measured (25 models).}
+\label{tab:exp2c}
+\end{table}
+
+\begin{table}[h]
+\centering\small
+\begin{tabular}{ccc@{\hspace{1.5em}}ccc}
+\hline
+Layer & $r$ & $\rho$ & Layer & $r$ & $\rho$ \\
+\hline
+2 & $-.05$ & $-.03$ & 8  & $\mathbf{.75}$ & $\mathbf{.71}$ \\
+3 & $-.35$ & $-.37$ & 9  & $\mathbf{.64}$ & $.54$ \\
+4 & $.00$  & $-.09$ & 10 & $\mathbf{.61}$ & $.45$ \\
+5 & $.51$  & $.30$  & 11 & $\mathbf{.66}$ & $\mathbf{.59}$ \\
+6 & $\mathbf{.68}$ & $.56$ & 12 & $.48$ & $.49$ \\
+7 & $\mathbf{.67}$ & $.53$ & & & \\
+\hline
 \end{tabular}
 \caption{$\alpha$ vs $\beta$ with all 25 models read at the same layer. \textbf{Bold}: significant
 after correcting for testing 16 layers ($p < 0.003$). Layers 1 and 13--16 have no clear number line.}
@@ -100,16 +123,19 @@ after correcting for testing 16 layers ($p < 0.003$). Layers 1 and 13--16 have n
 \end{table}
 
 \textbf{Result.} $\beta$ barely changes with new prompts, the fit is good, and the paper's 3-gap
-$\beta$ gives almost the same values. At every middle layer (6--11), where most models' chosen layers
-lie, $\alpha$ and $\beta$ are clearly related ($r = 0.61$--$0.75$). The sensitive step is the layer
-choice: for 8 models two layers score within 8\% of each other but give different $\beta$.
+$\beta$ gives almost the same values. \emph{Effect on $\alpha$--$\beta$:} at the same layers, the
+better-measured $\beta$ gives a slightly stronger relation (0.63 vs 0.56). When the layers are re-chosen
+it drops to 0.20, because for 8 models two layers score within 8\% of each other and the rule jumps
+to an early layer (2--4) with a very different $\beta$. When all models are compared at the same
+middle layer (6--11), the relation is clear at every layer ($r = 0.61$--$0.75$). So the measurement of
+$\beta$ is reliable; the sensitive step is the layer choice.
 
 \textbf{What it addresses.}
 \begin{itemize}
 \item \textbf{$\beta$ from few points; stability and fit quality} (a1nj, point 3): stable across seeds,
   good fit, and consistent with the 3-gap $\beta$.
-\item \textbf{Sensitivity to the layer:} the relation holds at every middle layer when all models are
-  compared at the same depth.
+\item \textbf{Sensitivity to the layer:} near-tied layers can change the result; comparing all models at
+  the same depth gives a clear relation at every middle layer.
 \end{itemize}
 
 \clearpage
@@ -133,16 +159,18 @@ orders the two correctly.
 
 \begin{table}[h]
 \centering\small
-\begin{tabular}{|l|c|c|c|}
+\begin{tabular}{lccc}
 \hline
  & & $\alpha_{\mathrm{old}}$ & $\alpha_{\mathrm{new}}$ \\
-Models used & $n$ & $r$ / $\rho$ & $r$ / $\rho$ \\ \hline
-All 25 & 25 & .56$^{*}$ / .46$^{*}$ & \textbf{.82}$^{*}$ / \textbf{.77}$^{*}$ \\ \hline
-No Dolma models & 19 & .22 / .11 & .68$^{*}$ / .66$^{*}$ \\ \hline
-No code/math recipes & 17 & $-$.38 / $-$.41 & .44 / .52$^{*}$ \\ \hline
-Only base corpora & 8 & .55 / .50 & .92$^{*}$ / .90$^{*}$ \\ \hline
-Within families & 25 & .28 / .24 & .75$^{*}$ / .75$^{*}$ \\ \hline
-Drop any one model ($r$) & 24 & .50--.61 & .79--.84 \\ \hline
+Models used & $n$ & $r$ / $\rho$ & $r$ / $\rho$ \\
+\hline
+All 25 & 25 & .56$^{*}$ / .46$^{*}$ & \textbf{.82}$^{*}$ / \textbf{.77}$^{*}$ \\
+No Dolma models & 19 & .22 / .11 & .68$^{*}$ / .66$^{*}$ \\
+No code/math recipes & 17 & $-$.38 / $-$.41 & .44 / .52$^{*}$ \\
+Only base corpora & 8 & .55 / .50 & .92$^{*}$ / .90$^{*}$ \\
+Within families & 25 & .28 / .24 & .75$^{*}$ / .75$^{*}$ \\
+Drop any one model ($r$) & 24 & .50--.61 & .79--.84 \\
+\hline
 \end{tabular}
 \caption{$\alpha$ vs $\beta$ with both definitions of $\alpha$. $^{*}p<0.05$. ``Within families'':
 each family's average removed first. ``Base corpora'': one recipe per original corpus, no
