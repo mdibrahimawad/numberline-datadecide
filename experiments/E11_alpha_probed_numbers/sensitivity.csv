@@ -1,0 +1,16 @@
+scenario,n,alpha_old_r,alpha_old_p,alpha_old_rho,alpha_old_rho_p,alpha_new_r,alpha_new_p,alpha_new_rho,alpha_new_rho_p
+All 25 models,25,0.56,0.0033,0.46,0.022,0.82,6.7e-07,0.77,7e-06
+Remove the 4 E10 measurement flags,21,0.5,0.022,0.38,0.092,0.79,2.1e-05,0.7,0.00037
+Remove dolma1_7-no-reddit only (beta does not replicate),24,0.5,0.012,0.39,0.061,0.79,4.2e-06,0.75,2.9e-05
+Remove the 6 Dolma models,19,0.22,0.36,0.11,0.65,0.68,0.0015,0.66,0.0019
+Remove the 3 DCLM-Dolma mixes,22,0.53,0.011,0.3,0.18,0.8,7.4e-06,0.71,0.00019
+Remove all 9 Dolma-containing models (Dolma + mixes),16,-0.31,0.24,-0.33,0.21,0.43,0.1,0.53,0.036
+Remove all recipes with code or math (8),17,-0.38,0.13,-0.41,0.1,0.44,0.079,0.52,0.031
+Remove the DCLM family (7),18,0.59,0.01,0.59,0.011,0.86,4.9e-06,0.82,3.3e-05
+Remove the Falcon family (6),19,0.63,0.0036,0.62,0.0047,0.83,1e-05,0.81,2.6e-05
+Remove FineWeb (2),23,0.57,0.0048,0.48,0.022,0.81,3.2e-06,0.76,2.9e-05
+Remove C4 (1),24,0.61,0.0016,0.52,0.0089,0.82,7.3e-07,0.8,2.4e-06
+Only the 6 Dolma models,6,0.75,0.084,0.71,0.11,0.8,0.054,0.54,0.27
+Only Dolma-containing models (9),9,0.74,0.021,0.8,0.0096,0.82,0.0068,0.73,0.025
+"Only base corpora, no filtered/ablated variants (8)",8,0.55,0.16,0.5,0.21,0.92,0.0011,0.9,0.002
+"Only quality-filtered variants (DCLM-qc + Falcon-qc, 10)",10,-0.27,0.46,-0.33,0.35,0.35,0.32,0.65,0.043
