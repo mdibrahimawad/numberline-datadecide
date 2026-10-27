@@ -84,3 +84,13 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
   dolma1_7 and fineweb-edu have layer near-ties with different β). No valid exclusion raises the α–β correlation.
 - **E11, α on the probed numbers:** the paper-protocol β (3 gaps, joint-score layer) against α fitted only on the
   probed groups gives r = +0.82, ρ = +0.77 (n = 25), versus 0.56 / 0.46. Exploratory; to be confirmed out of sample.
+
+## 2026-10-27
+- **AAAI reviews mapped to experiments** (`docs/rebuttal.md`). E01, E06 and E11 are the main evidence; a 3-page
+  body-only LaTeX write-up is in `paper/new_experiments_body.tex`.
+- **E11 cross-check** (`cross_check.py`): every α variant against every β measurement. The new α also beats α_OLS
+  with E06's β at E01's layers (0.77 vs 0.63) and survives E06's layer re-selection (0.60 vs 0.20), but at a fixed
+  layer 8 both give r = 0.75. Partial correlation with code + math share controlled: 0.30 (p = 0.15) for the E11
+  α. The 0.40 (p = 0.045) quoted in E10 belongs to the pooled variant. E11 caveat 3 corrected (E06 own-layer
+  value 0.42 → reproducible 0.60, or 0.46 with α on E06's groups).
+- E09 status line corrected (it was run on 2026-10-10).

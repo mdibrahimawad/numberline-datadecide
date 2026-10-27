@@ -76,8 +76,9 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-10.
    using the paper-protocol β (3 gaps, layer by the joint √(EV·|ρ|) score, held-out seeds)
    gives **r = +0.82 (p = 7×10⁻⁷), ρ = +0.77** across all 25 models (α_OLS: 0.56 / 0.46). It
    holds within families (r = 0.75 vs 0.28) and survives a family-cluster bootstrap
-   (95% CI 0.39–0.90). It is weaker among the 17 web-only recipes (r = 0.44, ρ = 0.53) and
-   in E06 at its own layers (r = 0.42). The definition was adopted after seeing the data, so it must be
+   (95% CI 0.39–0.90). It is weaker among the 17 web-only recipes (r = 0.44, ρ = 0.53), after
+   controlling for code + math share (partial r = 0.30, p = 0.15), and with E06's β at E06's own
+   layers (r = 0.60). At a fixed layer 8 it is no better than α_OLS (both r = 0.75). The definition was adopted after seeing the data, so it must be
    confirmed out of sample (E09 Paloma, E08). A blind audit (E10) found no valid reason to
    drop models: only dolma1_7-no-reddit (β does not replicate) and 3 layer near-ties are flagged.
 

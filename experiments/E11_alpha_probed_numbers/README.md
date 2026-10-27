@@ -5,12 +5,13 @@ joint score.
 **Question:** does the α–β relation get stronger if α describes how often the training data contains the
 *same numbers* that the model's number line is measured on?
 **Status:** done (2026-10-26). **Exploratory:** this α definition was adopted after seeing the original result
-(see §8).
+(see §9).
 
 **Reproduce (from the repo root):**
 ```bash
 python experiments/E11_alpha_probed_numbers/compute.py       # per_model.csv, results.json
 python experiments/E11_alpha_probed_numbers/sensitivity.py   # sensitivity.csv, leave_one_out.csv
+python experiments/E11_alpha_probed_numbers/cross_check.py   # cross_check.csv, partial.csv (§8)
 ```
 
 ## Headline
@@ -229,7 +230,56 @@ How the new α changes the ranking:
 - **Recipes that moved down** (low β; their data thins out quickly on the probed numbers): c4, falcon-and-cc
   and dolma1_7-no-math-code. The old α ranked them 8–12; the new α ranks them 15–21.
 
-## 8. Caveats
+## 8. Cross-check: other β measurements, other α variants, confounder control
+
+`cross_check.py` crosses every α definition with every β measurement (n = 25, nothing dropped).
+
+**α definitions**
+- **old:** α_OLS over all integers 1–10000 (paper).
+- **new:** this experiment, log median count against log group centre over the 4 E01 groups.
+- **pooled:** OLS of log c(n) on log n over every probed E01 number individually (the variant E10 auditor 13
+  proposed).
+- **new on E06 groups:** like *new*, but on E06's 10 groups (centres 10·10^(g/3), ±10 %).
+
+**β measurements**
+- **E01:** paper protocol, 3 gaps, joint-score layer (selected on seeds 42–44, evaluated on 45–47).
+- **E06 at E01 layer:** E06's continuous-fit β (10 groups, 3,000 prompts) at the layer E01 chose.
+- **E06 own layer:** E06's β at the layer E06 re-selects by the same rule.
+- **E06 layer 8:** E06's β with every model read at layer 8.
+
+Pearson r / Spearman ρ (\* p < 0.05):
+
+| α ↓ / β → | E01 | E06 at E01 layer | E06 own layer | E06 layer 8 |
+|---|---|---|---|---|
+| old (1–10000) | 0.56\* / 0.46\* | 0.63\* / 0.52\* | 0.20 / 0.19 | 0.75\* / 0.71\* |
+| **new (E01 groups)** | **0.82\* / 0.77\*** | 0.77\* / 0.62\* | 0.60\* / 0.61\* | 0.75\* / 0.50\* |
+| pooled (E01 numbers) | 0.79\* / 0.80\* | 0.73\* / 0.65\* | 0.67\* / 0.70\* | 0.63\* / 0.42\* |
+| new on E06 groups | 0.69\* / 0.62\* | 0.69\* / 0.58\* | 0.46\* / 0.43\* | 0.70\* / 0.58\* |
+
+**What it shows**
+1. **The improvement is not specific to E01's β.** With E06's β at the same layers, the new α also beats the old
+   one (0.77 vs 0.63).
+2. **The old α collapses when E06 re-selects layers (0.20); the new α does not (0.60).** The re-selection moves
+   8 models to near-tied early layers (E06, near-tie table).
+3. **At a common layer (8) both α do equally well on r (0.75)**, and the old α ranks better (ρ 0.71 vs 0.50). So
+   at a fixed depth the advantage of the new α disappears; it helps most when each model is read at its own
+   selected layer.
+4. **Measuring α on E06's own 10 groups is not better** than on E01's 4 groups (0.46 vs 0.60 at E06's own
+   layers).
+
+**Partial correlation with E01 β, controlling for code + math share** (`partial.csv`):
+
+| α | partial r | p |
+|---|---|---|
+| old | −0.23 | 0.28 |
+| new | 0.30 | 0.15 |
+| pooled | 0.40 | 0.05 |
+
+Code and math documents exist only in Dolma-based recipes, so this control removes most of the Dolma-vs-rest
+contrast. The new α keeps a positive but non-significant partial correlation. **The 0.40 (p ≈ 0.045) quoted in
+E10 is the pooled variant, not this experiment's α.**
+
+## 9. Caveats
 
 1. **Post-hoc choice.** This α was suggested by a blind auditor in E10 (agent 13, who never saw any α–β
    correlation), but it was adopted after the original α was known to correlate weakly, and several slope
@@ -238,17 +288,18 @@ How the new α changes the ranking:
    - Single-gap slopes do not: r = 0.05–0.66.
    - **Treat it as a hypothesis to confirm, not as a confirmed result.**
 2. **Only 4 points per model,** so the new α is a coarse slope.
-3. **It is weaker in E06** (10 groups, 9 gaps) at E06's own best layers: r = 0.42, ρ = 0.43. E06's layer choice
-   jumps to layers 2–4 for 7 models, and E06 selects and evaluates on the same seeds. At E01's layers, E06
-   gives r ≈ 0.70.
+3. **It is weaker with E06's β at E06's own layers** (§8): r = 0.60, ρ = 0.61 with this α, and 0.46 / 0.43 if
+   α is instead taken on E06's 10 groups. E06's layer choice jumps to early layers 2–4 for several models on
+   near-ties, and E06 selects and evaluates on the same seeds. At E01's layers E06 gives r = 0.77.
+   At a fixed layer 8 the new α is no better than the old one (r = 0.75 for both).
 4. **The content confound is reduced, not gone.** Without any code/math recipes, the relation is positive but
-   moderate (ρ = 0.52–0.53).
+   moderate (ρ = 0.52–0.53). Controlling for code + math share gives partial r = 0.30 (p = 0.15).
 5. **Counts stop at 10000,** so 10001–10019 of the top group are missing.
 6. **Next step:** fix this α definition now and test it on data it was not chosen on: the 6 Paloma models (E09)
    or the DataDecide checkpoints (E08). Alternatively, probe numbers spread over all of 1–10000, so that the old
    and new α describe the same range.
 
-## 9. Suggested wording for a paper
+## 10. Suggested wording for a paper
 
 > *Because β is estimated only from four probed magnitude groups, we measure the corpus exponent on those same
 > numbers (slope of log median count against log group centre, one point per group). This probed-range α

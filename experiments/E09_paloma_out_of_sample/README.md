@@ -2,9 +2,8 @@
 
 **Question:** do formulas fitted only on the 25 DataDecide models predict number-line
 compression β in 6 **new** models they never saw?
-**Status:** **planned, not run.** Everything under "Locked" was written before any Paloma
-data was collected. It must not change after the first Paloma β or count is computed.
-Results go in a separate `RESULTS.md`, with every deviation from this plan stated.
+**Status:** **done (2026-10-10); see "Result" below.** Everything under "Locked" was written before
+any Paloma data was collected and was not changed afterwards.
 **Written:** 2026-10-10.
 
 ## Why Paloma

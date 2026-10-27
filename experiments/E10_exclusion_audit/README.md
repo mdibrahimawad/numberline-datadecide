@@ -41,6 +41,9 @@ slope and ranks recipes only weakly like the counts of the tested numbers 1–39
 | within families (family means removed) | 25 | 0.79 | 0.82 |
 | partial correlation, controlling for code+math share | 25 | 0.40 (p 0.045) | |
 
+The rows above use the pooled variant (every probed number as its own point). E11 adopts the group-median
+variant; its partial correlation is 0.30 (p = 0.15); see `../E11_alpha_probed_numbers/README.md` §8.
+
 The variant using the 4 group medians gives the same picture (r = 0.82, ρ = 0.76).
 
 **Caveats:** this α definition was proposed by a blind auditor, but it was adopted after α_OLS had been seen to

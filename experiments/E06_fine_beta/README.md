@@ -50,5 +50,9 @@ python -m pytest -q tests/test_beta_fine.py
 - **α vs β:** at the old layer, the link is a bit stronger than in E01 (r = +0.63, p = 0.001;
   within families +0.40, p = 0.049). With the newly selected layers it weakens to
   0.37 / 0.20, because of those near-tie switches. Compare models at a fixed layer.
+- **At one common layer** (every model read at the same layer): α_OLS vs β_cont is r = +0.75, ρ = +0.71 at
+  layer 8 and significant (Bonferroni over 16 layers) at every layer 6–11 (r = 0.61–0.75); no relation at
+  layers 2–4. Table: `paper/tables/alpha_beta_by_layer.tex`. Spearman values for every β version, and the
+  probed-number α of E11 against E06's β: `experiments/E11_alpha_probed_numbers/cross_check.csv`.
 
 Per-model table and the near-tie table: [DETAILS.md](DETAILS.md).

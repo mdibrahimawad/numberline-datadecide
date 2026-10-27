@@ -1,0 +1,4 @@
+alpha,beta,control,partial_r,p
+old,e01,code_share + math_share,-0.228,0.28
+new,e01,code_share + math_share,0.304,0.15
+pooled,e01,code_share + math_share,0.404,0.05

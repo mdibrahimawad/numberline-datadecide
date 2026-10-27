@@ -33,6 +33,7 @@ Details: [`docs/findings.md`](docs/findings.md).
 | continue the project from zero (new person or new AI session) | [`docs/handover.md`](docs/handover.md) |
 | find which file does what | [`docs/code_map.md`](docs/code_map.md) |
 | see what happened when | [`docs/timeline.md`](docs/timeline.md) |
+| answer the AAAI reviews (which experiment addresses which concern) | [`docs/rebuttal.md`](docs/rebuttal.md) |
 | run jobs on RunPod (beginner guide) | [`docs/runpod.md`](docs/runpod.md) |
 | understand how DataDecide fed data to its models | [`docs/datadecide_sampling.md`](docs/datadecide_sampling.md) |
 
@@ -66,7 +67,7 @@ runpod_jobs/   RunPod runners (exact α on CPU pods, β on a GPU pod)
 utils/         small helpers used by src/
 tests/         offline tests
 reference/     the original paper's code (unchanged copies)
-paper/         LaTeX appendix + figures from the prior-work write-up
+paper/         LaTeX: prior-work appendix + figures; rebuttal write-ups (new_experiments*.tex, see docs/rebuttal.md)
 ```
 
 ## Quick start
