@@ -329,7 +329,16 @@ def main():
     ap.add_argument("--llama-id", default="", help="e.g. meta-llama/Llama-3.2-1B (gated); default = the E10 mirror")
     ap.add_argument("--ckpt-override", default="", help="testing: <model_id>:<rev1,rev2> replaces the checkpoint list")
     a = ap.parse_args()
-    Runner(a).run()
+    r = Runner(a)
+    try:
+        r.run()
+    except SystemExit:
+        raise
+    except BaseException as e:                       # crash: save what exists and (with --stop-pod) stop the pod
+        import traceback
+        r.log(f"RUN CRASHED: {type(e).__name__}: {e}\n{traceback.format_exc()}")
+        r.finish(status=f"crashed ({type(e).__name__})")
+        sys.exit(1)
 
 
 if __name__ == "__main__":
