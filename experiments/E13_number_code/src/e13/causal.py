@@ -189,7 +189,7 @@ def make_edit(kind, Q, mu, other=None, delta=None):
 
     def fn(h, rows):
         nonlocal Qt
-        if Qt is None:
+        if Qt is None and Q is not None:
             Qt = torch.tensor(Q, dtype=torch.float32, device=h.device)
         if kind == "ablate":
             m = torch.tensor(mu, dtype=torch.float32, device=h.device)
