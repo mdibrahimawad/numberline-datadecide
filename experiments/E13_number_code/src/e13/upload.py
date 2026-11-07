@@ -2,12 +2,21 @@
 environment variable HF_TOKEN and is never printed, logged or written to disk."""
 from __future__ import annotations
 
+
+def _saved_token():
+    """Token saved by `hf auth login` / `huggingface-cli login` (never printed)."""
+    try:
+        from huggingface_hub import get_token
+        return get_token()
+    except Exception:
+        return None
+
 import os
 
 
 def upload_folder(local_dir, repo_id, path_in_repo, log=print, ignore=None):
     from huggingface_hub import HfApi
-    token = os.environ.get("HF_TOKEN")
+    token = os.environ.get("HF_TOKEN") or _saved_token()
     if not token:
         log("  upload skipped: HF_TOKEN is not set"); return dict(uploaded=False, reason="no HF_TOKEN")
     if not repo_id:

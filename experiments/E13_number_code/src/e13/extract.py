@@ -5,6 +5,15 @@ Work is done in chunks of numbers; every chunk runs all contexts, writes its row
 recorded in progress.json, so an interrupted run resumes at the next chunk."""
 from __future__ import annotations
 
+
+def _saved_token():
+    """Token saved by `hf auth login` / `huggingface-cli login` (never printed)."""
+    try:
+        from huggingface_hub import get_token
+        return get_token()
+    except Exception:
+        return None
+
 import json
 import os
 import time
@@ -22,7 +31,7 @@ def load_model(key, dtype="float32", device=None, revision=None, model_id=None, 
     import torch
     from transformers import AutoModelForCausalLM, AutoTokenizer
     spec = C.MODELS.get(key, {}); mid = model_id or spec["hf"]; tok_kw = {}
-    token = os.environ.get("HF_TOKEN") or None
+    token = os.environ.get("HF_TOKEN") or _saved_token() or None
     kw = dict(revision=revision, token=token)
     if spec.get("trust_remote_code"):
         kw["trust_remote_code"] = True
