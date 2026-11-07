@@ -1,0 +1,7 @@
+model,set,share_f,share_digit,f_is_1D,f_recovers_order,power_at_1x,power_at_0p3x,power_at_0p1x,Zd_is_1D
+pythia-1.4b,P1,0.25–0.37,0.18–0.33,supported (5/5),supported (5/5),0/5,0/5,0/5,cannot tell
+pythia-1.4b,P2,0.17–0.37,0.43–0.52,mixed (2/5),mixed (3/5),0/5,0/5,0/5,cannot tell
+pythia-1.4b,P3,0.25–0.33,0.20–0.34,supported (5/5),supported (5/5),0/5,0/5,0/5,cannot tell
+qwen2.5-1.5b,Q2,0.03–0.21,0.40–0.74,supported (5/5),supported (5/5),0/5,0/5,0/5,cannot tell
+qwen2.5-1.5b,Q3,0.08–0.61,0.13–0.32,supported (5/5),supported (4/5),0/5,0/5,0/5,cannot tell
+qwen2.5-1.5b,Q4,0.08–0.67,0.08–0.35,supported (5/5),mixed (2/5),0/5,0/5,0/5,cannot tell

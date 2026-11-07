@@ -77,3 +77,45 @@ cloud environment); T9 ran with single-threaded torch (no effect on results).
 7. Pythia P1 mixes 1–3-digit numbers; its log advantage in T5 may be digit length.
 8. A positive control in the subspace where days/months are known to be circular (Engels et al. 2024 use specific
    probes / PCA directions and many contexts) would tell whether the loop detector can work at all on LLM states.
+
+---
+
+# E12b: smooth part + additive digit part (pre-registered in `PREREG_B.md`, commit `689399e`)
+Code `src/e12b_smooth_digits.py` (`7e9c2c7`), report `src/e12b_report.py` (`74fdd75`), both before results; synthetic
+test `tests/test_e12b_smooth_digits.py`. Results `results/e12b_smooth_digits/` (`tests.csv`, `power.csv`,
+`verdicts.csv`, `verdicts_by_depth.csv`, `secondary_units_only.csv`, `fig_dimension_vs_k.png`). Deviations: none.
+
+Z(n) = f(n) + D(n) + E(n), f smooth over n (CV bandwidth, ≥ 1 % of the range; chosen 1–10 %), D additive one-hot tens +
+units (+ hundreds for Q4), backfitted.
+
+**Variance carried (share of total variance of the 50 PCA dimensions):**
+| Set | f (smooth) by depth ~25 / 50 / 75 / 84 % / last | digit part | residual |
+|---|---|---|---|
+| Qwen Q2 (10–99) | 0.21 / 0.03 / 0.04 / 0.14 / 0.17 | 0.40–0.74 | 0.20–0.58 |
+| Qwen Q3 (100–999) | 0.18 / 0.08 / 0.16 / **0.61 / 0.54** | 0.13–0.32 | 0.19–0.68 |
+| Qwen Q4 (1000–9999) | 0.12 / 0.08 / 0.19 / **0.67 / 0.59** | 0.08–0.35 | 0.19–0.72 |
+| Pythia P2 (10–99) | 0.23 / 0.21 / 0.37 / 0.17 / 0.37 | 0.43–0.52 | 0.28–0.43 |
+| Pythia P3 (one-token 100–999) | 0.32 / 0.33 / 0.25 / 0.25 / 0.25 | 0.20–0.34 | 0.35–0.44 |
+| Pythia P1 (one-token 1–999) | 0.37 / 0.36 / 0.25 / 0.25 / 0.25 | 0.18–0.33 | 0.36–0.40 |
+
+**Is f 1-D?** Yes, as expected by construction: the T2 plateau passes in 5 / 5 depths for Q2, Q3, Q4, P3, P1 (MLE at
+k = 20: 1.08–1.30); P2 mixed (2 / 5; MLE up to 2.2–2.6 at ~75 %–last, where f is strongly curved).
+**Does f's geometry recover order without n (T3)?** Supported for Q2, Q3, P3, P1 (random ρ 0.80–1.00, held-out block
+ρ 0.97–1.00); mixed for Q4 (2 / 5; block ρ 0.02 at ~50 %) and P2 (3 / 5).
+**Spacing along f (T4, exact arc length):** close to linear in n: exponent p 0.75–1.20 (Qwen mostly 0.75–0.95, mild
+compression; Pythia 0.80–1.10); log spacing never selected.
+**Is the digit-removed data Z − D (f + residual) 1-D?** **Cannot tell: no power at any tested noise level.** The fake curve
+(f + c × the real residual) passed the plateau in 0 / 5 replicates at c = 0.1, 0.3 and 1 in every dataset (at c = 0.1
+its MLE is 1.4–2.0 at k = 20–80 but 2–11 at k = 5); the real Z − D has MLE 3.2–15 at k = 20. Even a tenth of the real
+residual is larger than the spacing of neighbouring numbers along f, so local dimension sees the noise.
+**Secondary (2-digit sets, units digit only):** f carries 0.10–0.55 (Qwen Q2) and 0.25–0.30 (Pythia P2); f passes the
+plateau at ~25–75 % (MLE 1.13–1.31), not at ~84 % / last (1.57–2.63).
+
+**Reading.** Removing an additive digit part leaves a smooth part that is a non-self-crossing curve ordering the numbers
+with roughly linear spacing, but that part carries only 3–37 % of the variance except in Qwen's late layers for 3- and
+4-digit numbers (54–67 %). Whether the full digit-removed representation is 1-D cannot be decided with local dimension:
+the residual is too large relative to the spacing of neighbours.
+
+**Double-check:** (1) f's bootstrap intervals for p are narrow because they resample points along a fixed f, not
+uncertainty in f itself; (2) for 2-digit sets f and the tens one-hot compete (see the units-only secondary); (3) a power
+check at c < 0.1 would locate the noise level where the plateau rule regains power.
