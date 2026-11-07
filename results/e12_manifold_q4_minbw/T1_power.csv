@@ -1,0 +1,6 @@
+model,set,depth,curve_pass_of5,fat_pass_of5,thin_pass_of5,power_fat,power_thin
+qwen2.5-1.5b,Q4,last,0,0,0,False,False
+qwen2.5-1.5b,Q4,~25%,0,0,0,False,False
+qwen2.5-1.5b,Q4,~50%,0,0,0,False,False
+qwen2.5-1.5b,Q4,~75%,0,0,0,False,False
+qwen2.5-1.5b,Q4,~84%,0,0,0,False,False

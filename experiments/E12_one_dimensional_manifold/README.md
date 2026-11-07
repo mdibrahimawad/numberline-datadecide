@@ -159,3 +159,43 @@ Standardisation and PCA fitted on training numbers only; bandwidths by 5-fold CV
    through its neighbours would put it, consistent with the leading-digit groups of E11. The digit part rescues early
    layers (R² 0.1–0.3) but not Qwen's late layers.
 4. Caveat (pre-registered): one prompt per number, so the attainable R² is unknown.
+
+## Amendment A results (Q4 minimum bandwidth; Pythia log vs linear on P3)
+Pre-registered in `PREREG.md` (Amendment A) before the rerun. Output `results/e12_manifold_q4_minbw/` (same files as
+`results/e12_manifold/`); the original Q4 rows are unchanged.
+
+**Deviation (seeds):** the rerun was started with `--sets Q4`, so the per-dataset id in the seed (`1000·dataset +
+condition`) was 1–5 instead of the original 11–15. Seeds were fixed, but not the same ones as in the main run. Effect on
+the real data: only the random parts move (T3 random ρ by ≤ 0.09, e.g. 0.20 → 0.16 at ~25 %); dimensions, T5–T8 on real
+data are identical to 3 decimals. The verdicts are identical to the original Q4.
+
+**Q4: bandwidth and trend (h = 1 before → h = 1 % of the range now):**
+| Depth | h (old → new) | trend share (old → new) | real MLE k = 20 | fake curve MLE k = 20 (old → new) | T1 curves passing plateau |
+|---|---|---|---|---|---|
+| ~25 % | 1 → 90 | 0.84 → 0.16 | 15.7 | 14.9 → 21.3 | 0 / 5 |
+| ~50 % | 1 → 90 | 0.82 → 0.09 | 15.2 | 16.5 → 22.4 | 0 / 5 |
+| ~75 % | 1 → 90 | 0.83 → 0.20 | 17.0 | 16.0 → 21.4 | 0 / 5 |
+| ~84 % | 1 → 90 | 0.97 → 0.74 | 10.9 | 9.3 → 16.6 | 0 / 5 |
+| last | 1 → 90 | 0.95 → 0.66 | 10.9 | 9.3 → 16.4 | 0 / 5 |
+
+Leave-one-out CV chose the smallest allowed bandwidth (1 %) at every depth. With a smooth trend, the fake curve is no
+longer ≈ the real data, but its noise (the residual covariance, 26–91 % of the variance) is still ~50-dimensional, so the
+fake curve, both sheets and every other fake are 11–24-dimensional; T1 power is still 0 at every depth (curve 0/5, thin
+0/5, fat 0/5). Real data vs fakes: the real MLE is now **below** the fake curve's at every depth (it was above before), and
+the real data still has far more digit structure than the curve (T6 digit R² 0.12–0.74 vs value R² 0.05–0.48; fake curve
+digit ≈ value at early depths), and a period-10 share (5–10 % at ~25/50 %) that only the helix fake reproduces.
+
+**Q4 verdicts (unchanged):** H1 cannot tell (0/5 depths with power), H2 mixed (3/5), H3 mixed (2/5), H4 cannot tell,
+H5 not supported (0/5).
+
+**Pythia log vs linear on P3 (one-token 100–999), from the main run:**
+| Depth | T5 R² linear / log (P3) | T4 best (P3) | T4 p [95 % CI] (P3) | P1 T5 linear / log (reference, confounded) |
+|---|---|---|---|---|
+| ~25 % | 0.31 / 0.34 | power | 0.75 [0.70, 0.80] | 0.28 / 0.66 |
+| ~50 % | 0.33 / 0.25 | power | 0.85 [0.80, 0.90] | 0.36 / 0.43 |
+| ~75 % | 0.17 / 0.10 | power | 0.60 [0.35, 0.85] | 0.15 / 0.07 |
+| ~84 % | 0.14 / 0.08 | linear | 0.80 [0.30, 1.25] | 0.13 / 0.05 |
+| last | 0.12 / 0.07 | power | 1.50 [1.30, 1.70] | 0.09 / 0.03 |
+
+On P3, log beats linear only at ~25 % and only slightly (0.34 vs 0.31); at the other depths linear wins. Log is never the
+best spacing model. P1's large early log advantage (0.66 vs 0.28) was mostly digit length (1- vs 2- vs 3-digit numbers).
