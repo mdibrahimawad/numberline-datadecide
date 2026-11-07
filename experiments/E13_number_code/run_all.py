@@ -124,7 +124,7 @@ class Runner:
         if self.done(f"analysis_{key}") or key in self.pending:
             return
         from e13 import analyse
-        jobs = [j for j in analyse.jobs_for(self.model_dir(key)) if not os.path.exists(analyse.job_path(j))]
+        jobs = [j for j in analyse.jobs_for(self.model_dir(key)) if not analyse.finished(j)]
         self.pending[key] = (time.time(), [self.executor().submit(analyse.run_job, j) for j in jobs])
         self.log(f"== {key}: {len(jobs)} analysis jobs submitted to {self.a.workers} workers")
 
@@ -144,7 +144,8 @@ class Runner:
                 if (k + 1) % 200 == 0:
                     self.log(f"  {key}: {k + 1}/{len(futs)} analysis jobs done")
             dt = time.time() - t; self.timing[f"analysis_{key}"] = dt
-            self.mark(f"analysis_{key}", dict(seconds=dt, jobs=len(futs), errors=n_err))
+            if n_err == 0:                       # with errors the step stays open, so the next run retries them
+                self.mark(f"analysis_{key}", dict(seconds=dt, jobs=len(futs), errors=0))
             self.log(f"== {key}: analysis done in {dt / 60:.1f} min ({len(futs)} jobs, {n_err} errors)")
 
     def projection(self, key):
@@ -188,7 +189,13 @@ class Runner:
 
     def gate_a(self):
         from e13 import report
-        res = report.build(self.a.out); keys = [m for m in self.C.STAGE_A if m in self.models]
+        try:
+            res = report.build(self.a.out)
+        except Exception as e:
+            import traceback
+            self.log(f"GATE A: report failed ({type(e).__name__}: {e}); causal stage not allowed\n{traceback.format_exc()}")
+            res = {}
+        keys = [m for m in self.C.STAGE_A if m in self.models]
         V = {(v["test"], v["condition"]): v["verdict"] for v in res.get("verdicts", [])}
         p7ok = all(res.get("p7_control_works", {}).get(m) for m in keys)
         h12 = any(V.get((t, c)) in ("supported", "one family only") for t in ("H1 decay", "H2a carry spikes", "H2b successor breaks",

@@ -228,7 +228,7 @@ def run_model(key, model, tok, data_dir, out_path, n_items=500, sets=None, log=p
             lst = []
             for s in sets:
                 pool = nums[s][dmask[s]] if split == "dev" else nums[s][~dmask[s]]
-                k = (100 if split == "dev" else n_items) // len(sets)
+                k = max(4, (min(100, n_items) if split == "dev" else n_items) // len(sets))
                 lst += build_items(tok, fam, pool, b, k, rng)
             items[split][b] = lst
     log(f"  causal {key}: items " + ", ".join(f"{b}={len(items['test'][b])}" for b in beh))

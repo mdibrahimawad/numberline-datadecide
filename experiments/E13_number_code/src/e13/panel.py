@@ -210,7 +210,11 @@ def exponent(get_X, sets_numbers, tag):
         return None
     sub = {s: (np.sort(np.random.default_rng(0).choice(n, 900, replace=False)) if len(n) > 900 else n) for s, n in lens.items()}
     n_all = np.concatenate([sub[s] for s in sub]); y = np.concatenate([[n_digits(s)] * len(sub[s]) for s in sub]).astype(float)
-    X = get_X(n_all); tr = np.isin(y, [2, 3]); Z = E1.prep(X, np.where(tr)[0])
+    X = get_X(n_all); tr = np.isin(y, [2, 3])
+    good = np.isfinite(X).all(1); X, y, tr = X[good], y[good], tr[good]
+    if X.std(0).max() < 1e-6:                        # fixed token at the embedding layer
+        return None
+    Z = E1.prep(X, np.where(tr)[0])
     rg = Ridge(alpha=1.0).fit(Z[tr], y[tr]); m2 = rg.predict(Z[y == 2]).mean(); m3 = rg.predict(Z[y == 3]).mean(); out = {}
     for Lh in (1, 4):
         k = y == Lh

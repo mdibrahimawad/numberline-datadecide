@@ -88,9 +88,20 @@ def job_path(job):
     return os.path.join(cd, f"{kind}__L{sl}__{s}.json")
 
 
+def finished(job):
+    """A job is finished if its JSON exists and is not an error record (errors are retried on the next run)."""
+    path = job_path(job)
+    if not os.path.exists(path):
+        return False
+    try:
+        return "error" not in json.load(open(path))
+    except Exception:
+        return False
+
+
 def run_job(job):
     path = job_path(job)
-    if os.path.exists(path):
+    if finished(job):
         return path, "cached", 0.0
     t0 = time.time(); kind, d, cond, sl, s, tier = job; md = _md(d)
     try:
@@ -141,7 +152,7 @@ def run_job(job):
 def run_model(model_dir, workers=4, deadline=None, log=print, executor=None, **kw):
     """Run all jobs for one model (blocking). Returns counts."""
     from concurrent.futures import ProcessPoolExecutor, as_completed
-    jobs = [j for j in jobs_for(model_dir, **kw) if not os.path.exists(job_path(j))]
+    jobs = [j for j in jobs_for(model_dir, **kw) if not finished(j)]
     log(f"  analysis {os.path.basename(model_dir)}: {len(jobs)} jobs to run")
     stats = dict(ok=0, error=0, cached=0); own = executor is None
     ex = executor or ProcessPoolExecutor(max_workers=workers)

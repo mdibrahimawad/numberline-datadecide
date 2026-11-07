@@ -132,9 +132,10 @@ def invariance(T):
             nat = [fr.get(f"{c}_num") for c in C.NATURAL]
             okn = sum(1 for v in nat if v is not None and np.isfinite(v) and v >= 0.5)
             c1 = fr.get("C1_num")
-            rows.append(dict(model=m, slot=sl, set=s, metric=met, ref=float(r[met]), frac_C1_num=c1, frac_AVG5=fr.get("AVG5_num"),
-                             natural_ge50=okn, holds=bool(c1 is not None and np.isfinite(c1) and c1 >= 0.5 and okn >= 3),
-                             **{f"frac_{k}": v for k, v in fr.items()}))
+            row = {f"frac_{k}": v for k, v in fr.items()}
+            row.update(model=m, slot=sl, set=s, metric=met, ref=float(r[met]), natural_ge50=okn,
+                       holds=bool(c1 is not None and np.isfinite(c1) and c1 >= 0.5 and okn >= 3))
+            rows.append(row)
     I = pd.DataFrame(rows); summ = []
     if len(I):
         for met, g in I.groupby("metric"):
@@ -238,7 +239,7 @@ def figures(T, I, P7, rd):
         fig.tight_layout(rect=(0, 0.04, 1, 0.96)); fig.savefig(os.path.join(rd, f"fig_ordinality_{m}.png"), dpi=110); plt.close(fig)
     # (2) invariance matrix: median fraction of C1/P_next per metric x condition
     if len(I):
-        cols = [c for c in I.columns if c.startswith("frac_") and c not in ("frac_C1_num", "frac_AVG5")]
+        cols = [c for c in I.columns if c.startswith("frac_")]
         M = I.groupby("metric")[cols].median()
         fig, ax = plt.subplots(figsize=(max(8, len(cols) * 0.6), 4))
         im = ax.imshow(M.values.astype(float), cmap="RdBu", vmin=-1, vmax=2, aspect="auto")
