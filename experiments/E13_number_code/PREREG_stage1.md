@@ -212,3 +212,27 @@ The full H1 picture ("trailing digits categorical") needs both. They are reporte
 - The "beyond smoothness / beyond digits" checks, the exponent code, the knee, robustness and the Pythia mid-layer
   remark are SECONDARY.
 - Anything else found while looking is EXPLORATORY.
+
+## Amendment 1 (2026-11-07, from the synthetic validation, before any real vector was analysed)
+Two problems were found while checking the code on planted data (`tests/test_e13_stage1.py`). Both concern H2a.
+
+1. **Model.** The pre-registered regression had a free coefficient b on the additive step. b is nearly collinear with
+   the carry dummies, because a level-j carry changes j + 1 digits, so the additive step grows with carry level
+   (r = 0.84 on synthetic data). The spike estimates were then unstable: level-2 CI −94 to +73 for a planted spike
+   of +75.
+   - **Fix.** The additive prediction enters as an **offset** (coefficient fixed at 1), as in the owner's wording
+     ("+ additive-model prediction"). It is noise-debiased:
+     y = s²(n) − (‖F̂(n+1) − F̂(n)‖² − σ̂² q_step), where q_step = Δxᵀ(XᵀX)⁻¹Δx.
+     Under a purely additive code plus noise, E[y] is the same for every step, so e_j = 0.
+   - **Free-b version.** It stays in the output as secondary (`e_freeb`).
+2. **Planted control.** The pre-registered control used *cumulative* jumps (a staircase). A cumulative jump at a
+   level-j carry **is** a digit effect: every number after it is shifted, which is what the leading/hundreds effect
+   encodes. So a test "beyond the additive digit model" should not detect it, and on synthetic data it did not at
+   level 2. That is the correct behaviour, but it makes the control useless for power.
+   - **Fix.** Power for H2a now uses a **transient** carry event: the number right after a level-j carry gets a
+     random displacement of norm κ_j = 0.5 j × the median level-0 step, with a fresh direction each time. The
+     same sizes and replicates are used.
+   - Cumulative-jump results are still reported for H2a (`has_power_cumulative`) and are kept as the power control
+     for H2b, as pre-registered.
+
+Nothing else changed. Code at this amendment: `src/e13_stage1.py` (commit below). Tests: 6 pass.
