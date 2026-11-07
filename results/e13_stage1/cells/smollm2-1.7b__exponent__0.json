@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 900, 900], "bal_acc": 1.0, "bal_acc_shuffled": 0.24083333333333334, "heldout_pred": {"1": 1.5186949832664065, "2": 2.013505426764758, "3": 3.22332233438145, "4": 3.4188124170666008}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": true, "model": "smollm2-1.7b", "depth": "~25%"}

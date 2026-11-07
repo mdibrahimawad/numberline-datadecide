@@ -1,0 +1,8 @@
+test,verdict
+H1 decay,not supported
+R-a all ordinal,not supported
+R-b all categorical,not supported
+R-c units circle,not supported
+H2a carry spikes,not supported
+H2b successor breaks,cannot tell
+H2c tree beats line (late),cannot tell

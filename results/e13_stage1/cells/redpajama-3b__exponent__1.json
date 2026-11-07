@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 777, 139], "bal_acc": 0.967324132971615, "bal_acc_shuffled": 0.2374862272344287, "heldout_pred": {"1": 1.6209691235049108, "2": 2.2301812954036433, "3": 3.181651560007631, "4": 3.1334663255258492}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": true, "model": "redpajama-3b", "depth": "~50%"}

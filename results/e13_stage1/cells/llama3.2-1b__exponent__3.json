@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3], "counts": [9, 90, 900], "bal_acc": 0.9629629629629629, "bal_acc_shuffled": 0.3685185185185185, "heldout_pred": {"1": 2.0906236880620246, "2": 2.4731792291017705, "3": 2.020781721600421}, "all_ordered": false, "ordered": [false, true, true], "explicit": false, "model": "llama3.2-1b", "depth": "~84%"}

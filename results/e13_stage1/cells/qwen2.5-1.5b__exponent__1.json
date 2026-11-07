@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 900, 900], "bal_acc": 0.9994444444444444, "bal_acc_shuffled": 0.3036111111111111, "heldout_pred": {"1": 1.5185090841576492, "2": 2.4341926228627457, "3": 3.2029399685523146, "4": 3.0548441362210212}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": true, "model": "qwen2.5-1.5b", "depth": "~50%"}

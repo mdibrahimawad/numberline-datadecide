@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 900, 900], "bal_acc": 0.9713888888888889, "bal_acc_shuffled": 0.21805555555555556, "heldout_pred": {"1": 2.020555189238036, "2": 2.3657121845710263, "3": 3.1677276808294312, "4": 3.072088251602862}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": true, "model": "starcoderbase-3b", "depth": "~50%"}

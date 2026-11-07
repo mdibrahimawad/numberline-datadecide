@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3], "counts": [9, 90, 900], "bal_acc": 0.9592592592592593, "bal_acc_shuffled": 0.3244444444444445, "heldout_pred": {"1": 1.79589072411206, "2": 2.3011734823044776, "3": 2.103775723111836}, "all_ordered": true, "ordered": [true, true, true], "explicit": true, "model": "olmo2-1b", "depth": "~25%"}

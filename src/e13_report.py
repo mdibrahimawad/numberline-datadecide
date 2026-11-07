@@ -154,7 +154,7 @@ def fig_s1(T, path):
             for m in ORDER:
                 q = sub[sub.model == m].sort_values("position")
                 if len(q):
-                    ax.errorbar(q.position + (ORDER.index(m) - 4) * 0.03, q.O1, yerr=[q.O1 - q.O1_lo, q.O1_hi - q.O1], marker="o",
+                    ax.errorbar(q.position + (ORDER.index(m) - 4) * 0.03, q.O1, yerr=[(q.O1 - q.O1_lo).clip(lower=0), (q.O1_hi - q.O1).clip(lower=0)], marker="o",
                                 ms=3, lw=1, capsize=1.5, color=MODEL_COL[m], ls="-" if E.MODELS[m][0] == "digit" else "--",
                                 label=m if (r, k) == (0, 0) else None)
             ax.axhline(0, color="k", lw=0.5); ax.set_xticks(range(1, 5)); ax.set_ylim(-1, 1.05)
@@ -199,7 +199,7 @@ def fig_s2b(T, path):
         for lv, col, off in ((1, "tab:orange", -0.2), (2, "tab:red", 0.0), (3, "darkred", 0.2)):
             if f"e{lv}" in sub and sub[f"e{lv}"].notna().any():
                 q = sub[sub[f"e{lv}"].notna()]; sc = q.mean_y_level0.abs()
-                ax.errorbar(q.ix + off, q[f"e{lv}"] / sc, yerr=[(q[f"e{lv}"] - q[f"e{lv}_lo"]) / sc, (q[f"e{lv}_hi"] - q[f"e{lv}"]) / sc],
+                ax.errorbar(q.ix + off, q[f"e{lv}"] / sc, yerr=[((q[f"e{lv}"] - q[f"e{lv}_lo"]) / sc).clip(lower=0), ((q[f"e{lv}_hi"] - q[f"e{lv}"]) / sc).clip(lower=0)],
                             fmt="o", ms=3, color=col, capsize=1.5, lw=0.8, label=f"e{lv} (level {lv})")
         ax.axhline(0, color="k", lw=0.5); ax.set_xticks([ORDER.index(m) * 6 + 2 for m in ORDER]); ax.set_xticklabels(ORDER, rotation=60, fontsize=7)
         ax.set_title(f"{s} (5 depths per model, left→right)"); ax.set_ylabel("carry spike / mean level-0 offset residual")
@@ -244,7 +244,7 @@ def fig_s4(T, path):
                 continue
             xs = x0 + np.arange(5); ticks.append((x0 + 2, m))
             ax.bar(xs, q.dR2g, color=FAM_COL[E.MODELS[m][0]], alpha=0.75,
-                   yerr=[q.dR2g - q.dR2g_lo, q.dR2g_hi - q.dR2g], capsize=2)
+                   yerr=[(q.dR2g - q.dR2g_lo).clip(lower=0), (q.dR2g_hi - q.dR2g).clip(lower=0)], capsize=2)
             ax.scatter(xs, q.ctrl_ms_dR2g, marker="x", color="k", s=14, zorder=3, label="matched-smoothness fake" if x0 == 0 else None)
             for xx, hp in zip(xs, q.has_power):
                 if hp is False or hp == 0:

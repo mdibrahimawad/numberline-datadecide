@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 900, 900], "bal_acc": 1.0, "bal_acc_shuffled": 0.2383333333333333, "heldout_pred": {"1": 1.7523833231450796, "2": 1.8816242492450403, "3": 3.4299159468087246, "4": 3.2345854940869505}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": true, "model": "openllama-3b", "depth": "~25%"}

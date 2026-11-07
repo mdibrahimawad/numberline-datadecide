@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 900, 900], "bal_acc": 0.9677777777777778, "bal_acc_shuffled": 0.25583333333333336, "heldout_pred": {"1": 1.8947131287492194, "2": 2.3387284324897664, "3": 3.137462370169156, "4": 3.1010978995497367}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": true, "model": "crystal", "depth": "~84%"}

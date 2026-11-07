@@ -1,0 +1,1 @@
+{"lengths": [1, 2, 3, 4], "counts": [9, 90, 777, 139], "bal_acc": 0.7946442074139916, "bal_acc_shuffled": 0.27335567839164965, "heldout_pred": {"1": 2.094344113015145, "2": 2.8177938018802666, "3": 2.8753707127984907, "4": 3.1509834053592156}, "all_ordered": true, "ordered": [true, true, true, true], "explicit": false, "model": "pythia-1.4b", "depth": "last"}

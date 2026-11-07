@@ -1,0 +1,43 @@
+test,scope,family,n,powered,passed,share,status
+H1 decay,all,digit,60,59,18,0.3050847457627119,mixed
+H1 decay,all,chunk,40,32,22,0.6875,mixed
+H1 decay,replication,digit,48,47,12,0.2553191489361702,does not hold
+H1 decay,replication,chunk,28,24,16,0.6666666666666666,mixed
+H1 decay,discovery,digit,12,12,6,0.5,mixed
+H1 decay,discovery,chunk,12,8,6,0.75,holds
+R-a all ordinal,all,digit,60,60,0,0.0,does not hold
+R-a all ordinal,all,chunk,40,40,0,0.0,does not hold
+R-a all ordinal,replication,digit,48,48,0,0.0,does not hold
+R-a all ordinal,replication,chunk,28,28,0,0.0,does not hold
+R-a all ordinal,discovery,digit,12,12,0,0.0,does not hold
+R-a all ordinal,discovery,chunk,12,12,0,0.0,does not hold
+R-b all categorical,all,digit,60,60,0,0.0,does not hold
+R-b all categorical,all,chunk,40,40,2,0.05,does not hold
+R-b all categorical,replication,digit,48,48,0,0.0,does not hold
+R-b all categorical,replication,chunk,28,28,1,0.03571428571428571,does not hold
+R-b all categorical,discovery,digit,12,12,0,0.0,does not hold
+R-b all categorical,discovery,chunk,12,12,1,0.08333333333333333,does not hold
+R-c units circle,all,digit,60,60,0,0.0,does not hold
+R-c units circle,all,chunk,40,40,0,0.0,does not hold
+R-c units circle,replication,digit,48,48,0,0.0,does not hold
+R-c units circle,replication,chunk,28,28,0,0.0,does not hold
+R-c units circle,discovery,digit,12,12,0,0.0,does not hold
+R-c units circle,discovery,chunk,12,12,0,0.0,does not hold
+H2a carry spikes,all,digit,50,36,2,0.05555555555555555,does not hold
+H2a carry spikes,all,chunk,20,11,0,0.0,does not hold
+H2a carry spikes,replication,digit,40,28,0,0.0,does not hold
+H2a carry spikes,replication,chunk,15,9,0,0.0,does not hold
+H2a carry spikes,discovery,digit,10,8,2,0.25,does not hold
+H2a carry spikes,discovery,chunk,5,2,0,0.0,cannot tell
+H2b successor breaks,all,digit,75,0,0,,cannot tell
+H2b successor breaks,all,chunk,50,0,0,,cannot tell
+H2b successor breaks,replication,digit,60,0,0,,cannot tell
+H2b successor breaks,replication,chunk,35,0,0,,cannot tell
+H2b successor breaks,discovery,digit,15,0,0,,cannot tell
+H2b successor breaks,discovery,chunk,15,0,0,,cannot tell
+H2c tree beats line (late),all,digit,30,30,8,0.26666666666666666,does not hold
+H2c tree beats line (late),all,chunk,20,0,0,,cannot tell
+H2c tree beats line (late),replication,digit,24,24,6,0.25,does not hold
+H2c tree beats line (late),replication,chunk,14,0,0,,cannot tell
+H2c tree beats line (late),discovery,digit,6,6,2,0.3333333333333333,mixed
+H2c tree beats line (late),discovery,chunk,6,0,0,,cannot tell
