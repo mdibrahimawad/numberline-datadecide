@@ -119,3 +119,43 @@ the residual is too large relative to the spacing of neighbours.
 **Double-check:** (1) f's bootstrap intervals for p are narrow because they resample points along a fixed f, not
 uncertainty in f itself; (2) for 2-digit sets f and the tens one-hot compete (see the units-only secondary); (3) a power
 check at c < 0.1 would locate the noise level where the plateau rule regains power.
+
+---
+
+# E12c: held-out R² of smooth models (pre-registered in `PREREG_C.md`, commit `3627f6a`)
+Code `src/e12c_heldout_r2.py` (`e259a5d`, synthetic test `tests/test_e12c_heldout_r2.py`). Results
+`results/e12c_heldout_r2/` (`r2_all.csv` per split and repeat with chosen bandwidths, `r2_summary.csv`). Deviations: none.
+Standardisation and PCA fitted on training numbers only; bandwidths by 5-fold CV inside the training set.
+
+**Random 80 / 20 (mean of 3 repeats), held-out R²:**
+| Set | curve (~25 / 50 / 75 / 84 % / last) | curve + digits | 2-D (n, n mod 10) | shuffled |
+|---|---|---|---|---|
+| Qwen Q2 | 0.19 / 0.12 / 0.12 / 0.56 / 0.48 | 0.13 / 0.20 / 0.07 / 0.77 / 0.69 | 0.18 / 0.16 / 0.12 / 0.55 / 0.49 | −0.04 to −0.02 |
+| Qwen Q3 | 0.18 / 0.09 / 0.17 / 0.74 / 0.68 | 0.39 / 0.38 / 0.25 / 0.81 / 0.75 | 0.29 / 0.29 / 0.17 / 0.74 / 0.68 | ≈ 0 |
+| Qwen Q4 | 0.17 / 0.08 / 0.19 / 0.78 / 0.71 | 0.44 / 0.41 / 0.24 / 0.82 / 0.76 | 0.29 / 0.30 / 0.19 / 0.78 / 0.71 | ≈ 0 |
+| Pythia P2 | 0.41 / 0.32 / 0.18 / 0.15 / 0.13 | 0.35 / 0.25 / 0.35 / 0.29 / 0.21 | 0.42 / 0.33 / 0.19 / 0.17 / 0.14 | −0.04 to −0.02 |
+| Pythia P3 | 0.38 / 0.39 / 0.34 / 0.33 / 0.35 | 0.50 / 0.51 / 0.62 / 0.59 / 0.62 | 0.39 / 0.39 / 0.35 / 0.33 / 0.36 | ≈ 0 |
+| Pythia P1 | 0.46 / 0.43 / 0.35 / 0.33 / 0.35 | 0.56 / 0.55 / 0.62 / 0.60 / 0.60 | 0.46 / 0.43 / 0.36 / 0.34 / 0.36 | ≈ 0 |
+
+**Held-out block (70–79, 700–799, 7000–7999):**
+| Set | curve | curve + digits | 2-D | shuffled |
+|---|---|---|---|---|
+| Qwen Q2 | 0.09 / 0.05 / 0.03 / −1.70 / −1.63 | −0.01 / 0.22 / 0.02 / −0.18 / −0.19 | 0.09 / 0.18 / 0.03 / −1.70 / −0.78 | ≈ −0.04 |
+| Qwen Q3 | −0.38 / −0.12 / −0.43 / −1.57 / −1.74 | 0.18 / 0.31 / −0.06 / −1.27 / −1.32 | 0.22 / 0.26 / −0.43 / −1.57 / −1.74 | ≈ 0 |
+| Qwen Q4 | −0.72 / −0.14 / −0.25 / −1.30 / −1.47 | 0.22 / 0.28 / −0.15 / −1.31 / −1.39 | −0.05 / 0.25 / −0.17 / −1.30 / −1.48 | ≈ 0 |
+| Pythia P2 | 0.09 / 0.07 / −0.07 / −0.11 / −0.14 | 0.11 / 0.10 / 0.15 / 0.24 / −0.09 | 0.11 / 0.09 / 0.00 / −0.04 / −0.08 | ≈ −0.03 |
+| Pythia P3 | −0.54 / −0.33 / −0.48 / −0.54 / −0.55 | 0.29 / 0.03 / 0.02 / −0.06 / −0.09 | −0.54 / −0.33 / −0.47 / −0.52 / −0.54 | ≈ 0 |
+| Pythia P1 | −0.39 / −0.22 / −0.40 / −0.44 / −0.45 | 0.05 / 0.14 / 0.08 / 0.02 / −0.03 | −0.35 / −0.22 / −0.39 / −0.43 / −0.44 | ≈ 0 |
+
+**Reading.**
+1. A smooth function of n predicts held-out numbers well above the shuffled control everywhere, most in Qwen's late
+   layers for 3- and 4-digit numbers (0.68–0.78); CV picked small bandwidths (median 1 % of the range), i.e. local
+   interpolation from neighbouring numbers.
+2. Adding the additive digit part helps in 24 of 30 random-split cells (largest gains in early Qwen layers and in Pythia's
+   late layers, up to +0.29); the 2-D (n, n mod 10) surface helps only in Qwen's early layers (+0.11 to +0.22) and is
+   otherwise ≈ the curve.
+3. The curve does **not** interpolate across a held-out block: R² < 0 in 24 of 30 cells, down to −1.7 in Qwen's late
+   layers. Each block is a whole leading-digit group (7x, 7xx, 7xxx), so a missing group is not where a smooth curve
+   through its neighbours would put it, consistent with the leading-digit groups of E11. The digit part rescues early
+   layers (R² 0.1–0.3) but not Qwen's late layers.
+4. Caveat (pre-registered): one prompt per number, so the attainable R² is unknown.
