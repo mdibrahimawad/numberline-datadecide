@@ -1,0 +1,7 @@
+model,set,depths_with_power,H1,H2,H3,H4,H5
+pythia-1.4b,P1,0,cannot tell (0/5),supported (5/5),mixed (3/5),cannot tell (0/5),not supported (0/5)
+pythia-1.4b,P2,0,cannot tell (0/5),supported (5/5),mixed (3/5),cannot tell (0/5),not supported (0/5)
+pythia-1.4b,P3,0,cannot tell (0/5),supported (5/5),mixed (3/5),cannot tell (0/5),not supported (0/5)
+qwen2.5-1.5b,Q2,0,cannot tell (0/5),supported (5/5),not supported (1/5),cannot tell (0/5),not supported (0/5)
+qwen2.5-1.5b,Q3,0,cannot tell (0/5),supported (5/5),mixed (2/5),cannot tell (0/5),not supported (0/5)
+qwen2.5-1.5b,Q4,0,cannot tell (0/5),mixed (3/5),mixed (2/5),cannot tell (0/5),not supported (0/5)

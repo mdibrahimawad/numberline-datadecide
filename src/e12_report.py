@@ -72,13 +72,13 @@ def figure(T, out):
                 if len(r):
                     y = [r[f"T2_mle_k{k}"].values[0] for k in KS]
                     ax.plot(KS, y, "o-", color=col, lw=2.4 if c == "real" else 1.3, ms=3, label=c.replace("_", " "))
-            ax.set_xscale("log"); ax.set_yscale("log"); ax.set_xticks(KS, [str(k) for k in KS])
+            ax.set_xscale("log"); ax.set_yscale("log"); ax.minorticks_off(); ax.set_xticks(KS, [str(k) for k in KS]); ax.set_yticks([1, 2, 5, 10, 20], ["1", "2", "5", "10", "20"]); ax.set_ylim(0.7, 45)
             if i == 0: ax.set_title(d, fontsize=10)
             if j == 0: ax.set_ylabel(f"{m.split('-')[0]} {s}\nMLE dimension", fontsize=9)
             if i == 5: ax.set_xlabel("k neighbours")
     axes[0, 0].legend(frameon=False, fontsize=7, loc="upper right")
     fig.suptitle("Levina–Bickel dimension vs k: real (black) vs fakes. Grey band = 1-D plateau zone [0.8, 1.5].", fontsize=11, x=0.01, ha="left")
-    fig.tight_layout(); fig.savefig(os.path.join(out, "fig_dimension_vs_k.png"), dpi=130); plt.close(fig)
+    fig.tight_layout(rect=(0, 0, 1, 0.98)); fig.savefig(os.path.join(out, "fig_dimension_vs_k.png"), dpi=130); plt.close(fig)
 
 
 def main():
