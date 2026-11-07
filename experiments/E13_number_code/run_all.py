@@ -351,6 +351,9 @@ def main():
         r.run()
     except SystemExit:
         raise
+    except KeyboardInterrupt:                        # Ctrl-C: stop the run, keep the pod running
+        r.log("Interrupted with Ctrl-C; everything finished so far is saved; rerun the same command to resume.")
+        sys.exit(130)
     except BaseException as e:                       # crash: save what exists and (with --stop-pod) stop the pod
         import traceback
         r.log(f"RUN CRASHED: {type(e).__name__}: {e}\n{traceback.format_exc()}")
