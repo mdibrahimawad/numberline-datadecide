@@ -99,3 +99,11 @@ calendar neighbours, wrap-around required, as in E11 Spoly) ≥ 0.75. The contro
   ±0.05 of the fake's.
 - Over depths: **supported** if the rule holds at ≥ 4 of 5 depths, **not supported** at ≤ 1, otherwise **mixed**;
   **cannot tell** where T1 shows no power (for H1 and H4).
+
+## Clarifications (added 2026-11-07 during the run, before any real result was read)
+- Over-depth rule with missing power: for H1 and H4 a depth without T1 power (vs the fat sheet) counts as "no
+  power". **Cannot tell** if fewer than 3 of 5 depths have power and the rule holds at fewer than 4; otherwise the
+  supported / mixed / not-supported counts above apply, counting no-power depths as "does not hold".
+- T3 "share projected beyond the training end" = share of held-out points whose curve position is at or above the
+  95th percentile of the training points' positions (positions cannot exceed a polyline fitted on training points).
+- H2's "no T2 plateau at k = 5–20" = the MLE is not inside [0.8, 1.5] at all three of k = 5, 10, 20.
