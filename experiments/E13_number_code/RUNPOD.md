@@ -33,8 +33,11 @@ cd /workspace
 git clone https://github.com/mdibrahimawad/numberline-datadecide.git
 cd numberline-datadecide
 pip install -r experiments/E13_number_code/requirements_pod.txt
+pip install --no-deps ai2-olmo ai2-olmo-core cached-path omegaconf   # DataDecide; --no-deps keeps the pod's torch
+python -c "import torch; print(torch.__version__, torch.cuda.is_available())"   # must end with True
 export HF_HOME=/workspace/hf
-python -c "import os; print('HF_TOKEN is set' if os.environ.get('HF_TOKEN') else 'HF_TOKEN is MISSING')"
+hf auth login        # press Enter, wait for the prompt, paste the WRITE token (invisible), Enter; answer n to git
+hf auth whoami       # shows your username
 nproc; nvidia-smi --query-gpu=name,memory.total --format=csv
 ```
 If the repo is private, the clone asks for a username and password. Use a GitHub fine-grained token as the password,
