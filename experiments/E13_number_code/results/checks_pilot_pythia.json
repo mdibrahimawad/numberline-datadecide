@@ -1,0 +1,167 @@
+{
+  "a_batch_vs_single_max_rel": 4.982535756425932e-05,
+  "a_pass": true,
+  "b_positions": [
+    {
+      "ctx": "C6b",
+      "prompt": "319 plus 1 =",
+      "P_num": "319",
+      "P_next": "\u0120plus",
+      "ok": true
+    },
+    {
+      "ctx": "C8",
+      "prompt": "The price is 135 dollars.",
+      "P_num": "\u0120135",
+      "P_next": "\u0120dollars",
+      "ok": true
+    },
+    {
+      "ctx": "C4",
+      "prompt": "Room 21 is on the third floor.",
+      "P_num": "\u012021",
+      "P_next": "\u0120is",
+      "ok": true
+    },
+    {
+      "ctx": "C1s7",
+      "prompt": "8=8,81=81,730=730,6599=6599,9=",
+      "P_num": "9",
+      "P_next": "=",
+      "ok": true
+    },
+    {
+      "ctx": "C2",
+      "prompt": "She bought 407 apples at the market.",
+      "P_num": "\u0120407",
+      "P_next": "\u0120apples",
+      "ok": true
+    },
+    {
+      "ctx": "C3b",
+      "prompt": "The population of the city is 457.",
+      "P_num": "\u0120457",
+      "P_next": ".",
+      "ok": true
+    },
+    {
+      "ctx": "C8",
+      "prompt": "The price is 304 dollars.",
+      "P_num": "\u0120304",
+      "P_next": "\u0120dollars",
+      "ok": true
+    },
+    {
+      "ctx": "C8b",
+      "prompt": "The price is 365 euros.",
+      "P_num": "\u0120365",
+      "P_next": "\u0120euros",
+      "ok": true
+    },
+    {
+      "ctx": "C3b",
+      "prompt": "The population of the city is 272.",
+      "P_num": "\u0120272",
+      "P_next": ".",
+      "ok": true
+    },
+    {
+      "ctx": "C8",
+      "prompt": "The price is 468 dollars.",
+      "P_num": "\u0120468",
+      "P_next": "\u0120dollars",
+      "ok": true
+    },
+    {
+      "ctx": "C4",
+      "prompt": "Room 408 is on the third floor.",
+      "P_num": "\u0120408",
+      "P_next": "\u0120is",
+      "ok": true
+    },
+    {
+      "ctx": "C3b",
+      "prompt": "The population of the city is 2.",
+      "P_num": "\u01202",
+      "P_next": ".",
+      "ok": true
+    },
+    {
+      "ctx": "C6",
+      "prompt": "429 + 1 =",
+      "P_num": "429",
+      "P_next": "\u0120+",
+      "ok": true
+    },
+    {
+      "ctx": "C8",
+      "prompt": "The price is 17 dollars.",
+      "P_num": "\u012017",
+      "P_next": "\u0120dollars",
+      "ok": true
+    },
+    {
+      "ctx": "C5b",
+      "prompt": "Which is larger, 365 or 700? Answer:",
+      "P_num": "\u0120365",
+      "P_next": "\u0120or",
+      "ok": true
+    },
+    {
+      "ctx": "C6b",
+      "prompt": "88 plus 1 =",
+      "P_num": "88",
+      "P_next": "\u0120plus",
+      "ok": true
+    },
+    {
+      "ctx": "C1s7",
+      "prompt": "3=3,40=40,629=629,3951=3951,432=",
+      "P_num": "432",
+      "P_next": "=",
+      "ok": true
+    },
+    {
+      "ctx": "C1",
+      "prompt": "2=2,77=77,567=567,1251=1251,271=",
+      "P_num": "271",
+      "P_next": "=",
+      "ok": true
+    },
+    {
+      "ctx": "C1s7",
+      "prompt": "6=6,45=45,381=381,6771=6771,150=",
+      "P_num": "150",
+      "P_next": "=",
+      "ok": true
+    },
+    {
+      "ctx": "C7",
+      "prompt": "3, 8, 212, 21, 40",
+      "P_num": "\u0120212",
+      "P_next": ",",
+      "ok": true
+    }
+  ],
+  "b_last_char_mismatch": 0,
+  "b_pass": true,
+  "c_copy_first_token_acc": 0.995,
+  "f_head_greedy_agrees": 1.0,
+  "f_pass": true,
+  "d_cos_min": 0.9999998211860657,
+  "d_cos_by_layer": {
+    "6": 0.9999999403953552,
+    "12": 1.0,
+    "18": 0.9999998211860657,
+    "20": 0.9999998211860657,
+    "24": 0.9999998807907104
+  },
+  "d_pass": true,
+  "d_layers": [
+    6,
+    12,
+    18,
+    20,
+    24
+  ]
+}

@@ -1,6 +1,35 @@
 # E13: how LLMs code integers (staged study)
 
-**Stage 1 (H1 digit-position codes, H2 carries) is done. Stage 2 is not started; it waits for the owner.**
+**Stage 1 (H1 digit-position codes, H2 carries) is done. The full E13 pipeline (METHODOLOGY.md) is built and tested;
+the real run is on RunPod (`RUNPOD.md`), not started.**
+
+## E13 pipeline: build and laptop tests (2026-11-07)
+| Item | Where |
+|---|---|
+| Work order | `METHODOLOGY.md`, `PLAN.md` |
+| Pre-registration (all stages) | `PREREG_E13.md` |
+| Choices and deviations | `DEVIATIONS.md` |
+| Code | `run_all.py` (master), `src/e13/` (config, prompts, extract, checks, data, panel, h0, h3, p7, power, causal, training, analyse, report, upload) |
+| Pod steps | `RUNPOD.md` |
+| Tests | `tests/test_e13_pipeline.py` and `tests/test_e13_stage1.py` (15 pass): positions with the real Pythia and Qwen tokenizers; extraction, checks and resume with a tiny random model; causal hooks; planted-structure recovery (`results/power_check_synthetic.csv`) |
+
+**Laptop pilot.** Pythia-1.4B on CPU, numbers 1–500, all 16 contexts. It is a code test only; its numbers are
+not results.
+- **Checks (2.5)** (`results/checks_pilot_pythia.json`):
+  - batched vs single: max relative difference 5e-5;
+  - copy accuracy: 0.995;
+  - the stored old E10 vectors are reproduced (cosine ≥ 0.9999998);
+  - greedy decoding via the output head matches the full model.
+- **Timing:** extraction 9 min (8,000 prompts); 844 analysis jobs in 9.5 min on 3 CPU workers; report, figures and
+  Gate A all built.
+- **Causal stage:** ran end to end with 24 items per behaviour (848 matrix rows, the decision rule applied); about
+  2 h on CPU.
+- **Checkpoint runner:** tested on Pythia-160M at step 0 and step 143000 (numbers 1–150): extraction, behaviour,
+  light analysis, and vectors purged after the run.
+- **Real-noise power rows from the pilot:** `results/power_check_pilot.csv`.
+- **Bugs found and fixed by the pilot:** constant layer-0 cells, a duplicate report column, Gate A not tolerating
+  a failed report, errored cells not retried on resume, the steering edit crashing, and degenerate digit positions.
+
 
 | Item | Where |
 |---|---|

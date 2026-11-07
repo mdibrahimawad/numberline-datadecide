@@ -1,0 +1,859 @@
+model,cond,slot,set,test,recovered,false_positive,reps,has_power
+pythia-1.4b,AVG5_num,6,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,6,S3,H2a transient carry spike,0.35,0.0,20,False
+pythia-1.4b,AVG5_num,6,S3,H2a cumulative carry jump,0.3,0.0,20,False
+pythia-1.4b,AVG5_num,6,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,6,S3,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,AVG5_num,6,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,6,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,6,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,6,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,6,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,6,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,6,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,6,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,6,S2,H2b successor break (cumulative jump),0.5,0.0,20,False
+pythia-1.4b,AVG5_num,6,S2,H2c tree vs line,0.9,0.0,10,True
+pythia-1.4b,AVG5_num,6,S2,M1 smooth curve,1.0,0.1,10,True
+pythia-1.4b,AVG5_num,6,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,6,S2,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,6,S2,H3 lexicon reliability,1.0,0.3,10,False
+pythia-1.4b,AVG5_num,2,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,2,S3,H2a transient carry spike,0.15,0.0,20,False
+pythia-1.4b,AVG5_num,2,S3,H2a cumulative carry jump,0.05,0.0,20,False
+pythia-1.4b,AVG5_num,2,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,2,S3,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,2,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p0_circle,0.85,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,1,S3,H2a transient carry spike,0.2,0.0,20,False
+pythia-1.4b,AVG5_num,1,S3,H2a cumulative carry jump,0.1,0.0,20,False
+pythia-1.4b,AVG5_num,1,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,1,S3,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,AVG5_num,1,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,1,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,1,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,1,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,7,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,7,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,7,S3,H2a transient carry spike,0.95,0.0,20,True
+pythia-1.4b,C1_num,7,S3,H2a cumulative carry jump,0.85,0.0,20,True
+pythia-1.4b,C1_num,7,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,7,S3,H2c tree vs line,0.3,0.0,10,False
+pythia-1.4b,C1_num,7,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,7,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,7,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,7,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,2,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p0_circle,0.85,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,2,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,2,S3,H2a transient carry spike,0.35,0.0,20,False
+pythia-1.4b,C1_num,2,S3,H2a cumulative carry jump,0.15,0.0,20,False
+pythia-1.4b,C1_num,2,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,2,S3,H2c tree vs line,0.6,0.0,10,False
+pythia-1.4b,C1_num,2,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,2,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,2,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,2,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,5,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,5,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,5,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,5,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,5,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,5,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,5,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,5,S2,H2a transient carry spike,0.1,0.0,20,False
+pythia-1.4b,C1_num,5,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_num,5,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,C1_num,5,S2,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_num,5,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,5,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,5,S2,P8 knee (rank-3 planted),0.6,,10,False
+pythia-1.4b,C1_num,5,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,3,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,3,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,3,S3,H2a transient carry spike,0.45,0.0,20,False
+pythia-1.4b,C1_num,3,S3,H2a cumulative carry jump,0.25,0.0,20,False
+pythia-1.4b,C1_num,3,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,3,S3,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_num,3,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,3,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,3,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,3,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,5,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,5,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,5,S2,H2b successor break (cumulative jump),0.2,0.0,20,False
+pythia-1.4b,AVG5_num,5,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S2,P8 knee (rank-3 planted),0.9,,10,True
+pythia-1.4b,AVG5_num,5,S2,H3 lexicon reliability,1.0,0.2,10,True
+pythia-1.4b,C1_num,6,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,6,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,6,S3,H2a transient carry spike,0.6,0.0,20,False
+pythia-1.4b,C1_num,6,S3,H2a cumulative carry jump,0.55,0.0,20,False
+pythia-1.4b,C1_num,6,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,6,S3,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_num,6,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,6,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,6,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,6,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,5,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p0_circle,0.85,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,5,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,5,S3,H2a transient carry spike,0.55,0.0,20,False
+pythia-1.4b,C1_next,5,S3,H2a cumulative carry jump,0.45,0.0,20,False
+pythia-1.4b,C1_next,5,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,5,S3,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_next,5,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,5,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,5,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,5,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,2,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,2,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,2,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,2,S2,H2b successor break (cumulative jump),0.05,0.0,20,False
+pythia-1.4b,AVG5_num,2,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,2,S2,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,2,S2,H3 lexicon reliability,1.0,0.2,10,True
+pythia-1.4b,C1_next,3,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,3,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,3,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,3,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,3,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,3,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,3,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,3,S2,H2a transient carry spike,0.2,0.0,20,False
+pythia-1.4b,C1_next,3,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,3,S2,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,3,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_next,3,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,3,S2,M2 digit-additive,0.8,0.0,10,True
+pythia-1.4b,C1_next,3,S2,P8 knee (rank-3 planted),0.1,,10,False
+pythia-1.4b,C1_next,3,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,8,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,8,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,8,S3,H2a transient carry spike,0.65,0.0,20,False
+pythia-1.4b,C1_next,8,S3,H2a cumulative carry jump,0.55,0.0,20,False
+pythia-1.4b,C1_next,8,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,8,S3,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_next,8,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,8,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,8,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,8,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S3,H1 decay rule,0.95,0.0,20,True
+pythia-1.4b,AVG5_num,0,S3,H2a transient carry spike,0.25,0.0,20,False
+pythia-1.4b,AVG5_num,0,S3,H2a cumulative carry jump,0.15,0.0,20,False
+pythia-1.4b,AVG5_num,0,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,0,S3,H2c tree vs line,0.4,0.0,10,False
+pythia-1.4b,AVG5_num,0,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,0,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,0,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,0,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,5,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,5,S3,H1 decay rule,0.95,0.0,20,True
+pythia-1.4b,C1_num,5,S3,H2a transient carry spike,0.75,0.0,20,False
+pythia-1.4b,C1_num,5,S3,H2a cumulative carry jump,0.65,0.0,20,False
+pythia-1.4b,C1_num,5,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,5,S3,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,C1_num,5,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,5,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,5,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,5,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,2,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,2,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,2,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,2,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,2,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,2,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,2,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,2,S2,H2a transient carry spike,0.1,0.0,20,False
+pythia-1.4b,C1_next,2,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,2,S2,H2b successor break (cumulative jump),0.05,0.0,20,False
+pythia-1.4b,C1_next,2,S2,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,C1_next,2,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,2,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,2,S2,P8 knee (rank-3 planted),0.3,,10,False
+pythia-1.4b,C1_next,2,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,7,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p0_circle,0.85,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,7,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,7,S3,H2a transient carry spike,0.6,0.0,20,False
+pythia-1.4b,C1_next,7,S3,H2a cumulative carry jump,0.4,0.0,20,False
+pythia-1.4b,C1_next,7,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,7,S3,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_next,7,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,7,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,7,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,7,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,2,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,2,S3,H1 decay rule,0.95,0.0,20,True
+pythia-1.4b,C1_next,2,S3,H2a transient carry spike,0.65,0.0,20,False
+pythia-1.4b,C1_next,2,S3,H2a cumulative carry jump,0.45,0.0,20,False
+pythia-1.4b,C1_next,2,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,2,S3,H2c tree vs line,0.2,0.0,10,False
+pythia-1.4b,C1_next,2,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,2,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,2,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,2,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,0,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,0,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,0,S3,H2a transient carry spike,0.2,0.0,20,False
+pythia-1.4b,C1_num,0,S3,H2a cumulative carry jump,0.15,0.0,20,False
+pythia-1.4b,C1_num,0,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,0,S3,H2c tree vs line,0.2,0.0,10,False
+pythia-1.4b,C1_num,0,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,0,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,0,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,0,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,8,S3,H2a transient carry spike,0.15,0.0,20,False
+pythia-1.4b,AVG5_num,8,S3,H2a cumulative carry jump,0.05,0.0,20,False
+pythia-1.4b,AVG5_num,8,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,8,S3,H2c tree vs line,0.2,0.0,10,False
+pythia-1.4b,AVG5_num,8,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,8,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,8,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,8,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,6,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,6,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,6,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,6,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,6,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,6,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,6,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,6,S2,H2a transient carry spike,0.4,0.05,20,False
+pythia-1.4b,C1_num,6,S2,H2a cumulative carry jump,0.0,0.05,20,False
+pythia-1.4b,C1_num,6,S2,H2b successor break (cumulative jump),0.2,0.0,20,False
+pythia-1.4b,C1_num,6,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_num,6,S2,M1 smooth curve,0.8,0.0,10,True
+pythia-1.4b,C1_num,6,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,6,S2,P8 knee (rank-3 planted),0.5,,10,False
+pythia-1.4b,C1_num,6,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,8,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,8,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,8,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,8,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,8,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,8,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,8,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,8,S2,H2a transient carry spike,0.2,0.1,20,False
+pythia-1.4b,C1_num,8,S2,H2a cumulative carry jump,0.05,0.1,20,False
+pythia-1.4b,C1_num,8,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,C1_num,8,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_num,8,S2,M1 smooth curve,0.8,0.0,10,True
+pythia-1.4b,C1_num,8,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,8,S2,P8 knee (rank-3 planted),0.6,,10,False
+pythia-1.4b,C1_num,8,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,4,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,4,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,4,S3,H2a transient carry spike,0.9,0.0,20,True
+pythia-1.4b,C1_next,4,S3,H2a cumulative carry jump,0.85,0.0,20,True
+pythia-1.4b,C1_next,4,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,4,S3,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,C1_next,4,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,4,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,4,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,4,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,5,S3,H1 decay rule,0.95,0.0,20,True
+pythia-1.4b,AVG5_num,5,S3,H2a transient carry spike,0.25,0.0,20,False
+pythia-1.4b,AVG5_num,5,S3,H2a cumulative carry jump,0.2,0.0,20,False
+pythia-1.4b,AVG5_num,5,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,5,S3,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,AVG5_num,5,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,5,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,5,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,4,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,4,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,4,S3,H2a transient carry spike,0.3,0.0,20,False
+pythia-1.4b,C1_num,4,S3,H2a cumulative carry jump,0.35,0.0,20,False
+pythia-1.4b,C1_num,4,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,4,S3,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,C1_num,4,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,4,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,4,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,4,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,2,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,2,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,2,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,2,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,2,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,2,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,2,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,2,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_num,2,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_num,2,S2,H2b successor break (cumulative jump),0.1,0.0,20,False
+pythia-1.4b,C1_num,2,S2,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,C1_num,2,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,2,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,2,S2,P8 knee (rank-3 planted),0.7,,10,False
+pythia-1.4b,C1_num,2,S2,H3 lexicon reliability,1.0,0.1,10,True
+pythia-1.4b,AVG5_num,8,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,8,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,8,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,8,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,8,S2,H2b successor break (cumulative jump),0.6,0.0,20,False
+pythia-1.4b,AVG5_num,8,S2,H2c tree vs line,0.9,0.0,10,True
+pythia-1.4b,AVG5_num,8,S2,M1 smooth curve,1.0,0.2,10,True
+pythia-1.4b,AVG5_num,8,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,8,S2,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,8,S2,H3 lexicon reliability,1.0,0.4,10,False
+pythia-1.4b,C1_num,7,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,7,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,7,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,7,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,7,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,7,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,7,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,7,S2,H2a transient carry spike,0.3,0.0,20,False
+pythia-1.4b,C1_num,7,S2,H2a cumulative carry jump,0.05,0.0,20,False
+pythia-1.4b,C1_num,7,S2,H2b successor break (cumulative jump),0.05,0.0,20,False
+pythia-1.4b,C1_num,7,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_num,7,S2,M1 smooth curve,0.9,0.0,10,True
+pythia-1.4b,C1_num,7,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,7,S2,P8 knee (rank-3 planted),0.6,,10,False
+pythia-1.4b,C1_num,7,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,8,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,8,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,8,S3,H2a transient carry spike,0.5,0.05,20,False
+pythia-1.4b,C1_num,8,S3,H2a cumulative carry jump,0.45,0.05,20,False
+pythia-1.4b,C1_num,8,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,8,S3,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_num,8,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,8,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,8,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,8,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,6,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,6,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,6,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,6,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,6,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,6,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,6,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,6,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_next,6,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,6,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,C1_next,6,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_next,6,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,6,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,6,S2,P8 knee (rank-3 planted),0.3,,10,False
+pythia-1.4b,C1_next,6,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,1,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,1,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,1,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,1,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,1,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,1,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,1,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_num,1,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_num,1,S2,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,1,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S2,P8 knee (rank-3 planted),0.9,,10,True
+pythia-1.4b,C1_num,1,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,0,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,0,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,0,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,0,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,0,S2,H2b successor break (cumulative jump),0.1,0.0,20,False
+pythia-1.4b,AVG5_num,0,S2,H2c tree vs line,0.8,0.0,10,True
+pythia-1.4b,AVG5_num,0,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,0,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,0,S2,P8 knee (rank-3 planted),0.5,,10,False
+pythia-1.4b,AVG5_num,0,S2,H3 lexicon reliability,1.0,0.1,10,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,7,S3,H2a transient carry spike,0.1,0.0,20,False
+pythia-1.4b,AVG5_num,7,S3,H2a cumulative carry jump,0.15,0.0,20,False
+pythia-1.4b,AVG5_num,7,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,7,S3,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,AVG5_num,7,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,7,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,7,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,7,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,4,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,4,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,4,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,4,S2,H2b successor break (cumulative jump),0.2,0.0,20,False
+pythia-1.4b,AVG5_num,4,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,4,S2,M1 smooth curve,1.0,0.1,10,True
+pythia-1.4b,AVG5_num,4,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,4,S2,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,4,S2,H3 lexicon reliability,1.0,0.6,10,False
+pythia-1.4b,AVG5_num,7,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,7,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,7,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,7,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,7,S2,H2b successor break (cumulative jump),0.35,0.0,20,False
+pythia-1.4b,AVG5_num,7,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,7,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,7,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,7,S2,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,7,S2,H3 lexicon reliability,1.0,0.5,10,False
+pythia-1.4b,C1_next,3,S3,H1 template p0_line,0.8,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p0_circle,0.7,,20,False
+pythia-1.4b,C1_next,3,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,3,S3,H1 decay rule,0.95,0.0,20,True
+pythia-1.4b,C1_next,3,S3,H2a transient carry spike,0.95,0.0,20,True
+pythia-1.4b,C1_next,3,S3,H2a cumulative carry jump,0.8,0.0,20,True
+pythia-1.4b,C1_next,3,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,3,S3,H2c tree vs line,0.2,0.0,10,False
+pythia-1.4b,C1_next,3,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,3,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,3,S3,P8 knee (rank-3 planted),0.6,,10,False
+pythia-1.4b,C1_next,3,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,4,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,4,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,4,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,4,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,4,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,4,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,4,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,4,S2,H2a transient carry spike,0.2,0.0,20,False
+pythia-1.4b,C1_next,4,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,4,S2,H2b successor break (cumulative jump),0.1,0.0,20,False
+pythia-1.4b,C1_next,4,S2,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_next,4,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,4,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,4,S2,P8 knee (rank-3 planted),0.1,,10,False
+pythia-1.4b,C1_next,4,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,8,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,8,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,8,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,8,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,8,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,8,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,8,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,8,S2,H2a transient carry spike,0.05,0.0,20,False
+pythia-1.4b,C1_next,8,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,8,S2,H2b successor break (cumulative jump),0.25,0.0,20,False
+pythia-1.4b,C1_next,8,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_next,8,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,8,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,8,S2,P8 knee (rank-3 planted),0.0,,10,False
+pythia-1.4b,C1_next,8,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,3,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,3,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,3,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,3,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,3,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,3,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,3,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,3,S2,H2a transient carry spike,0.1,0.0,20,False
+pythia-1.4b,C1_num,3,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_num,3,S2,H2b successor break (cumulative jump),0.1,0.0,20,False
+pythia-1.4b,C1_num,3,S2,H2c tree vs line,0.0,0.0,10,False
+pythia-1.4b,C1_num,3,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,3,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,3,S2,P8 knee (rank-3 planted),0.2,,10,False
+pythia-1.4b,C1_num,3,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,3,S3,H2a transient carry spike,0.15,0.0,20,False
+pythia-1.4b,AVG5_num,3,S3,H2a cumulative carry jump,0.15,0.0,20,False
+pythia-1.4b,AVG5_num,3,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,3,S3,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,AVG5_num,3,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,3,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,1,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,1,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,1,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,1,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,1,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,1,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,1,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,1,S2,H2a transient carry spike,0.1,0.0,20,False
+pythia-1.4b,C1_next,1,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,1,S2,H2b successor break (cumulative jump),0.1,0.0,20,False
+pythia-1.4b,C1_next,1,S2,H2c tree vs line,0.2,0.0,10,False
+pythia-1.4b,C1_next,1,S2,M1 smooth curve,1.0,0.1,10,True
+pythia-1.4b,C1_next,1,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,1,S2,P8 knee (rank-3 planted),0.2,,10,False
+pythia-1.4b,C1_next,1,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,6,S3,H1 template p0_line,0.95,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,6,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,6,S3,H2a transient carry spike,0.55,0.0,20,False
+pythia-1.4b,C1_next,6,S3,H2a cumulative carry jump,0.45,0.0,20,False
+pythia-1.4b,C1_next,6,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,6,S3,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_next,6,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,6,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,6,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,6,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,1,S3,H1 template p0_line,0.9,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_next,1,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,1,S3,H2a transient carry spike,0.4,0.0,20,False
+pythia-1.4b,C1_next,1,S3,H2a cumulative carry jump,0.4,0.0,20,False
+pythia-1.4b,C1_next,1,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_next,1,S3,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_next,1,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,1,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,1,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_next,1,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p0_circle,0.9,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,C1_num,1,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,1,S3,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_num,1,S3,H2a cumulative carry jump,0.05,0.0,20,False
+pythia-1.4b,C1_num,1,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,C1_num,1,S3,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,C1_num,1,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,1,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,C1_num,1,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_next,7,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,7,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,7,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,7,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,7,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,7,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,7,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,7,S2,H2a transient carry spike,0.1,0.0,20,False
+pythia-1.4b,C1_next,7,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,7,S2,H2b successor break (cumulative jump),0.25,0.0,20,False
+pythia-1.4b,C1_next,7,S2,H2c tree vs line,0.1,0.0,10,False
+pythia-1.4b,C1_next,7,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,7,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,7,S2,P8 knee (rank-3 planted),0.1,,10,False
+pythia-1.4b,C1_next,7,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,3,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,3,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,3,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,3,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,AVG5_num,3,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,3,S2,P8 knee (rank-3 planted),0.9,,10,True
+pythia-1.4b,AVG5_num,3,S2,H3 lexicon reliability,1.0,0.4,10,False
+pythia-1.4b,C1_next,5,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_next,5,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_next,5,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_next,5,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_next,5,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_next,5,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_next,5,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_next,5,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_next,5,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_next,5,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,C1_next,5,S2,H2c tree vs line,0.5,0.0,10,False
+pythia-1.4b,C1_next,5,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_next,5,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_next,5,S2,P8 knee (rank-3 planted),0.7,,10,False
+pythia-1.4b,C1_next,5,S2,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p0_circle,0.95,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p2_line,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p2_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 template p2_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,4,S3,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,4,S3,H2a transient carry spike,0.3,0.0,20,False
+pythia-1.4b,AVG5_num,4,S3,H2a cumulative carry jump,0.2,0.0,20,False
+pythia-1.4b,AVG5_num,4,S3,H2b successor break (cumulative jump),0.0,0.0,20,False
+pythia-1.4b,AVG5_num,4,S3,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,AVG5_num,4,S3,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,4,S3,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,4,S3,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,4,S3,H3 lexicon reliability,1.0,0.0,10,True
+pythia-1.4b,C1_num,0,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,0,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,0,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,0,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,0,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,0,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,0,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,0,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_num,0,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_num,0,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,C1_num,0,S2,H2c tree vs line,0.6,0.0,10,False
+pythia-1.4b,C1_num,0,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,0,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,0,S2,P8 knee (rank-3 planted),0.5,,10,False
+pythia-1.4b,C1_num,0,S2,H3 lexicon reliability,1.0,0.1,10,True
+pythia-1.4b,C1_num,4,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,C1_num,4,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,C1_num,4,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,C1_num,4,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,C1_num,4,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,C1_num,4,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,C1_num,4,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,C1_num,4,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,C1_num,4,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,C1_num,4,S2,H2b successor break (cumulative jump),0.15,0.0,20,False
+pythia-1.4b,C1_num,4,S2,H2c tree vs line,0.7,0.0,10,False
+pythia-1.4b,C1_num,4,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,C1_num,4,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,C1_num,4,S2,P8 knee (rank-3 planted),0.6,,10,False
+pythia-1.4b,C1_num,4,S2,H3 lexicon reliability,1.0,0.2,10,True
+pythia-1.4b,AVG5_num,1,S2,H1 template p0_line,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S2,H1 template p0_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S2,H1 template p0_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S2,H1 template p1_line,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S2,H1 template p1_circle,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S2,H1 template p1_simplex,1.0,,20,True
+pythia-1.4b,AVG5_num,1,S2,H1 decay rule,1.0,0.0,20,True
+pythia-1.4b,AVG5_num,1,S2,H2a transient carry spike,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,1,S2,H2a cumulative carry jump,0.0,0.0,20,False
+pythia-1.4b,AVG5_num,1,S2,H2b successor break (cumulative jump),0.05,0.0,20,False
+pythia-1.4b,AVG5_num,1,S2,H2c tree vs line,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,1,S2,M1 smooth curve,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,1,S2,M2 digit-additive,1.0,0.0,10,True
+pythia-1.4b,AVG5_num,1,S2,P8 knee (rank-3 planted),1.0,,10,True
+pythia-1.4b,AVG5_num,1,S2,H3 lexicon reliability,1.0,0.1,10,True

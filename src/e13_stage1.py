@@ -143,6 +143,12 @@ def template_t(levels, kind):
 def pos_stats(D2, levels, tot_var, seed, full=True):
     K = len(levels); iu = np.triu_indices(K, 1); d = np.sqrt(np.clip(D2[iu], 0, None))
     dv = np.abs(levels[iu[0]] - levels[iu[1]])
+    if len(d) < 5:                                   # E13: a position with < 4 digit values cannot be scored
+        out = dict(O1=np.nan, V=float(D2[iu].mean() / 2 / tot_var) if len(d) else np.nan)
+        if full:
+            out.update(PR=np.nan, A1=np.nan, template="none",
+                       **{f"{k}_{t}": np.nan for t in TEMPLATES for k in ("R2", "cvmse")})
+        return out
     o1 = spearmanr(d, dv)[0] if d.std() > 0 else np.nan
     out = dict(O1=float(o1), V=float(D2[iu].mean() / 2 / tot_var))
     if not full:
