@@ -151,10 +151,10 @@ Standardisation and PCA fitted on training numbers only; bandwidths by 5-fold CV
 1. A smooth function of n predicts held-out numbers well above the shuffled control everywhere, most in Qwen's late
    layers for 3- and 4-digit numbers (0.68–0.78); CV picked small bandwidths (median 1 % of the range), i.e. local
    interpolation from neighbouring numbers.
-2. Adding the additive digit part helps in 24 of 30 random-split cells (largest gains in early Qwen layers and in Pythia's
-   late layers, up to +0.29); the 2-D (n, n mod 10) surface helps only in Qwen's early layers (+0.11 to +0.22) and is
-   otherwise ≈ the curve.
-3. The curve does **not** interpolate across a held-out block: R² < 0 in 24 of 30 cells, down to −1.7 in Qwen's late
+2. Adding the additive digit part helps in 26 of 30 random-split cells (largest gains in early Qwen layers and in Pythia's
+   late layers, up to +0.33); the 2-D (n, n mod 10) surface helps only in Qwen Q3/Q4 early layers (up to +0.22) and is
+   otherwise within 0.04 of the curve.
+3. The curve does **not** interpolate across a held-out block: R² < 0 in 25 of 30 cells, down to −1.7 in Qwen's late
    layers. Each block is a whole leading-digit group (7x, 7xx, 7xxx), so a missing group is not where a smooth curve
    through its neighbours would put it, consistent with the leading-digit groups of E11. The digit part rescues early
    layers (R² 0.1–0.3) but not Qwen's late layers.
