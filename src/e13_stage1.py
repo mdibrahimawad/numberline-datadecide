@@ -476,14 +476,35 @@ def tree_X(pre, a, b):
     return np.column_stack([np.ones(len(a))] + [(p[a] != p[b]).astype(float) for p in pre])
 
 
+class FastIso:
+    """Increasing isotonic fit for integer-valued x: aggregate ties, weighted PAVA on unique x (same solution as
+    sklearn on the raw pairs), predict by linear interpolation with clipping (sklearn's out_of_bounds='clip')."""
+    def fit(self, x, y):
+        ux, inv = np.unique(x, return_inverse=True); cnt = np.bincount(inv); m = np.bincount(inv, weights=y) / cnt
+        self.ux = ux.astype(float)
+        self.uy = IsotonicRegression(increasing=True).fit(self.ux, m, sample_weight=cnt).predict(self.ux)
+        return self
+
+    def predict(self, x):
+        return np.interp(x, self.ux, self.uy)
+
+
 def fit_models(x_tr, T_tr, y_tr, x_te, T_te):
-    iso = IsotonicRegression(increasing=True, out_of_bounds="clip").fit(x_tr, y_tr); p_line = iso.predict(x_te)
-    bt = ols_coef(T_tr, y_tr); p_tree = T_te @ bt
-    g = T_tr @ bt
+    """line (isotonic in integer |m-n|), tree (OLS on prefix indicators), both (backfit, 10 alternations)."""
+    ux, inv = np.unique(x_tr, return_inverse=True); cnt = np.bincount(inv); uxf = ux.astype(float)
+    grid = np.arange(0, int(max(ux.max(), x_te.max())) + 1, dtype=float)
+
+    def iso_table(yv):
+        m = np.bincount(inv, weights=yv) / cnt
+        uy = IsotonicRegression(increasing=True).fit(uxf, m, sample_weight=cnt).predict(uxf)
+        return np.interp(grid, uxf, uy)                 # identical to sklearn predict with out_of_bounds="clip"
+    P = np.linalg.pinv(T_tr.T @ T_tr)
+    tab = iso_table(y_tr); p_line = tab[x_te]
+    bt = P @ (T_tr.T @ y_tr); p_tree = T_te @ bt; g = T_tr @ bt
     for _ in range(10):
-        iso2 = IsotonicRegression(increasing=True, out_of_bounds="clip").fit(x_tr, y_tr - g + g.mean())
-        f = iso2.predict(x_tr) - g.mean(); bb = ols_coef(T_tr, y_tr - f); g = T_tr @ bb
-    p_both = iso2.predict(x_te) - g.mean() + T_te @ bb
+        tab2 = iso_table(y_tr - g + g.mean()); f = tab2[x_tr] - g.mean()
+        bb = P @ (T_tr.T @ (y_tr - f)); g = T_tr @ bb
+    p_both = tab2[x_te] - g.mean() + T_te @ bb
     return p_line, p_tree, p_both
 
 
@@ -551,7 +572,7 @@ def within_group_line(Z, n, L, tag):
         rng = np.random.default_rng(seed_of(tag, "wg", g)); a, b = sample_pairs(idx, None, 50_000, rng, same=True)
         x = np.abs(n[a] - n[b]); y = ((Z[a] - Z[b]) ** 2).sum(1); e = 0.0; t = 0.0
         for tr, te in KFold(5, shuffle=True, random_state=int(g)).split(x):
-            p = IsotonicRegression(out_of_bounds="clip").fit(x[tr], y[tr]).predict(x[te])
+            p = FastIso().fit(x[tr], y[tr]).predict(x[te])
             e += ((y[te] - p) ** 2).sum(); t += ((y[te] - y[tr].mean()) ** 2).sum()
         rs.append(1 - e / t)
     return float(np.mean(rs)) if rs else np.nan
