@@ -23,6 +23,10 @@ from . import config as C
 from .data import ModelData, subsample_s4
 
 FULL = [("C1", "next"), ("C1", "num"), ("AVG5", "num")]
+
+
+class SkipCell(Exception):
+    pass
 _MD = {}
 
 
@@ -99,6 +103,8 @@ def run_job(job):
                 X = md.X(cond, sl, n)
                 if not np.isfinite(X).all():
                     good = np.isfinite(X).all(1); n, X = n[good], X[good]
+                if X.std(0).max() < 1e-6:                   # e.g. layer 0 at a fixed token (P_next / P_task)
+                    raise SkipCell("vectors identical for every number (fixed token at the embedding layer)")
                 tag = f"{md.key}|{cond[0]}_{cond[1]}|L{sl}|{s}"
                 res = panel.run_cell(X, n, s, tag, tier)
                 res.update(condition=list(cond), layer_slot=sl, layer=md.lidx[sl] if cond[0] not in ("STATIC_E", "STATIC_U") else None,
@@ -124,6 +130,8 @@ def run_job(job):
             from . import p7
             res = p7.run(d)
         res = dict(job=[kind, cond, sl, s, tier], seconds=time.time() - t0, result=res)
+    except SkipCell as e:
+        res = dict(job=[kind, cond, sl, s, tier], result=dict(skipped=str(e)))
     except Exception as e:                                   # report failures, never silently drop them
         res = dict(job=[kind, cond, sl, s, tier], error=f"{type(e).__name__}: {e}", trace=traceback.format_exc())
     json.dump(clean(res), open(path + ".tmp", "w")); os.replace(path + ".tmp", path)
