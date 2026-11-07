@@ -113,6 +113,7 @@ Vectors live in `mdibrahimawad/topology_number_line` (`data/<model>_vectors/`, `
 | `e11_tier0.py` | E11 tier 0: hypotheses H1–H29 on existing vectors |
 | `e11_tier1_laptop.py` | E11 tier 1 extraction (several prompts, random init, behaviour); `number_subset()` |
 | `e11_checkpoints.py`, `e11_ckpt_analysis.py`, `e11_ckpt_figure.py` | E11 checkpoints: extraction (laptop), pre-registered analysis, figure |
+| `e12_manifold.py`, `e12_report.py`, `e12_positive_control.py` | E12 1-D manifold tests (fakes, T1–T8), verdicts and figure, days/months positive control |
 | `e11_shape_search.py`, `e11_shape_figure.py` | E11 shape search (discover / lock / test, resumable) and its figure |
 
 ## utils/

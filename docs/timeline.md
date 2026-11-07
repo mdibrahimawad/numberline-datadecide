@@ -113,6 +113,11 @@ The original repository (uploaded to `main` on 2026-10-05) covered:
 - Explanatory figures for E10/E11 (`src/e10_explain_figures.py`, `src/e10_d2_figure.py`, `src/e11_ckpt_figure.py`,
   `src/e11_shape_figure.py`) and LaTeX tables (`results/e11_ckpt/*.tex`); E11 README written.
 
+## 2026-11-07
+- **E12** pre-registered (`5307d7a`, clarifications `60f65d6`), code checked on synthetic shapes (`dcc3ae0`), run on
+  Qwen2.5 and Pythia (30 datasets × real + 7 fakes): no power for a 1-D claim; digit-additive distances; periodic
+  residuals; T9 positive control failed. New personal cloud environment `numberline-datadecide` allows Hugging Face.
+
 ## Next
 - **Tokenizer → topology**: one rule (neighbours share their first token?) and a causal test (feed chunk-tokenizer
   models digit-by-digit numbers at inference); novelty checked 2026-10-16 (partly known: Convergent Evolution,

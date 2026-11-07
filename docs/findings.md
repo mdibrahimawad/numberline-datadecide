@@ -109,6 +109,13 @@ README). n = 25 DataDecide 1B models unless stated. Last updated: 2026-10-14.
    locked shapes replicate in every held-out model, but they are the known last-digit / parity code (n mod 6/12/60
    classes cluster by parity and last digit). Details: `experiments/E11_topology_hypotheses/README.md`.
 
+12. **E12: is there a 1-D number manifold? (pre-registered, 2026-11-07).** Qwen2.5 and Pythia, one-token / constant-
+   token sets, all depths, against 7 fakes with matched noise and smoothness. No evidence for a 1-D manifold, and **no
+   power** to detect one at the real noise level (a fake curve with the real noise never passes the 1-D rule). Real
+   data differs from a matched-smoothness fake (not "just smoothness"); distances follow an additive per-digit model
+   better than numeric closeness in 30 / 30 datasets; residuals carry period-2/5/10/100 structure. The days/months
+   positive control failed, so the absence of loops is uninformative. `experiments/E12_one_dimensional_manifold/README.md`.
+
 ## What holds up (with evidence)
 
 | Claim | Evidence | Experiment |
@@ -180,3 +187,4 @@ notes can be understood in context:
 | E10 C–E (2026-10-15) | 7 models | topology simplifies with depth; models converge late (pre-registered, D); spacing effect graded over 10 frequency levels | topology-only questions and more models |
 | E10 F, D2 (2026-10-16) | 9 models, pre-registered | extra room of frequent numbers is mainly vector length; same tokenizer → same late-layer number topology | length-removed test; 2 same-tokenizer partner models |
 | E11 (2026-10-15/16) | 9 models + 28 checkpoints | no holes; digit → value organisation with depth; number line appears abruptly with the copy skill and keeps reorganising; shape search finds only the last-digit code | hypotheses from recent papers; checkpoints |
+| E12 (2026-11-07) | 2 models, 30 datasets, pre-registered | no 1-D manifold detectable (no power); digit-additive distances; periodic residuals; loop detector fails its positive control | professor's 1-D manifold question |

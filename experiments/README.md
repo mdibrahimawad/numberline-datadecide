@@ -19,6 +19,7 @@ number, problems met). Code lives in the shared packages (`src/`, `modal_app/`,
 | [E09](E09_paloma_out_of_sample/) | Paloma out-of-sample test | Do formulas frozen on DataDecide predict β of 6 new models? | **done** | no formula transfers; α closest (MAE 0.19), S overpredicts, R falsified; only 3 models valid at layer 8 |
 | [E10](E10_frequency_topology/) | Frequency and topology of single numbers | Do frequent numbers get a different shape than equally large rare ones? | **done (stages A–F, D2)** | frequent numbers slightly more spread out in all 7 models, mainly vector length (F); special numbers isolated; H1 no effect; same tokenizer → same late-layer topology (D, D2, pre-registered) |
 | [E11](E11_topology_hypotheses/) | Topology hypotheses, checkpoints, shape search | What shape do numbers take, how does it form in training, what is general? | **done (tier 0, checkpoints, shape search); tier 1 not run** | no holes; last-digit → value organisation with depth; number line appears abruptly with the copy skill (pre-registered) and keeps reorganising; shape search finds only the last-digit code |
+| [E12](E12_one_dimensional_manifold/) | 1-D manifold test | Do number hidden states lie on a 1-D manifold? | **done (pre-registered)** | no 1-D manifold detectable (no power at real noise); not reducible to smoothness; digit-additive distances; periodic residuals; positive control failed |
 
 ## Dependencies between experiments
 

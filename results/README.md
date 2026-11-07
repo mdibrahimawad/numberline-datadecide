@@ -29,6 +29,7 @@ access. Raw training data and model weights are **not** stored here.
 | `e11_tier0/` | E11 | one CSV per hypothesis (H1–H29), `LID_per_number.csv` | `python -m src.e11_tier0`, `experiments/E11_topology_hypotheses/scratch/lid.py` |
 | `e11_ckpt/` | E11 checkpoints | C1/C2/secondary summaries, per-checkpoint neighbourhoods and crowding, features, Wasserstein matrices, `fig_trajectories.png`, LaTeX tables | `python -m src.e11_ckpt_analysis`, `src.e11_ckpt_figure` |
 | `e11_shape_search/` | E11 shape search | `discovery.csv`, `locked.json`, `test.csv`, per-cell cache, `fig_mod_clusters.png` | `python -m src.e11_shape_search --phase discover/test` |
+| `e12_manifold/` | E12 | all tests (`tests.csv`), summary table, T1 power, verdicts, positive control, `fig_dimension_vs_k.png` | `python -m src.e12_manifold`, `src.e12_report`, `src.e12_positive_control` |
 | `beta_fine/fine_vs_data.csv` | E06 | fine β joined with exact α, numbers seen, E01 β, family | `python -m src.beta_fine_analysis` |
 
 ## Conventions
