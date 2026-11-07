@@ -206,6 +206,7 @@ def build(out_root, report_dir=None):
         res.update(verdicts=S.to_dict("records"), invariance=IS.to_dict("records"))
         try:
             figures(T, I, pd.DataFrame(p7rows), report_dir)
+            extra_figures(dirs, report_dir)
         except Exception as e:                       # figures never block the tables
             res["figure_error"] = f"{type(e).__name__}: {e}"
     json.dump(res, open(os.path.join(report_dir, "summary.json"), "w"), indent=2, default=str)
@@ -272,3 +273,41 @@ def figures(T, I, P7, rd):
                     ax.plot(range(len(lv)), [r[c] for c in lv], "o-", alpha=0.7, label=f"{m} slot {r.slot}")
             ax.set_xticks(range(len(lv))); ax.set_xticklabels(["level 0", "1", "2", "3"][:len(lv)]); ax.set_title(f"{s}: successor operator R²")
         axs[0].legend(fontsize=6); fig.tight_layout(); fig.savefig(os.path.join(rd, "fig_successor_by_level.png"), dpi=120); plt.close(fig)
+
+
+def extra_figures(dirs, rd):
+    """R2 vs k (P8) and step length vs n with carries marked, number reading (AVG5/P_num), slots 50 % and last."""
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from src import e13_stage1 as E1
+    from .data import ModelData
+    fig, axs = plt.subplots(1, 3, figsize=(16, 4), sharey=True)
+    for ax, s in zip(axs, C.MAIN_SETS):
+        for d in dirs:
+            for sl in (4, 8):
+                J = _load(os.path.join(d, "cells", f"panel__AVG5_num__L{sl}__{s}.json"))
+                R = (J or {}).get("result") or {}
+                if "p8" not in R:
+                    continue
+                cur = R["p8"]["random"]["curve"]; ks = sorted(int(k) for k in cur)
+                ax.plot(ks, [cur[str(k)] for k in ks], label=f"{os.path.basename(d)} {C.DEPTH_NAMES[sl]}")
+                cs = R["p8"]["ctrl_sheet"]["curve"]; ax.plot(ks, [cs[str(k)] for k in ks], ":", color="0.6")
+        ax.set_xlabel("rank k"); ax.set_title(f"{s}: held-out R² vs k (dotted = flat-sheet control)")
+    axs[0].legend(fontsize=6); fig.tight_layout(); fig.savefig(os.path.join(rd, "fig_R2_vs_k.png"), dpi=120); plt.close(fig)
+    for d in dirs:
+        md = ModelData(d); s = "S3" if len(md.set_numbers("S3", ["AVG5"])) > 100 else "S2"; n = md.set_numbers(s, ["AVG5"])
+        if len(n) < 30:
+            continue
+        L = int(s[1]); fig, axs = plt.subplots(1, 2, figsize=(14, 4))
+        for ax, sl in zip(axs, (4, 8)):
+            Z = E1.prep(md.X(("AVG5", "num"), sl, n)); i, j, c = E1.steps_of(n)
+            if not len(c):
+                continue
+            add = E1.additive(Z, E1.digits(n, L)); lv = E1.h2_levels(c)
+            Xr, y, _, _ = E1.h2a_fit(Z, n, L, i, j, c, lv, add); keep = (c == 0) | np.isin(c, lv); nn = n[i][keep]; cc = c[keep]
+            for lev, col, sz in ((0, "0.7", 3), (1, "tab:orange", 10), (2, "tab:red", 28)):
+                ax.scatter(nn[cc == lev], y[cc == lev], s=sz, color=col, label=f"carry level {lev}")
+            ax.set_title(f"{os.path.basename(d)} {s} {C.DEPTH_NAMES[sl]}: step² − additive step²"); ax.set_xlabel("n")
+        axs[0].legend(fontsize=7); fig.tight_layout(); fig.savefig(os.path.join(rd, f"fig_step_length_{os.path.basename(d)}.png"), dpi=110)
+        plt.close(fig)

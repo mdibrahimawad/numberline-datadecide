@@ -50,6 +50,8 @@ class Runner:
         logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s",
                             handlers=[logging.FileHandler(os.path.join(a.out, "run_all.log")), logging.StreamHandler(sys.stdout)])
         self.log = logging.getLogger("e13").info
+        for noisy in ("httpx", "httpcore", "huggingface_hub", "urllib3"):
+            logging.getLogger(noisy).setLevel(logging.WARNING)
         self.ex = None; self.pending = {}; self.timing = {}
         from e13 import config as C
         self.C = C; self.numbers = parse_numbers(a.numbers)
