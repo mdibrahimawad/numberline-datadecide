@@ -107,3 +107,14 @@ calendar neighbours, wrap-around required, as in E11 Spoly) ≥ 0.75. The contro
 - T3 "share projected beyond the training end" = share of held-out points whose curve position is at or above the
   95th percentile of the training points' positions (positions cannot exceed a polyline fitted on training points).
 - H2's "no T2 plateau at k = 5–20" = the MLE is not inside [0.8, 1.5] at all three of k = 5, 10, 20.
+
+## Amendment A (2026-11-07, after the main E12 results; written before this rerun)
+Reason: in Q4 the leave-one-out bandwidth was h = 1 (numbers ≈ 3 apart in the 3,000-number subsample), so its
+"trend" was not smooth and the fake curve ≈ the real data (listed in the README double-checks).
+1. **Q4 rerun:** all E12 tests (T1–T8, all fakes, robustness row) repeated for Q4 at all five depths with the trend
+   bandwidth restricted to h ∈ {0.01, 0.02, 0.05, 0.10, 0.20} × R (R = 8,999; i.e. ≥ 1 % of the range), chosen by
+   the same leave-one-out CV. Everything else unchanged (same subsample, seeds, rules). Output
+   `results/e12_manifold_q4_minbw/`; the original Q4 results stay as they are.
+2. **Log vs linear for Pythia:** P1 mixes 1-, 2- and 3-digit numbers, so its T4/T5 log-vs-linear comparison is
+   confounded with digit length. For Pythia that comparison is reported on **P3** (one-token 100–999, all three
+   digits) instead of P1, from the existing E12 results; P1 stays in the tables but is not used for log vs linear.

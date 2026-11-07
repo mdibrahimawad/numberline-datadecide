@@ -82,9 +82,13 @@ def kernel_smooth(Z, n, h, n_eval=None):
     return (W @ Z) / W.sum(1, keepdims=True)
 
 
+BW_FRACS = None            # Amendment A: if set, the trend bandwidth grid is these fractions of the range
+
+
 def cv_bandwidth(Z, n, grid=(1, 2, 4, 8, 16, 32, 64, 128, 256)):
     R = n.max() - n.min(); best = None
-    for h in [g for g in grid if g <= R / 4]:
+    hs = [f * R for f in BW_FRACS] if BW_FRACS else [g for g in grid if g <= R / 4]
+    for h in hs:
         W = np.exp(-0.5 * ((n[:, None] - n[None, :]) / h) ** 2); w0 = np.diag(W).copy()
         pred = (W @ Z - w0[:, None] * Z) / (W.sum(1) - w0)[:, None]      # leave-one-out
         err = float(((Z - pred) ** 2).sum(1).mean())
@@ -403,19 +407,26 @@ def run_dataset(args):
     return rows, power
 
 
+def _set_bw():
+    global BW_FRACS
+    BW_FRACS = [0.01, 0.02, 0.05, 0.10, 0.20]
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", default="results/e12_manifold")
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--sets", default="", help="comma list of sets to run (default: all)")
+    ap.add_argument("--min-bw", action="store_true", help="Amendment A: bandwidth grid {1,2,5,10,20} %% of the range")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
-    jobs = []
+    jobs = []; only = set(a.sets.split(",")) if a.sets else None
     for model in MODELS:
-        for sname in SETS[model]:
+        for sname in [s for s in SETS[model] if only is None or s in only]:
             for d in range(5):
                 jobs.append((a.data, model, sname, d, len(jobs) + 1))
-    with Pool(a.workers) as pool:
+    with Pool(a.workers, initializer=_set_bw if a.min_bw else None) as pool:
         res = pool.map(run_dataset, jobs)
     rows = [r for rr, _ in res for r in rr]; power = [p for _, pp in res for p in pp]
     pd.DataFrame(rows).to_csv(os.path.join(a.out, "tests.csv"), index=False)
