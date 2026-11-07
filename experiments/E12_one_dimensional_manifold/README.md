@@ -166,8 +166,9 @@ Pre-registered in `PREREG.md` (Amendment A) before the rerun. Output `results/e1
 
 **Deviation (seeds):** the rerun was started with `--sets Q4`, so the per-dataset id in the seed (`1000·dataset +
 condition`) was 1–5 instead of the original 11–15. Seeds were fixed, but not the same ones as in the main run. Effect on
-the real data: only the random parts move (T3 random ρ by ≤ 0.09, e.g. 0.20 → 0.16 at ~25 %); dimensions, T5–T8 on real
-data are identical to 3 decimals. The verdicts are identical to the original Q4.
+the real data: T2 dimensions, T7 shares and p-values, and T8 are identical; seed-dependent parts move: T3 random ρ by
+≤ 0.09, T3 fine-order ρ by up to 0.33 (~84 %: 0.30 → 0.63), T5/T6 R² by ≤ 0.007, the T4 upper CI of p by ≤ 0.10. So T3
+fine order is seed-unstable at this N. The verdicts are identical to the original Q4.
 
 **Q4: bandwidth and trend (h = 1 before → h = 1 % of the range now):**
 | Depth | h (old → new) | trend share (old → new) | real MLE k = 20 | fake curve MLE k = 20 (old → new) | T1 curves passing plateau |
