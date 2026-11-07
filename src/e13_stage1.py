@@ -303,27 +303,31 @@ def h1(Z, n, L, tag, B=200, n_perm=200, n_rep=20):
                 parts.append(real_parts[p])
         return base + sum(parts) + Rres[r.permutation(len(Z))]
 
-    rec = {}
-    for p, P in enumerate(m["pos"]):
-        for kind in TEMPLATES:
-            hits = 0
+    if n_rep == 0:                                  # E13 light tier: no planted power (defaults unchanged)
+        res.update(template_recovery=None, decay_power=None, decay_fp=None, has_power=None, Rc=None)
+        u = res["positions"][-1]
+    else:
+        rec = {}
+        for p, P in enumerate(m["pos"]):
+            for kind in TEMPLATES:
+                hits = 0
+                for rep in range(n_rep):
+                    r = np.random.default_rng(seed_of(tag, "plant", p, kind, rep)); Zp = fake_with({p: kind}, r)
+                    mp = additive(Zp, dig); tvp = float(((Zp - Zp.mean(0)) ** 2).sum(1).mean()); Pp = mp["pos"][p]
+                    st = pos_stats(debiased_d2(Pp["C"], Pp["Q"], mp["sigma2"]), Pp["levels"], tvp, seed_of(tag, "pt", p, rep))
+                    hits += st["template"] == kind
+                rec[f"p{p}_{kind}"] = hits / n_rep
+        res["template_recovery"] = rec
+        for name, plants in (("decay_power", {0: "line", L - 1: "simplex"}), ("decay_fp", {p: "line" for p in range(L)})):
+            ok = 0
             for rep in range(n_rep):
-                r = np.random.default_rng(seed_of(tag, "plant", p, kind, rep)); Zp = fake_with({p: kind}, r)
-                mp = additive(Zp, dig); tvp = float(((Zp - Zp.mean(0)) ** 2).sum(1).mean()); Pp = mp["pos"][p]
-                st = pos_stats(debiased_d2(Pp["C"], Pp["Q"], mp["sigma2"]), Pp["levels"], tvp, seed_of(tag, "pt", p, rep))
-                hits += st["template"] == kind
-            rec[f"p{p}_{kind}"] = hits / n_rep
-    res["template_recovery"] = rec
-    for name, plants in (("decay_power", {0: "line", L - 1: "simplex"}), ("decay_fp", {p: "line" for p in range(L)})):
-        ok = 0
-        for rep in range(n_rep):
-            r = np.random.default_rng(seed_of(tag, name, rep)); Zp = fake_with(plants, r)
-            o = o1_all(Zp, dig); b = boot_o1(Zp, dig, 50, r); lo = np.nanpercentile(b[:, 0] - b[:, -1], 2.5)
-            ok += decay_pass(o, lo)
-        res[name] = ok / n_rep
-    res["has_power"] = bool(res["decay_power"] >= 0.8 and res["decay_fp"] <= 0.2)
-    u = res["positions"][-1]
-    res["Rc"] = bool(u["template"] == "circle" and rec[f"p{L-1}_circle"] >= 0.8)
+                r = np.random.default_rng(seed_of(tag, name, rep)); Zp = fake_with(plants, r)
+                o = o1_all(Zp, dig); b = boot_o1(Zp, dig, 50, r); lo = np.nanpercentile(b[:, 0] - b[:, -1], 2.5)
+                ok += decay_pass(o, lo)
+            res[name] = ok / n_rep
+        res["has_power"] = bool(res["decay_power"] >= 0.8 and res["decay_fp"] <= 0.2)
+        u = res["positions"][-1]
+        res["Rc"] = bool(u["template"] == "circle" and rec[f"p{L-1}_circle"] >= 0.8)
     res["units_simplex_signal"] = bool(u["template"] == "simplex" and u["V_shuffle_p"] < 0.01)
     res["beyond_smooth"] = bool(res["delta"] - res["fake_ms"]["delta"] > 0.10)
     return res
@@ -663,7 +667,7 @@ def exponent(Xall, model, tag):
 
 
 # --------------------------------------------------------------------------- H2 bundle with controls
-def h2_all(X, Z, n, L, tag, big):
+def h2_all(X, Z, n, L, tag, big, n_ab=20, n_c=10):
     i, j, c = steps_of(n); res = dict(n_steps={int(k): int((c == k).sum()) for k in np.unique(c)} if len(c) else {})
     m = additive(Z, digits(n, L)); F = m["F"]
     res["h2a"] = h2a(Z, n, L, tag, i, j, c, add=m)
@@ -704,7 +708,7 @@ def h2_all(X, Z, n, L, tag, big):
         order = np.argsort(n); lvl_all = trailing_nines(n); nset = set(int(v) for v in n)
         has_next = np.array([int(v) + 1 in nset for v in n])
         pw = {"a_jump": 0, "a_none": 0, "b_jump": 0, "b_none": 0, "a_transient": 0, "b_transient": 0}
-        for rep in range(20):
+        for rep in range(n_ab):
             r = np.random.default_rng(seed_of(tag, "h2plant", rep)); base = T + E[r.permutation(len(Z))]
             J = np.zeros_like(Z); cum = np.zeros(Z.shape[1])
             for k in order:
@@ -720,13 +724,13 @@ def h2_all(X, Z, n, L, tag, big):
                 a = h2a(Zf, n, L, tag + "pl", i, j, c, B=100, n_perm=0, rng=r)
                 b = h2b(Zf, n, tag + f"pl{rep}{name}", i, j, c, B=100, prep_fn=zprep, reps=1)
                 pw["a_" + name] += a["pass"]; pw["b_" + name] += b["pass"]
-        pw = {k: v / 20 for k, v in pw.items()}; res["power_ab"] = pw
+        pw = {k: v / n_ab for k, v in pw.items()}; res["power_ab"] = pw
         res["h2a"]["has_power"] = bool(pw["a_transient"] >= 0.8 and pw["a_none"] <= 0.2)   # Amendment 1
         res["h2a"]["has_power_cumulative"] = bool(pw["a_jump"] >= 0.8 and pw["a_none"] <= 0.2)
         res["h2b"]["has_power"] = bool(pw["b_jump"] >= 0.8 and pw["b_none"] <= 0.2)
     # planted power for H2c (tree vs line)
     lv = level_variances(Z, n, L); hits = {"tree": 0, "line": 0}
-    for rep in range(10):
+    for rep in range(n_c):
         r = np.random.default_rng(seed_of(tag, "h2cplant", rep)); noise = E[r.permutation(len(Z))]
         Tr = np.zeros_like(Z)
         for l, v in lv:
@@ -734,7 +738,7 @@ def h2_all(X, Z, n, L, tag, big):
             Tr += (r.standard_normal((len(ug), Z.shape[1])) * np.sqrt(v / Z.shape[1]))[inv]
         for name, Zf in (("tree", Z.mean(0) + Tr + noise), ("line", T + noise)):
             hits[name] += h2c(Zf, n, L, tag + f"cp{rep}{name}", prep_fn=zprep, big=big, B=200, light=True)["pass"]
-    res["power_c"] = {k: v / 10 for k, v in hits.items()}
+    res["power_c"] = {k: v / n_c for k, v in hits.items()}
     res["h2c"]["has_power"] = bool(res["power_c"]["tree"] >= 0.8 and res["power_c"]["line"] <= 0.2)
     if res["h2b"] is not None:
         res["h2b"].pop("_boot", None)

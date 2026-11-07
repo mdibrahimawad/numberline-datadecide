@@ -1,0 +1,37 @@
+noise,test,recovered,false_positive,reps,has_power
+0.2,M1 smooth curve,1.0,0.0,5,True
+0.2,M2 digit-additive,1.0,0.0,5,True
+0.2,P8 knee (rank-3 planted),1.0,,5,True
+0.2,H3 lexicon reliability,1.0,0.0,5,True
+0.2,H1 template p0_line,1.0,,5,True
+0.2,H1 template p0_circle,1.0,,5,True
+0.2,H1 template p0_simplex,1.0,,5,True
+0.2,H1 template p1_line,1.0,,5,True
+0.2,H1 template p1_circle,1.0,,5,True
+0.2,H1 template p1_simplex,1.0,,5,True
+0.2,H1 template p2_line,1.0,,5,True
+0.2,H1 template p2_circle,1.0,,5,True
+0.2,H1 template p2_simplex,1.0,,5,True
+0.2,H1 decay rule,0.6,0.0,5,False
+0.2,H2a transient carry spike,0.0,0.0,5,False
+0.2,H2a cumulative carry jump,0.0,0.0,5,False
+0.2,H2b successor break (cumulative jump),0.0,0.0,5,False
+0.2,H2c tree vs line,1.0,0.0,3,True
+0.7,M1 smooth curve,1.0,0.0,5,True
+0.7,M2 digit-additive,1.0,0.0,5,True
+0.7,P8 knee (rank-3 planted),1.0,,5,True
+0.7,H3 lexicon reliability,1.0,0.0,5,True
+0.7,H1 template p0_line,1.0,,5,True
+0.7,H1 template p0_circle,1.0,,5,True
+0.7,H1 template p0_simplex,1.0,,5,True
+0.7,H1 template p1_line,1.0,,5,True
+0.7,H1 template p1_circle,1.0,,5,True
+0.7,H1 template p1_simplex,1.0,,5,True
+0.7,H1 template p2_line,1.0,,5,True
+0.7,H1 template p2_circle,1.0,,5,True
+0.7,H1 template p2_simplex,1.0,,5,True
+0.7,H1 decay rule,0.4,0.0,5,False
+0.7,H2a transient carry spike,0.4,0.0,5,False
+0.7,H2a cumulative carry jump,0.0,0.0,5,False
+0.7,H2b successor break (cumulative jump),0.0,0.0,5,False
+0.7,H2c tree vs line,1.0,0.0,3,True

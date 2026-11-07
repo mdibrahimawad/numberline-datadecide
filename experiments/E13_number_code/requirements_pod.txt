@@ -1,0 +1,11 @@
+# torch comes with the RunPod PyTorch template
+transformers>=4.46
+accelerate
+huggingface_hub>=0.25
+scipy
+scikit-learn
+pandas
+matplotlib
+ripser
+# DataDecide checkpoints (Stage D) use the ai2-olmo "hf_olmo" model type
+ai2-olmo
