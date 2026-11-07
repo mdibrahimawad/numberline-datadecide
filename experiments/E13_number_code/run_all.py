@@ -211,7 +211,8 @@ class Runner:
             self.log("Stage C skipped: Gate A failed (H1/H2 do not hold on the number reading). Use --force-causal to run anyway.")
             return
         from e13 import causal, extract
-        for key in [m for m in self.C.CAUSAL_MODELS if m in self.models]:
+        cms = self.a.causal_models.split(",") if self.a.causal_models else self.C.CAUSAL_MODELS
+        for key in [m for m in cms if m in self.models or self.a.causal_models]:
             step = f"causal_{key}"
             if self.done(step):
                 continue
@@ -227,6 +228,11 @@ class Runner:
     def stage_d(self):
         from e13 import training
         fams = [("pythia-1.4b", self.C.MODELS["pythia-1.4b"]["hf"], None), ("olmo2-1b", self.C.MODELS["olmo2-1b"]["hf"], None)]
+        if self.a.ckpt_families:
+            fams = [f for f in fams if f[0] in self.a.ckpt_families.split(",")]
+        if self.a.ckpt_steps:
+            fams = [(f, m, [f"step{int(x)}" for x in self.a.ckpt_steps.split(",")] if f == "pythia-1.4b" else r)
+                    for f, m, r in fams]
         if self.a.ckpt_override:
             mid, revs = self.a.ckpt_override.split(":"); fams = [("pythia-1.4b", mid, revs.split(","))]
         for fam, mid, revs in fams:
@@ -241,7 +247,7 @@ class Runner:
                                           self.a.workers, executor=self.executor())
                 if r.get("done"):
                     self.upload(f"ckpt_{fam}_{rev}", path=d); self.purge_vectors(d); self.mark(step)
-            rep = training.checkpoint_report(os.path.join(self.a.out, f"ckpt_{fam}"), fam) if not self.a.ckpt_override else None
+            rep = training.checkpoint_report(os.path.join(self.a.out, f"ckpt_{fam}"), fam, revs) if not self.a.ckpt_override else None
             if rep:
                 rd = os.path.join(self.a.out, "report"); os.makedirs(rd, exist_ok=True)
                 rep["table"].to_csv(os.path.join(rd, f"checkpoints_{fam}.csv"), index=False)
@@ -250,7 +256,14 @@ class Runner:
         if self.a.skip_datadecide or self.a.ckpt_override:
             return
         training.register_datadecide()
-        for r in training.datadecide_recipes():
+        recipes = training.datadecide_recipes()
+        if self.a.dd_recipes == "half":                       # every second recipe in alpha order: spans the alpha range
+            import pandas as pd
+            al = pd.read_csv(self.C.ALPHA).sort_values("alpha_ols")["recipe"].tolist(); recipes = al[::2]
+        elif self.a.dd_recipes:
+            recipes = self.a.dd_recipes.split(",")
+        self.log(f"DataDecide recipes ({len(recipes)}): {recipes}")
+        for r in recipes:
             key = f"dd-{r}"; step = f"datadecide_{r}"
             if self.done(step):
                 continue
@@ -327,6 +340,10 @@ def main():
     ap.add_argument("--purge-main", action="store_true", help="delete vec_*.npy of the 9 main models after upload")
     ap.add_argument("--skip-datadecide", action="store_true")
     ap.add_argument("--llama-id", default="", help="e.g. meta-llama/Llama-3.2-1B (gated); default = the E10 mirror")
+    ap.add_argument("--causal-models", default="", help="comma list (default: pythia-1.4b,qwen2.5-1.5b,olmo2-1b)")
+    ap.add_argument("--ckpt-families", default="", help="comma list of pythia-1.4b,olmo2-1b (default: both)")
+    ap.add_argument("--ckpt-steps", default="", help="Pythia steps, e.g. 0,256,1000,2000,4000,8000,33000,143000 (default: 16)")
+    ap.add_argument("--dd-recipes", default="", help="'half' (every second recipe by alpha) or a comma list (default: all 25)")
     ap.add_argument("--ckpt-override", default="", help="testing: <model_id>:<rev1,rev2> replaces the checkpoint list")
     a = ap.parse_args()
     r = Runner(a)

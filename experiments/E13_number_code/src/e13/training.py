@@ -154,8 +154,8 @@ def order_test(table, n_perm=10000, seed=0):
     return dict(tau=obs, p=float((1 + np.sum(np.array(null) >= obs)) / (n_perm + 1)), cells=int(len(T)))
 
 
-def checkpoint_report(base_dir, family):
-    revs = revisions(family); steps = []; tabs = []
+def checkpoint_report(base_dir, family, revs=None):
+    revs = revs or revisions(family); steps = []; tabs = []
     for r in revs:
         d = os.path.join(base_dir, r.replace("/", "_"))
         if not os.path.exists(os.path.join(d, "revision.done")):
