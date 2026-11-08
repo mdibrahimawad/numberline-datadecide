@@ -84,3 +84,11 @@ EXPLORATORY.
 - **Across models:** T6.
 - **Training:** T10.
 - **Causal:** T7, T8 and T9 per model; the curve "encodes the number line for the model" if T7 and T8 pass in both models.
+
+## Amendment 1 (2026-11-08, from the synthetic check, before any real data was tested)
+- **Problem.** On planted data, a curve built with **shuffled** n still gave a high order (Spearman −0.74 to +0.93 over
+  5 shuffles). The shuffled curve collapses to a few points, and which way they line up is luck. R² stayed ≤ 0.31, so
+  T2 is not fooled, but "order ≥ 0.90" alone is not specific.
+- **Fix.** T1 now passes only if order ≥ 0.90 **and** the order is above the 95th percentile of 20 shuffled-n curves,
+  computed at the chosen layer. The shuffled curves also report how often T2 would pass by chance (`T2_false_pass`).
+- Nothing else changed.

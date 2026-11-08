@@ -157,3 +157,22 @@ def test_emergence_and_order_test():
     assert training.emergence(steps, [0, 0, 1, 2, 3, 4, 4]) < training.emergence(steps, [0, 0, 0, 0, 1, 3, 4])
     rows = [dict(zip(training.PRED_ORDER, np.sort(np.random.default_rng(i).random(4)) * 1e4)) for i in range(20)]
     assert training.order_test(pd.DataFrame(rows), n_perm=500)["p"] < 0.05
+
+
+def test_manifold1d_planted():
+    """E13-1D: a planted smooth curve passes T1/T2/T4 and shows no tear; a planted tear is detected by T3."""
+    from e13 import manifold1d as M
+    rng = np.random.default_rng(0); n = np.arange(100, 1000); D = 50; t = (n - 100) / 900
+    curve = 4 * np.c_[np.cos(2 * t), np.sin(2 * t), t, t ** 2] @ rng.standard_normal((4, D)) / 2
+    X = curve + 0.3 * rng.standard_normal((len(n), D))
+    a = M.t1_t2(X, n, "S3", reps=2)
+    assert a["T1_pass"] and a["T2_pass"], a
+    null = M.shuffle_null(X, n, "S3", perms=10)
+    assert a["rho"] > null["rho_q95"] and null["T2_false_pass"] <= 0.2, null
+    assert M.t4(X, n, "S3")["T4_pass"]
+    Z = M.prep_apply(M.prep_fit(X), X)
+    assert M.t3(Z, n, "S3", B=100)["T3_pass"]
+    L = M.lead(n); J = np.zeros_like(Z)
+    for d in range(2, 10):
+        J[L >= d] += rng.standard_normal(Z.shape[1]) * 3
+    assert not M.t3(Z + J, n, "S3", B=100)["T3_pass"]
