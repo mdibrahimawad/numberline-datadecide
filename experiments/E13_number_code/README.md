@@ -1,7 +1,47 @@
 # E13: how LLMs code integers (staged study)
 
-**Stage 1 (H1 digit-position codes, H2 carries) is done. The full E13 pipeline (METHODOLOGY.md) is built and tested;
-the real run is on RunPod (`RUNPOD.md`), not started.**
+**Stage 1 is done. The E13 pipeline is built; a reduced first pod run (DEVIATIONS D26) produced Stage A data for Pythia-1.4B and
+Qwen2.5-1.5B (discovery models only). Results below are discovery-only; Stage B (7 replication models), the causal stage and
+checkpoints have not run.**
+
+## Stage A results (Pythia-1.4B + Qwen2.5-1.5B), 2026-11-08
+**What ran:**
+- Pod run 2026-11-07, extraction for both models: all numbers 1–9999, 16 contexts, 9 layers. Checks 2.5 pass for both
+  (cosine with the old vectors ≥ 0.9999998).
+- Pythia analysis on the pod.
+- Qwen: 102 cells on the pod; the rest here (2026-11-08). Here, the second wordings and the C1 seed-7 set were not
+  downloaded, so the H0 ceilings, decomposition and transfer (secondary) are missing for Qwen.
+- Tables and figures: `results/stageA_partial/`.
+
+**The pod run failed overnight:**
+- The pod container restarted at about 22:04. This killed the run and the auto-stop, and the empty pod stayed on for
+  about 9 h.
+- The cause is unknown: one heavy 4-digit cell peaks at 1.7 GB, so memory is unlikely.
+
+| Pre-registered test (PREREG_E13), number reading AVG5/P_num | Digit (Qwen) | Chunk (Pythia) | Verdict (discovery only) |
+|---|---|---|---|
+| P7 positive control (days and months both work) | no | no (days yes, months no) | **fails**: no loop/PH claims |
+| H1: order decays from the leading digit to the units | 12/15 powered cells | 10/10 | **holds in both families** |
+| R-a / R-b | 0 | 0 | not supported |
+| H2a carry spikes | 1/11 | no power | not supported / cannot tell |
+| H2b, H2c | no power | no power | cannot tell |
+| P8 knee sharper than controls | 0 | 0 | not supported |
+| H3 lexicon: residual reliability ≥ 0.30 and frequency slope CI ≠ 0 (depth ≥ 50 %) | 11/15 | 13/15 | holds in both families. Crowding is "lexical" in only 2/9 Qwen cells (S4); not testable for Pythia (139 numbers) |
+| H0 invariance (C1/P_num and ≥ 3 natural contexts ≥ 50 % of C1/P_next) | | | invariant: O1_leading (94 % of cells), smooth-curve R² (85 %), curve + digits R² (96 %), units-digit decoding (100 %), probe for n (96 %). Not invariant: decay Δ, carry e_1, tree − line |
+
+**The copy confound, resolved for these two models (exploratory reading of the tables above):**
+- Stage 1 found that the leading digit loses its order in late layers. This happens **only at the copy position "="**:
+  - Qwen late layers: O1_leading −0.15 to 0.03 at "=";
+  - Qwen at the number token: 0.77–0.85;
+  - Qwen in neutral sentences: 0.83–0.88.
+- Likewise, Qwen's high late-layer smooth-curve R² (0.64–0.75, the E12c headline) appears only at "="; the number
+  readings give 0.06–0.23.
+
+**PCA pictures by reading:** `results/pca_number_line_*.png`, `results/pca_number_line_by_reading.csv`. Exploratory:
+the layer with the highest |Spearman(PC1, n)| is shown.
+- Neutral-sentence reading: PC1 order 0.94–0.97, on 7–17 % of the variance.
+- Old copy reading at "=": 0.78–0.92.
+
 
 ## E13 pipeline: build and laptop tests (2026-11-07)
 | Item | Where |

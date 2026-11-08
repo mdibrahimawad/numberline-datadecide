@@ -1,0 +1,9 @@
+metric,cells,share_holds,invariant
+O1_p1,48,0.9375,True
+R2_curve,48,0.8541666666666666,True
+R2_curve_digits,48,0.9583333333333334,True
+dR2g,48,0.3541666666666667,False
+delta,48,0.5625,False
+e1,48,0.5,False
+lin_acc_units,48,1.0,True
+probe_n_R2,48,0.9583333333333334,True

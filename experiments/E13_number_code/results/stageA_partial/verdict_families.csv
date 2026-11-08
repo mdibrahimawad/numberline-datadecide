@@ -1,0 +1,43 @@
+test,family,n,powered,share,status
+H1 decay [AVG5_num],digit,15,15,0.8,holds
+H1 decay [AVG5_num],chunk,15,10,1.0,holds
+R-a [AVG5_num],digit,15,15,0.0,does not hold
+R-a [AVG5_num],chunk,15,15,0.0,does not hold
+R-b [AVG5_num],digit,15,15,0.0,does not hold
+R-b [AVG5_num],chunk,15,15,0.0,does not hold
+H2a carry spikes [AVG5_num],digit,18,11,0.09090909090909091,does not hold
+H2a carry spikes [AVG5_num],chunk,9,0,,cannot tell
+H2b successor breaks [AVG5_num],digit,27,1,1.0,cannot tell
+H2b successor breaks [AVG5_num],chunk,27,0,,cannot tell
+H2c tree beats line (late) [AVG5_num],digit,6,0,,cannot tell
+H2c tree beats line (late) [AVG5_num],chunk,6,2,0.0,cannot tell
+P8 knee sharper than controls [AVG5_num],digit,15,15,0.06666666666666667,does not hold
+P8 knee sharper than controls [AVG5_num],chunk,15,15,0.0,does not hold
+H1 decay [C1_num],digit,15,15,0.4666666666666667,mixed
+H1 decay [C1_num],chunk,15,10,1.0,holds
+R-a [C1_num],digit,15,15,0.0,does not hold
+R-a [C1_num],chunk,15,15,0.0,does not hold
+R-b [C1_num],digit,15,15,0.0,does not hold
+R-b [C1_num],chunk,15,15,0.0,does not hold
+H2a carry spikes [C1_num],digit,18,14,0.07142857142857142,does not hold
+H2a carry spikes [C1_num],chunk,9,1,0.0,cannot tell
+H2b successor breaks [C1_num],digit,27,1,1.0,cannot tell
+H2b successor breaks [C1_num],chunk,27,0,,cannot tell
+H2c tree beats line (late) [C1_num],digit,6,0,,cannot tell
+H2c tree beats line (late) [C1_num],chunk,6,0,,cannot tell
+P8 knee sharper than controls [C1_num],digit,15,15,0.2,does not hold
+P8 knee sharper than controls [C1_num],chunk,15,15,0.5333333333333333,mixed
+H1 decay [C1_next],digit,15,15,0.6,mixed
+H1 decay [C1_next],chunk,15,10,0.7,holds
+R-a [C1_next],digit,15,15,0.0,does not hold
+R-a [C1_next],chunk,15,15,0.0,does not hold
+R-b [C1_next],digit,15,15,0.0,does not hold
+R-b [C1_next],chunk,15,15,0.06666666666666667,does not hold
+H2a carry spikes [C1_next],digit,16,14,0.14285714285714285,does not hold
+H2a carry spikes [C1_next],chunk,8,5,0.0,does not hold
+H2b successor breaks [C1_next],digit,24,0,,cannot tell
+H2b successor breaks [C1_next],chunk,24,0,,cannot tell
+H2c tree beats line (late) [C1_next],digit,6,6,0.3333333333333333,mixed
+H2c tree beats line (late) [C1_next],chunk,6,0,,cannot tell
+P8 knee sharper than controls [C1_next],digit,15,15,0.13333333333333333,does not hold
+P8 knee sharper than controls [C1_next],chunk,15,15,0.2,does not hold

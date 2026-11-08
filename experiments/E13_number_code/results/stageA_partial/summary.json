@@ -1,0 +1,167 @@
+{
+  "models": [
+    "pythia-1.4b",
+    "qwen2.5-1.5b"
+  ],
+  "p7_control_works": {
+    "pythia-1.4b": false,
+    "qwen2.5-1.5b": false
+  },
+  "verdicts": [
+    {
+      "test": "H1 decay",
+      "condition": "AVG5_num",
+      "verdict": "supported"
+    },
+    {
+      "test": "R-a",
+      "condition": "AVG5_num",
+      "verdict": "not supported"
+    },
+    {
+      "test": "R-b",
+      "condition": "AVG5_num",
+      "verdict": "not supported"
+    },
+    {
+      "test": "H2a carry spikes",
+      "condition": "AVG5_num",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "H2b successor breaks",
+      "condition": "AVG5_num",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "H2c tree beats line (late)",
+      "condition": "AVG5_num",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "P8 knee sharper than controls",
+      "condition": "AVG5_num",
+      "verdict": "not supported"
+    },
+    {
+      "test": "H1 decay",
+      "condition": "C1_num",
+      "verdict": "one family only"
+    },
+    {
+      "test": "R-a",
+      "condition": "C1_num",
+      "verdict": "not supported"
+    },
+    {
+      "test": "R-b",
+      "condition": "C1_num",
+      "verdict": "not supported"
+    },
+    {
+      "test": "H2a carry spikes",
+      "condition": "C1_num",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "H2b successor breaks",
+      "condition": "C1_num",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "H2c tree beats line (late)",
+      "condition": "C1_num",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "P8 knee sharper than controls",
+      "condition": "C1_num",
+      "verdict": "not supported"
+    },
+    {
+      "test": "H1 decay",
+      "condition": "C1_next",
+      "verdict": "one family only"
+    },
+    {
+      "test": "R-a",
+      "condition": "C1_next",
+      "verdict": "not supported"
+    },
+    {
+      "test": "R-b",
+      "condition": "C1_next",
+      "verdict": "not supported"
+    },
+    {
+      "test": "H2a carry spikes",
+      "condition": "C1_next",
+      "verdict": "not supported"
+    },
+    {
+      "test": "H2b successor breaks",
+      "condition": "C1_next",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "H2c tree beats line (late)",
+      "condition": "C1_next",
+      "verdict": "cannot tell"
+    },
+    {
+      "test": "P8 knee sharper than controls",
+      "condition": "C1_next",
+      "verdict": "not supported"
+    }
+  ],
+  "invariance": [
+    {
+      "metric": "O1_p1",
+      "cells": 48,
+      "share_holds": 0.9375,
+      "invariant": true
+    },
+    {
+      "metric": "R2_curve",
+      "cells": 48,
+      "share_holds": 0.8541666666666666,
+      "invariant": true
+    },
+    {
+      "metric": "R2_curve_digits",
+      "cells": 48,
+      "share_holds": 0.9583333333333334,
+      "invariant": true
+    },
+    {
+      "metric": "dR2g",
+      "cells": 48,
+      "share_holds": 0.3541666666666667,
+      "invariant": false
+    },
+    {
+      "metric": "delta",
+      "cells": 48,
+      "share_holds": 0.5625,
+      "invariant": false
+    },
+    {
+      "metric": "e1",
+      "cells": 48,
+      "share_holds": 0.5,
+      "invariant": false
+    },
+    {
+      "metric": "lin_acc_units",
+      "cells": 48,
+      "share_holds": 1.0,
+      "invariant": true
+    },
+    {
+      "metric": "probe_n_R2",
+      "cells": 48,
+      "share_holds": 0.9583333333333334,
+      "invariant": true
+    }
+  ]
+}

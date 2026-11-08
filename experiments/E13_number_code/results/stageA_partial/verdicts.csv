@@ -1,0 +1,22 @@
+test,condition,verdict
+H1 decay,AVG5_num,supported
+R-a,AVG5_num,not supported
+R-b,AVG5_num,not supported
+H2a carry spikes,AVG5_num,cannot tell
+H2b successor breaks,AVG5_num,cannot tell
+H2c tree beats line (late),AVG5_num,cannot tell
+P8 knee sharper than controls,AVG5_num,not supported
+H1 decay,C1_num,one family only
+R-a,C1_num,not supported
+R-b,C1_num,not supported
+H2a carry spikes,C1_num,cannot tell
+H2b successor breaks,C1_num,cannot tell
+H2c tree beats line (late),C1_num,cannot tell
+P8 knee sharper than controls,C1_num,not supported
+H1 decay,C1_next,one family only
+R-a,C1_next,not supported
+R-b,C1_next,not supported
+H2a carry spikes,C1_next,not supported
+H2b successor breaks,C1_next,cannot tell
+H2c tree beats line (late),C1_next,cannot tell
+P8 knee sharper than controls,C1_next,not supported
