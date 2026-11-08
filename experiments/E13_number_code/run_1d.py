@@ -284,10 +284,13 @@ def report(a, log):
         for s, v in J.get("sets", {}).items():
             if "error" in v:
                 lines.append(f"- causal {J['model']} {s}: ERROR {v['error']}"); continue
-            lines.append(f"- causal {J['model']} {s} (layer {v['layer']}): T7 necessary {'PASS' if v['T7']['passed'] else 'FAIL'} "
-                         f"(B1 drop {v['T7']['B1_drop']:.2f} vs random {v['T7']['B1_random']:.2f}; B2 drop {v['T7']['B2_drop']:.2f} vs {v['T7']['B2_random']:.2f}); "
-                         f"T8 sufficient {'PASS' if v.get('T8', {}).get('passed') else 'FAIL'} (flips {v.get('T8', {}).get('flip_curve')} vs random {v.get('T8', {}).get('flip_random')}); "
-                         f"T9 behaviour {'PASS' if v['T9']['passed'] else 'FAIL'} (partial r {v['T9']['partial_spearman']:.2f})")
+            f = lambda x: "NA" if x is None else f"{x:.2f}"
+            t7, t8, t9 = v.get("T7", {}), v.get("T8", {}), v.get("T9", {})
+            lines.append(f"- causal {J['model']} {s} (layer {v.get('layer')}, items B1={v.get('n_B1')} B2={v.get('n_B2')}): "
+                         f"T7 necessary {'PASS' if t7.get('passed') else 'FAIL'} (B1 drop {f(t7.get('B1_drop'))} vs random {f(t7.get('B1_random'))}; "
+                         f"B2 drop {f(t7.get('B2_drop'))} vs {f(t7.get('B2_random'))}); "
+                         f"T8 sufficient {'PASS' if t8.get('passed') else 'FAIL'} (flips {f(t8.get('flip_curve'))} vs random {f(t8.get('flip_random'))}, n={t8.get('n_items')}); "
+                         f"T9 behaviour {'PASS' if t9.get('passed') else 'FAIL'} (partial r {f(t9.get('partial_spearman'))}, n={t9.get('n')})")
     open(os.path.join(a.out, "report", "RESULTS.md"), "w").write("\n".join(lines))
     log("\n".join(lines[:40]))
 
