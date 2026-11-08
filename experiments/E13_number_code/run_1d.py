@@ -212,7 +212,12 @@ def stage_causal(a, log):
         if os.path.exists(path) or not a.new_data or not os.path.exists(os.path.join(a.new_data, m, "config.json")):
             continue
         log(f"== causal {m} on {dev}")
-        model, tok_model, tok_fast, _ = load_model(m, "float32", device=dev, log=log)
+        try:
+            model, tok_model, tok_fast, _ = load_model(m, "float32", device=dev, log=log)
+        except Exception as e:                  # a failed download must not stop the report; rerun to retry
+            log(f"  causal {m}: could not load the model ({type(e).__name__}: {e}). "
+                f"Pre-download it with: hf download {C.MODELS[m]['hf']}  - then rerun the same command.")
+            continue
         md = ModelData(os.path.join(a.new_data, m)); arr = np.load(os.path.join(a.new_data, m, "vec_avg_num_alllayers.npy"), mmap_mode="r")
         res = dict(model=m, device=dev, sets={})
         for s in ("S2", "S3"):
