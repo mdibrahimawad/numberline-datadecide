@@ -257,21 +257,24 @@ def report(a, log):
                          tear_ratio=J["T3_full"].get("ratio"), tear_ratio_hi=J["T3_full"].get("ratio_hi"),
                          T4_blocks_passed=L["T4"]["n_pass"], T1=v["T1"], T2=v["T2"], T3=v["T3"], T4=v["T4"],
                          power_T1=p.get("T1"), power_T2=p.get("T2"), power_T4=p.get("T4"), power_T3_detects_tear=p.get("T3_detects_tear"),
-                         manifold_1d=bool(v["T1"] is True and v["T2"] is True and v["T4"] is True)))
+                         manifold_1d=("pass" if all(v[t] is True for t in ("T1", "T2", "T4"))
+                                      else "fail" if any(v[t] is False for t in ("T1", "T2", "T4")) else "no power")))
     T = pd.DataFrame(rows); os.makedirs(os.path.join(a.out, "report"), exist_ok=True)
     T.to_csv(os.path.join(a.out, "report", "shape_tests.csv"), index=False)
     lines = ["# E13-1D results (PREREG_1D.md)", ""]
     if len(T) and "manifold_1d" in T:
-        V = T[T.manifold_1d.notna()]
-        g = V.groupby(["source", "model", "reading"]).manifold_1d.agg(["sum", "count"]).reset_index()
-        g["supported"] = g["sum"] >= 2
-        lines += ["## Per model and reading: 1-D manifold (T1, T2, T4 pass with power) in >= 2 of 3 sets", g.to_string(index=False), ""]
+        V = T[T.manifold_1d.notna()].copy(); V["is_pass"] = V.manifold_1d == "pass"; V["powered"] = V.manifold_1d != "no power"
+        g = V.groupby(["source", "model", "reading"]).agg(sets_pass=("is_pass", "sum"), sets_powered=("powered", "sum"),
+                                                          sets=("is_pass", "size")).reset_index()
+        g["verdict"] = ["supported" if p >= 2 else ("cannot tell (no power)" if w < 2 else "not supported")
+                        for p, w in zip(g.sets_pass, g.sets_powered)]
+        lines += ["## Per model and reading: 1-D manifold = T1, T2, T4 pass with power, in >= 2 of 3 sets", g.to_string(index=False), ""]
         for src in ("old", "new"):
-            S = V[V.source == src]
+            S = V[(V.source == src) & V.powered]
             if len(S):
-                fam = S.groupby("family").manifold_1d.mean()
+                fam = S.groupby("family").is_pass.mean()
                 ok = all(fam.get(f, 0) >= 0.70 for f in ("digit", "chunk"))
-                lines += [f"## T6 across models ({src} prompt): share of (model, set) cells passing by family: {fam.round(2).to_dict()} -> {'PASS' if ok else 'FAIL'}", ""]
+                lines += [f"## T6 across models ({src} prompt): share of powered (model, set) cells passing, by family: {fam.round(2).to_dict()} -> {'PASS' if ok else 'FAIL'}", ""]
         lines += ["## All jobs", T.round(3).to_string(index=False), ""]
     for f in sorted(glob.glob(os.path.join(a.out, "jobs", "t5__*.json"))):
         J = json.load(open(f)); lines.append(f"- T5 {J.get('model')} {J.get('set')}: share of context pairs with order >= 0.90 = {J.get('share_ge_090')} -> {'PASS' if J.get('T5_pass') else 'FAIL'}")

@@ -92,3 +92,34 @@ EXPLORATORY.
 - **Fix.** T1 now passes only if order ≥ 0.90 **and** the order is above the 95th percentile of 20 shuffled-n curves,
   computed at the chosen layer. The shuffled curves also report how often T2 would pass by chance (`T2_false_pass`).
 - Nothing else changed.
+
+## Amendment 2 (2026-11-08, AFTER the first full laptop run; disclosed as such)
+**What the first run showed.** The planted-structure power checks showed that two tests were broken by design:
+- **T4 (unseen block):** recovered a planted curve in 0–20 % of replicates in almost every cell, so it had no power.
+- **T3 (continuity):** produced no value for 100–999. Each leading-digit group had only one block, so there were no
+  within-group steps.
+
+**Why.** The "planted curve" was the real trend at the CV bandwidth (≈ 1 % of the range). That trend itself jumps at
+leading-digit boundaries, so it was not a smooth curve. In addition, the T4 curve could not bridge a gap of a whole
+leading-digit block.
+
+**Changes.** Pass thresholds are unchanged.
+1. **Planted curve.** The real trend is re-smoothed at 20 % of the range and rescaled to the same total variance, so
+   it is genuinely smooth. The planted tear is added to this smooth curve.
+2. **T4.** The curve is built with bandwidth max(h_CV, half the block width), so it can bridge the hidden block.
+3. **T3.** At least 2 blocks per leading-digit group.
+4. **Qwen causal items.** B1 items no longer require the two answers to differ in their first token: whole answers
+   are scored, and in Qwen every answer starts with a space token, which had removed all items.
+5. **Report.** The 1-D verdict per (model, reading) is "supported" (≥ 2 sets pass), "not supported", or "cannot tell"
+   (fewer than 2 sets with power), instead of counting no-power cells as failures.
+
+**Power with the fix** (Qwen sentences, 5 replicates):
+
+| | T1 | T2 | T4 | T3 tear detected | T3 no false tear |
+|---|---|---|---|---|---|
+| 10–99 | 1.0 | 1.0 | 1.0 | 1.0 | 0.6 |
+| 100–999 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
+| 1000–9999 | 1.0 | 1.0 | 0.4 | 1.0 | 1.0 |
+
+**Rerun.** All shape-test jobs and the Qwen causal job. T5, T10 and the Pythia causal results are unaffected and kept.
+Results from the first run stay in its report for comparison.

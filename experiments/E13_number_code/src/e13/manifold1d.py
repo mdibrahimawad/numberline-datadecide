@@ -102,7 +102,7 @@ def t3(Z, n, s, B=500, seed=0, prepped=True):
         b = max(3, int(round(0.05 * R * len(n) / (R + 1))))          # subsample: same share of the numbers
     L = lead(n); blocks = []
     for g in np.unique(L):
-        idx = np.where(L == g)[0]; k = max(1, len(idx) // b)
+        idx = np.where(L == g)[0]; k = max(2, len(idx) // b) if len(idx) >= 4 else 1      # Amendment 2: >= 2 blocks
         blocks += [(g, part) for part in np.array_split(idx, k) if len(part) >= 2]
     if len(blocks) < 4:
         return dict(ratio=None, T3_pass=None, note="too few blocks")
@@ -135,7 +135,8 @@ def t4(X, n, s, prepped=False):
         if te.sum() < 5:
             continue
         T = None if prepped else prep_fit(X[tr]); Z = X if prepped else prep_apply(T, X)
-        cur = fit_curve(Z[tr], n[tr], lo, hi, d); nh = place(cur, Z[te])
+        h0 = choose_h(Z[tr], n[tr], d)
+        cur = fit_curve(Z[tr], n[tr], lo, hi, d, h=max(h0, width / 2)); nh = place(cur, Z[te])   # Amendment 2: bridge the gap
         rho = float(spearmanr(nh, n[te])[0]) if np.ptp(nh) > 0 else 0.0
         inside = float(np.mean((nh >= blo - width / 2) & (nh <= bhi + width / 2)))
         ok = bool(rho >= 0.80 and inside >= 0.80); passed += ok
@@ -147,6 +148,10 @@ def t4(X, n, s, prepped=False):
 def power(X, n, s, tag, reps=10):
     T0 = prep_fit(X); Z = prep_apply(T0, X); lo, hi = SETS[s]
     h = choose_h(Z, n, 0); Tn = kernel_pred(Z, n, n, h); E = Z - Tn
+    # Amendment 2: the planted curve must be genuinely smooth. The real trend at the CV bandwidth jumps at leading-digit
+    # boundaries, so it is re-smoothed at 20 % of the range and rescaled to the same total variance.
+    Ts = kernel_pred(Tn, n, n, max(1.0, 0.2 * (n.max() - n.min()))); Ts = Ts - Ts.mean(0)
+    Ts = Ts * np.sqrt(((Tn - Tn.mean(0)) ** 2).sum() / max((Ts ** 2).sum(), 1e-12)) + Tn.mean(0); Tn = Ts
     base = t3(Z, n, s, B=0); ws = base.get("within_step") or 0.0; L = lead(n); o = np.argsort(n)
     hits = dict(T1=0, T2=0, T4=0, T3_no_tear_on_curve=0, T3_detects_tear=0)
     import zlib

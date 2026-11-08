@@ -122,7 +122,7 @@ def build_items(tok, family, numbers, kind, n_items, rng):
         if pos is None:
             continue
         ids = pos["ids"]; cid = [tok(c, add_special_tokens=False)["input_ids"] for c in cands]
-        if kind == "B1" and cid[0][0] == cid[1][0]:
+        if kind == "B1" and cid[0] == cid[1]:       # (full answers are scored, so a shared first token, e.g. a space, is fine)
             continue
         items.append(dict(n=n, prompt_ids=ids, pos=pos["last"], cands=cid, carry=carry, kind=kind))
     return items
