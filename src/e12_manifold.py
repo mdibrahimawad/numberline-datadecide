@@ -17,7 +17,6 @@ from multiprocessing import Pool
 
 import numpy as np
 import pandas as pd
-from ripser import ripser
 from scipy.ndimage import gaussian_filter1d, uniform_filter1d
 from scipy.spatial.distance import pdist
 from scipy.stats import spearmanr
@@ -359,6 +358,7 @@ def t7_helix(Z, n, seed, n_perm=200):
 
 # --------------------------------------------------------------------------- T8 topology
 def t8_topology(Z, landmarks=400, rule=0.25):
+    from ripser import ripser              # imported here: only the topology test (T8) needs it
     if len(Z) > landmarks:
         r = ripser(Z, maxdim=1, n_perm=landmarks); P = Z[r["idx_perm"]]
     else:
