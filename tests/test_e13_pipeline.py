@@ -176,3 +176,13 @@ def test_manifold1d_planted():
     for d in range(2, 10):
         J[L >= d] += rng.standard_normal(Z.shape[1]) * 3
     assert not M.t3(Z + J, n, "S3", B=100)["T3_pass"]
+
+
+def test_causal1d_tiny(tiny):
+    """E13-1D causal tests T7-T9 run end to end on a tiny random model (the numbers are meaningless)."""
+    from e13 import causal1d
+    model, tok, out, _ = tiny
+    n = np.arange(10, 100); rng = np.random.default_rng(0); d = model.config.hidden_size
+    X = np.outer((n - 55) / 45, rng.standard_normal(d)) * 3 + rng.standard_normal((len(n), d))
+    r = causal1d.run(model, tok, "chunk", X, n, "S2", layer=2, n_items=8, log=lambda *a: None)
+    assert {"T7", "T9"} <= set(r) and "passed" in r["T7"], r.keys()

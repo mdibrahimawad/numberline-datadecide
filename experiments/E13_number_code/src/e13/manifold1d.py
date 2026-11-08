@@ -63,7 +63,7 @@ def t1_t2(X, n, s, reps=3, shuffled=True, prepped=False):
         te = np.random.default_rng(rep).random(len(n)) < 0.2; tr = ~te
         T = None if prepped else prep_fit(X[tr]); Z = X if prepped else prep_apply(T, X)
         cur = fit_curve(Z[tr], n[tr], lo, hi, rep); nh = place(cur, Z[te]); y = n[te].astype(float); ref = n[tr].mean()
-        knn = KNeighborsRegressor(10).fit(Z[tr], n[tr]).predict(Z[te])
+        knn = KNeighborsRegressor(min(10, int(tr.sum()) - 1)).fit(Z[tr], n[tr]).predict(Z[te])
         rid = RidgeCV(alphas=np.logspace(-2, 4, 13)).fit(Z[tr], n[tr]).predict(Z[te])
         row = dict(rho=float(spearmanr(nh, y)[0]), R2_curve=r2(y, nh, ref), R2_knn=r2(y, knn, ref), R2_ridge=r2(y, rid, ref), m=cur["m"], h=cur["h"])
         if shuffled and rep == 0:
@@ -207,7 +207,7 @@ def run_job(job, layers_X, n, s, tag, do_power=True):
         if X[good].std(0).max() < 1e-6 or good.sum() < 30:
             continue
         Xd, nd = X[dev & good], n[dev & good]; Xe, ne = X[~dev & good], n[~dev & good]
-        if len(nd) < 15 or len(ne) < 30:
+        if len(nd) < 10 or len(ne) < 30:
             continue
         dv = t1_t2(Xd, nd, s, reps=3, shuffled=False)["rho"]
         a = t1_t2(Xe, ne, s, reps=3)

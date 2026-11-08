@@ -135,7 +135,8 @@ def stage_t5(a, log):
             J = json.load(open(src)); chosen = J.get("chosen_layer")
             if chosen is None:
                 continue
-            slot = int(np.argmin([abs(l - chosen) for l in md.lidx])); n = M.subsample(md.set_numbers(s, ctxs), s)
+            slot = int(np.argmin([abs(l - chosen) if l > 0 else 1e9 for l in md.lidx]))   # never layer 0 (token embedding only)
+            n = M.subsample(md.set_numbers(s, ctxs), s)
             n = n[~M.dev_split(n)]
             try:
                 res = M.t5(lambda c: md.X((c, "num"), slot, n), ctxs, n, s)
@@ -259,14 +260,14 @@ def report(a, log):
         V = T[T.manifold_1d.notna()]
         g = V.groupby(["source", "model", "reading"]).manifold_1d.agg(["sum", "count"]).reset_index()
         g["supported"] = g["sum"] >= 2
-        lines += ["## Per model and reading: 1-D manifold (T1, T2, T4 pass with power) in >= 2 of 3 sets", g.to_markdown(index=False), ""]
+        lines += ["## Per model and reading: 1-D manifold (T1, T2, T4 pass with power) in >= 2 of 3 sets", g.to_string(index=False), ""]
         for src in ("old", "new"):
             S = V[V.source == src]
             if len(S):
                 fam = S.groupby("family").manifold_1d.mean()
                 ok = all(fam.get(f, 0) >= 0.70 for f in ("digit", "chunk"))
                 lines += [f"## T6 across models ({src} prompt): share of (model, set) cells passing by family: {fam.round(2).to_dict()} -> {'PASS' if ok else 'FAIL'}", ""]
-        lines += ["## All jobs", T.round(3).to_markdown(index=False), ""]
+        lines += ["## All jobs", T.round(3).to_string(index=False), ""]
     for f in sorted(glob.glob(os.path.join(a.out, "jobs", "t5__*.json"))):
         J = json.load(open(f)); lines.append(f"- T5 {J.get('model')} {J.get('set')}: share of context pairs with order >= 0.90 = {J.get('share_ge_090')} -> {'PASS' if J.get('T5_pass') else 'FAIL'}")
     for f in sorted(glob.glob(os.path.join(a.out, "jobs", "t10__*.json"))):
