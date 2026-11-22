@@ -26,3 +26,33 @@
   out["J"] = float(np.nanmean([out.get(f"J_{B}", np.nan) for B in PRIMARY_B]))
 /home/user/numberline-datadecide/src/e14_length_log.py:70: RuntimeWarning: Mean of empty slice
   out["LS"] = float(np.nanmean([out.get(f"LS_{B}", np.nan) for B in PRIMARY_B]))
+  E06 (bands, 3 seeds)         noise=0.1  professor toy (one-hot only)   correct=1.00 LS=+0.99 lam=+0.67 {"length staircase": 20}
+  E06 (bands, 3 seeds)         noise=0.1  length staircase               correct=1.00 LS=+0.99 lam=+0.10 {"length staircase": 20}
+  E06 (bands, 3 seeds)         noise=0.1  smooth log                     correct=1.00 LS=+0.03 lam=-0.01 {"smooth, log inside": 20}
+  E06 (bands, 3 seeds)         noise=0.1  smooth, linear inside          correct=1.00 LS=+0.10 lam=+0.99 {"smooth, linear inside": 20}
+  E06 (bands, 3 seeds)         noise=0.1  mixed (37.5% length)           correct=1.00 LS=+0.39 lam=+0.03 {"mixed": 20}
+  E06 (bands, 3 seeds)         noise=0.3  professor toy (one-hot only)   correct=1.00 LS=+0.99 lam=+0.02 {"length staircase": 20}
+  E06 (bands, 3 seeds)         noise=0.3  length staircase               correct=1.00 LS=+1.00 lam=+0.28 {"length staircase": 20}
+  E06 (bands, 3 seeds)         noise=0.3  smooth log                     correct=1.00 LS=+0.04 lam=-0.01 {"smooth, log inside": 20}
+  E06 (bands, 3 seeds)         noise=0.3  smooth, linear inside          correct=1.00 LS=+0.11 lam=+0.98 {"smooth, linear inside": 20}
+  E06 (bands, 3 seeds)         noise=0.3  mixed (37.5% length)           correct=1.00 LS=+0.40 lam=-0.03 {"mixed": 20}
+  E06 (bands, 3 seeds)         noise=0.6  professor toy (one-hot only)   correct=1.00 LS=+1.04 lam=+0.11 {"length staircase": 20}
+  E06 (bands, 3 seeds)         noise=0.6  length staircase               correct=1.00 LS=+1.00 lam=+0.10 {"length staircase": 20}
+  E06 (bands, 3 seeds)         noise=0.6  smooth log                     correct=1.00 LS=+0.04 lam=+0.03 {"smooth, log inside": 20}
+  E06 (bands, 3 seeds)         noise=0.6  smooth, linear inside          correct=1.00 LS=+0.09 lam=+1.01 {"smooth, linear inside": 20}
+  E06 (bands, 3 seeds)         noise=0.6  mixed (37.5% length)           correct=1.00 LS=+0.41 lam=+0.01 {"mixed": 20}
+  E13 (every number 10-9999)   noise=0.1  professor toy (one-hot only)   correct=1.00 LS=+1.01 lam=+0.65 {"length staircase": 20}
+  E13 (every number 10-9999)   noise=0.1  length staircase               correct=1.00 LS=+0.99 lam=-0.95 {"length staircase": 20}
+  E13 (every number 10-9999)   noise=0.1  smooth log                     correct=1.00 LS=+0.03 lam=+0.00 {"smooth, log inside": 20}
+  E13 (every number 10-9999)   noise=0.1  smooth, linear inside          correct=1.00 LS=-0.02 lam=+1.00 {"smooth, linear inside": 20}
+  E13 (every number 10-9999)   noise=0.1  mixed (37.5% length)           correct=1.00 LS=+0.40 lam=-0.10 {"mixed": 20}
+  E13 (every number 10-9999)   noise=0.3  professor toy (one-hot only)   correct=0.70 LS=+1.02 lam=+0.93 {"length staircase": 14, "can't tell": 6}
+  E13 (every number 10-9999)   noise=0.3  length staircase               correct=1.00 LS=+1.00 lam=-0.10 {"length staircase": 20}
+  E13 (every number 10-9999)   noise=0.3  smooth log                     correct=1.00 LS=+0.05 lam=-0.08 {"smooth, log inside": 20}
+  E13 (every number 10-9999)   noise=0.3  smooth, linear inside          correct=1.00 LS=-0.03 lam=+1.00 {"smooth, linear inside": 20}
+  E13 (every number 10-9999)   noise=0.3  mixed (37.5% length)           correct=1.00 LS=+0.41 lam=+0.00 {"mixed": 20}
+  E13 (every number 10-9999)   noise=0.6  professor toy (one-hot only)   correct=0.00 LS=+0.99 lam=+1.27 {"can't tell": 10, "no number line": 10}
+  E13 (every number 10-9999)   noise=0.6  length staircase               correct=1.00 LS=+1.01 lam=+1.40 {"length staircase": 20}
+  E13 (every number 10-9999)   noise=0.6  smooth log                     correct=1.00 LS=+0.04 lam=+0.05 {"smooth, log inside": 20}
+  E13 (every number 10-9999)   noise=0.6  smooth, linear inside          correct=1.00 LS=+0.00 lam=+1.02 {"smooth, linear inside": 20}
+  E13 (every number 10-9999)   noise=0.6  mixed (37.5% length)           correct=1.00 LS=+0.39 lam=+0.00 {"mixed": 20}
