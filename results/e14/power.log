@@ -1,0 +1,28 @@
+/home/user/numberline-datadecide/src/e14_length_log.py:161: RuntimeWarning: Mean of empty slice
+  point = {k: float(np.nanmean([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:161: RuntimeWarning: Mean of empty slice
+  point = {k: float(np.nanmean([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:161: RuntimeWarning: Mean of empty slice
+  point = {k: float(np.nanmean([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:161: RuntimeWarning: Mean of empty slice
+  point = {k: float(np.nanmean([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:169: RuntimeWarning: Mean of empty slice
+  boot.append({k: float(np.nanmean([r.get(k, np.nan) for r in reps])) for k in KEYS})
+/home/user/numberline-datadecide/src/e14_length_log.py:169: RuntimeWarning: Mean of empty slice
+  boot.append({k: float(np.nanmean([r.get(k, np.nan) for r in reps])) for k in KEYS})
+/home/user/numberline-datadecide/src/e14_length_log.py:169: RuntimeWarning: Mean of empty slice
+  boot.append({k: float(np.nanmean([r.get(k, np.nan) for r in reps])) for k in KEYS})
+/home/user/numberline-datadecide/src/e14_length_log.py:169: RuntimeWarning: Mean of empty slice
+  boot.append({k: float(np.nanmean([r.get(k, np.nan) for r in reps])) for k in KEYS})
+/home/user/numberline-datadecide/src/e14_length_log.py:147: RuntimeWarning: All-NaN slice encountered
+  point = {k: float(np.nanmedian([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:147: RuntimeWarning: All-NaN slice encountered
+  point = {k: float(np.nanmedian([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:147: RuntimeWarning: All-NaN slice encountered
+  point = {k: float(np.nanmedian([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:147: RuntimeWarning: All-NaN slice encountered
+  point = {k: float(np.nanmedian([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:71: RuntimeWarning: Mean of empty slice
+  out["J"] = float(np.nanmean([out.get(f"J_{B}", np.nan) for B in PRIMARY_B]))
+/home/user/numberline-datadecide/src/e14_length_log.py:70: RuntimeWarning: Mean of empty slice
+  out["LS"] = float(np.nanmean([out.get(f"LS_{B}", np.nan) for B in PRIMARY_B]))
