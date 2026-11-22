@@ -1,0 +1,2 @@
+/home/user/numberline-datadecide/src/e14_length_log.py:147: RuntimeWarning: All-NaN slice encountered
+  point = {k: float(np.nanmedian([p.get(k, np.nan) for p in pts])) for k in KEYS}
