@@ -1,2 +1,10 @@
 /home/user/numberline-datadecide/src/e14_length_log.py:147: RuntimeWarning: All-NaN slice encountered
   point = {k: float(np.nanmedian([p.get(k, np.nan) for p in pts])) for k in KEYS}
+  E13 pythia-1.4b    copy '=' (C1, beta-like)         L9  LS=+0.23 [+0.16,+0.31] LS100=+0.40 LS1000=+0.07 lam=+0.05 R3=+10.42 -> mixed
+/home/user/numberline-datadecide/src/e14_length_log.py:71: RuntimeWarning: Mean of empty slice
+  out["J"] = float(np.nanmean([out.get(f"J_{B}", np.nan) for B in PRIMARY_B]))
+  E13 pythia-1.4b    sentence (AVG5, number token)    L18 LS=+0.31 [+0.25,+0.35] LS100=+0.44 LS1000=+0.18 lam=+0.25 R3=+17.55 -> mixed
+/home/user/numberline-datadecide/src/e14_length_log.py:70: RuntimeWarning: Mean of empty slice
+  out["LS"] = float(np.nanmean([out.get(f"LS_{B}", np.nan) for B in PRIMARY_B]))
+  E13 qwen2.5-1.5b   copy '=' (C1, beta-like)         L4  LS=+0.69 [+0.60,+0.75] LS100=+0.85 LS1000=+0.53 lam=+0.50 R3=+4.69 -> length staircase
+  E13 qwen2.5-1.5b   sentence (AVG5, number token)    L28 LS=+0.18 [+0.11,+0.24] LS100=+0.41 LS1000=-0.04 lam=-0.40 R3=-45.59 -> smooth, log inside

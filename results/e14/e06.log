@@ -2,3 +2,40 @@
   point = {k: float(np.nanmean([p.get(k, np.nan) for p in pts])) for k in KEYS}
 /home/user/numberline-datadecide/src/e14_length_log.py:169: RuntimeWarning: Mean of empty slice
   boot.append({k: float(np.nanmean([r.get(k, np.nan) for r in reps])) for k in KEYS})
+  E06_DataDecide c4                                         L3  LS=+0.07 [+0.03,+0.12] J=+0.40 lam=+0.05 -> smooth, log inside
+  E06_DataDecide dclm-baseline-25p-dolma1.7-75p             L8  LS=+0.36 [+0.32,+0.39] J=+0.23 lam=+0.33 -> mixed
+  E06_DataDecide dclm-baseline-50p-dolma1.7-50p             L8  LS=+0.23 [+0.20,+0.27] J=+0.18 lam=+0.02 -> mixed
+  E06_DataDecide dclm-baseline-75p-dolma1.7-25p             L10 LS=+0.26 [+0.22,+0.29] J=+0.27 lam=+0.00 -> mixed
+  E06_DataDecide dclm-baseline-qc-10p                       L8  LS=+0.20 [+0.15,+0.24] J=+0.25 lam=-0.13 -> smooth, log inside
+  E06_DataDecide dclm-baseline-qc-20p                       L9  LS=+0.36 [+0.33,+0.39] J=+0.42 lam=-0.13 -> mixed
+  E06_DataDecide dclm-baseline-qc-7p-fw2                    L8  LS=+0.28 [+0.25,+0.31] J=+0.34 lam=-1.00 -> mixed
+  E06_DataDecide dclm-baseline-qc-7p-fw3                    L3  LS=+0.49 [+0.47,+0.52] J=+0.33 lam=-0.07 -> mixed
+  E06_DataDecide dclm-baseline-qc-fw-10p                    L3  LS=+0.29 [+0.26,+0.31] J=+0.26 lam=-0.22 -> mixed
+  E06_DataDecide dclm-baseline-qc-fw-3p                     L2  LS=+0.19 [+0.14,+0.24] J=+0.16 lam=+0.52 -> smooth, shape unclear
+  E06_DataDecide dclm-baseline                              L8  LS=+0.27 [+0.22,+0.33] J=+0.45 lam=-0.13 -> mixed
+  E06_DataDecide dolma1_6plus                               L9  LS=+0.43 [+0.39,+0.47] J=+0.30 lam=-0.35 -> mixed
+  E06_DataDecide dolma1_7-no-code                           L8  LS=+0.38 [+0.34,+0.41] J=+0.40 lam=-0.02 -> mixed
+  E06_DataDecide dolma1_7-no-flan                           L9  LS=+0.40 [+0.37,+0.45] J=+0.27 lam=+0.20 -> mixed
+  E06_DataDecide dolma1_7-no-math-code                      L4  LS=-0.09 [-0.17,-0.02] J=+0.54 lam=-0.60 -> smooth, log inside
+  E06_DataDecide dolma1_7-no-reddit                         L8  LS=+0.35 [+0.30,+0.40] J=+0.29 lam=-0.25 -> mixed
+  E06_DataDecide dolma1_7                                   L4  LS=+0.27 [+0.25,+0.29] J=+0.22 lam=-0.07 -> mixed
+  E06_DataDecide falcon-and-cc-qc-10p                       L3  LS=+0.28 [+0.25,+0.30] J=+0.24 lam=+0.13 -> mixed
+  E06_DataDecide falcon-and-cc-qc-20p                       L8  LS=+0.29 [+0.25,+0.34] J=+0.32 lam=-0.17 -> mixed
+  E06_DataDecide falcon-and-cc-qc-orig-10p                  L3  LS=+0.26 [+0.24,+0.29] J=+0.36 lam=-0.35 -> mixed
+  E06_DataDecide falcon-and-cc-qc-tulu-10p                  L2  LS=+0.24 [+0.17,+0.29] J=+0.27 lam=+1.28 -> mixed
+  E06_DataDecide falcon-and-cc                              L9  LS=+0.35 [+0.31,+0.40] J=+0.55 lam=-0.20 -> mixed
+  E06_DataDecide falcon                                     L8  LS=+0.39 [+0.35,+0.43] J=+0.46 lam=-0.90 -> mixed
+  E06_DataDecide fineweb-edu                                L9  LS=+0.48 [+0.45,+0.50] J=+0.46 lam=-0.38 -> mixed
+/home/user/numberline-datadecide/src/e14_length_log.py:70: RuntimeWarning: Mean of empty slice
+  out["LS"] = float(np.nanmean([out.get(f"LS_{B}", np.nan) for B in PRIMARY_B]))
+  E06_DataDecide fineweb-pro                                L7  LS=+0.21 [+0.15,+0.26] J=+0.52 lam=-0.17 -> mixed
+/home/user/numberline-datadecide/src/e14_length_log.py:161: RuntimeWarning: Mean of empty slice
+  point = {k: float(np.nanmean([p.get(k, np.nan) for p in pts])) for k in KEYS}
+/home/user/numberline-datadecide/src/e14_length_log.py:169: RuntimeWarning: Mean of empty slice
+  boot.append({k: float(np.nanmean([r.get(k, np.nan) for r in reps])) for k in KEYS})
+  E06_Paloma allenai_paloma-1b-baseline-c4              L7  LS=-0.34 [-0.74,-0.14] J=+0.15 lam=+1.87 -> can't tell
+  E06_Paloma allenai_paloma-1b-baseline-dolma           L1  LS=+0.37 [+0.21,+0.53] J=+0.11 lam=+0.93 -> mixed
+  E06_Paloma allenai_paloma-1b-baseline-falcon-refinedweb L5  LS=-0.09 [-0.17,-0.00] J=+0.24 lam=-0.38 -> smooth, log inside
+  E06_Paloma allenai_paloma-1b-baseline-mc4             L5  LS=+0.47 [+0.45,+0.50] J=+0.42 lam=-0.13 -> mixed
+  E06_Paloma allenai_paloma-1b-baseline-pile            L5  LS=+0.33 [+0.30,+0.36] J=+0.21 lam=-0.30 -> mixed
+  E06_Paloma allenai_paloma-1b-baseline-redpajama       L9  LS=+0.03 [-0.12,+0.15] J=+0.23 lam=+0.47 -> smooth, shape unclear
