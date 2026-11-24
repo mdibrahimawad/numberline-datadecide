@@ -1,0 +1,3 @@
+boundary,J,ci_lo,ci_hi,jump,tokens_before,tokens_after,token_added,matches_token_account
+99->100,0.5082164350197396,0.34216444824079256,0.6810883840453323,True,1.0,1.0,False,False
+999->1000,0.20398484328021826,0.05393572575027466,0.3486456467414406,True,1.0,1.2,False,False
