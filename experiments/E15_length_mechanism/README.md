@@ -63,3 +63,13 @@ python -m src.e15_length_mechanism extract --model allenai/OLMo-2-0425-1B --out 
 python -m src.e15_length_mechanism extract --model Qwen/Qwen2.5-1.5B --out <vec_dir>        # ~17 min
 python -m src.e15_length_mechanism analyse --vectors <vec_dir> --out results/e15
 ```
+
+## Exploratory extension (2026-11-25, not pre-registered)
+All padded numbers at once (1-digit starts: 9 numbers, 2-digit: 90, plus a new run of 100 three-digit numbers padded to
+4 digits, `src/e15_extra_pad3.py`), a PCA picture (PC1 × PC2) and a full-vector Euclidean check (which group of real
+numbers is each padded string closest to?). Figure `results/e15/exploratory/e15_more.png`, numbers
+`results/e15/exploratory/e15_more.csv`, script `results/e15/exploratory/e15_fig_more.py`.
+- Padded to 4 digits, 3-digit numbers (`0123`) land at 3.70 / 3.65 / 3.65 (Pythia / OLMo-2 / Qwen), next to real 4-digit
+  numbers (3.72 / 3.75 / 3.76); 2-digit numbers (`0045`) at 3.40 / 3.56 / 3.53; 1-digit numbers (`0007`) at 3.22 / 3.25 / 3.39.
+- In the full hidden vector (Euclidean, nearest centroid of real 1-, 2-, 3- or 4-digit numbers), the padded strings
+  are closest to the group of their **written** length in 67–100 % of items and to their true length in 0–22 %.
